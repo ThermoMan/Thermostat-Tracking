@@ -385,10 +385,10 @@ echo "<tr><td>this->passphrase</td><td>" . "MASKED" . "</td><td>password (not sh
 
   public function getStat()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat" );
     $obj = json_decode( $outputs );
-$this->debug = 0;
+//$this->debug = 0;
 /* Sample data (CR added for readability) 2012-07-06 Firmware 1.04.83
  {
    "temp":78.00,
@@ -470,10 +470,10 @@ $this->debug = 0;
 
   public function getEventLog()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat/eventlog" );
     $obj = json_decode( $outputs );
-$this->debug = 0;
+//$this->debug = 0;
     $var1 = $obj->{"eventlog"};
 
 /* These are the outputs of eventlog
@@ -528,10 +528,10 @@ object(stdClass)#4 (1)
   // Essentially a duplicate function, but it works
   public function getFMode()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat/fmode" );
     $obj = json_decode( $outputs );
-$this->debug = 0;
+//$this->debug = 0;
 
     $this->fmode = $obj->{"fmode"};           // Present fan mode
     return;
@@ -539,10 +539,10 @@ $this->debug = 0;
 
   public function getHelp()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat/help" );
     $obj = json_decode( $outputs );
-$this->debug = 0;
+//$this->debug = 0;
 
     return;
   }
@@ -550,10 +550,10 @@ $this->debug = 0;
   // Essentially a duplicate function, but it works
   public function getHold()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat/hold" );
     $obj = json_decode( $outputs );
-$this->debug = 0;
+//$this->debug = 0;
 
     $this->hold = $obj->{"hold"};             // Present hold status 0 = off, 1 = on
     return;
@@ -562,10 +562,10 @@ $this->debug = 0;
   // Returns -1 because it is not implemented in hardware
   public function getHumidity()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat/humidity" );
     $obj = json_decode( $outputs );
-$this->debug = 0;
+//$this->debug = 0;
 
 //    $this->humidity = $obj->{"humidity"};             // Present humidity
     return;
@@ -592,10 +592,10 @@ $this->debug = 0;
   // Essentially a duplicate function, but it works
   public function getOverride()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat/override" );
     $obj = json_decode( $outputs );
-$this->debug = 0;
+//$this->debug = 0;
 
     $this->override = $obj->{"override"};
     return;
@@ -603,10 +603,10 @@ $this->debug = 0;
 
   public function getPower()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat/power" );
     $obj = json_decode( $outputs );
-$this->debug = 0;
+//$this->debug = 0;
 
     $this->power = $obj->{"power"};  // Milliamps?
     return;
@@ -654,7 +654,7 @@ $this->debug = 0;
   // Essentially a duplicate function, but it works
   public function getTimeDay()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat/time/day" );
     $obj = json_decode( $outputs );
 $this->debug = 0;
@@ -665,7 +665,7 @@ $this->debug = 0;
   // Essentially a duplicate function, but it works
   public function getTimeHour()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat/time/hour" );
     $obj = json_decode( $outputs );
 $this->debug = 0;
@@ -676,7 +676,7 @@ $this->debug = 0;
   // Essentially a duplicate function, but it works
   public function getTimeMinute()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat/time/minute" );
     $obj = json_decode( $outputs );
 $this->debug = 0;
@@ -687,7 +687,7 @@ $this->debug = 0;
   // Essentially a duplicate function, but it works
   public function getTime()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/tstat/time" );
     $obj = json_decode( $outputs );
 $this->debug = 0;
@@ -699,7 +699,7 @@ $this->debug = 0;
   public function setTimeDay()
   {
     return;  // Prevent problems for now
-$this->debug = 1;
+//$this->debug = 1;
     $cmd = "/tstat/time/day";
     $value = "{\"day\":2}";   // 2 = Tuesday
     $outputs = $this->setStatData( $cmd, $value );
@@ -727,7 +727,7 @@ $this->debug = 0;
 
   public function getSysNetwork()
   {
-$this->debug = 1;
+//$this->debug = 1;
     $outputs = $this->getStatData( "/sys/network" );
     $obj = json_decode( $outputs );
 $this->debug = 0;

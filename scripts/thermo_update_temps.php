@@ -17,18 +17,37 @@ $stat = new Stat( $thermostatIP, $ZIP );
 $stat->getTemp();
 $outside = $stat->getOutdoorTemp();
 // Log the indoor and outdoor temperatures for this half-hour increment
-$sql = "INSERT INTO thermo.temperatures ( date, indoor_temp, outdoor_temp ) VALUES ( concat( substr( now( ) , 1, 17 ) , \"00\" ) , ".$stat->temp.", ".$outside.")";
-// echo "Here is the SQL: " . $sql;
+$sql = "INSERT INTO " . $table_prefix . "temperatures ( date, indoor_temp, outdoor_temp ) VALUES ( concat( substr( now( ) , 1, 17 ) , \"00\" ) , ".$stat->temp.", ".$outside.")";
+ echo "Here is the SQL: " . $sql;
 $result = mysql_query( $sql );
-// echo "Result is: " . $result;
+echo "Result is: " . $result;
 
 $stat->getDataLog();
 // Log the runtimes for yesterday and today
-$sql = "CALL save_runtime( ".$stat->runTimeHeat.", ".$stat->runTimeCool.", ".$stat->runTimeHeatYesterday.", ".$stat->runTimeCoolYesterday." )";
-// echo "Here is the SQL: " . $sql;
-$result = mysql_query( $sql );
-// echo "Result is: " . $result;
 
+// Remove yesterdays work in progress
+$sql = "DELETE FROM " . $table_prefix . "run_times WHERE date = CURDATE()";
+//echo "Here is the SQL: " . $sql;
+$result = mysql_query( $sql );
+//echo "Result is: " . $result;
+
+// Add todays present accumulated run time
+$sql = "INSERT INTO " . $table_prefix . "run_times (date, heat_runtime, cool_runtime ) VALUES ( CURDATE(), ".$stat->runTimeHeat.", ".$stat->runTimeCool." )";
+//echo "Here is the SQL: " . $sql;
+$result = mysql_query( $sql );
+//echo "Result is: " . $result;
+
+// Remove yesterdays total (if present)
+$sql = "DELETE FROM " . $table_prefix . "run_times WHERE date = CURDATE() -  INTERVAL 1 DAY";
+//echo "Here is the SQL: " . $sql;
+$result = mysql_query( $sql );
+//echo "Result is: " . $result;
+
+// Add yesterdays total
+$sql = "INSERT INTO " . $table_prefix . "run_times (date, heat_runtime, cool_runtime ) VALUES ( CURDATE()- INTERVAL 1 DAY, ".$stat->runTimeHeatYesterday.", ".$stat->runTimeCoolYesterday." )";
+//echo "Here is the SQL: " . $sql;
+$result = mysql_query( $sql );
+//echo "Result is: " . $result;
 
 mysql_close( $link );
 
