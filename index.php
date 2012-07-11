@@ -7,8 +7,9 @@
 <body>
 <?php
 REQUIRE "config.php";
+REQUIRE "lib/t_lib.php";
 
-date_default_timezone_set( "America/Chicago" );
+date_default_timezone_set( $timezone );
 $show_date = time();  // Start with today's date
 ?>
 Type a date and then click Show Chart.  If you're using Chrome, then the HTML5 pieces work, but not yet in Firefox 13<br>
@@ -102,7 +103,7 @@ else
 echo "<br>Weather Underground outdoor temp is " . $url . "<" . $outdoorTemp . ">";
 
 // Create DOM from URL
-$url = "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=" . $ZIP";
+$url = "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=" . $ZIP;
 $html = file_get_html( $url );
 foreach($html->find('div[id=nowTemp]') as $key => $info)
 {

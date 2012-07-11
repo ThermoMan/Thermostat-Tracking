@@ -1,5 +1,6 @@
 <?php
 REQUIRE "lib/t_lib.php";
+REQUIRE "config.php";
 
 // pChart library inclusions
 include("lib/pChart2.1.3/class/pData.class.php");
@@ -8,10 +9,6 @@ include("lib/pChart2.1.3/class/pImage.class.php");
 include("lib/pChart2.1.3/class/pStock.class.php");
 
 //session_start();
-$host = "localhost:3306";
-$user = "thermo_user";
-$pass = "thermo_user";
-$db = "thermo";
 
 $link = mysql_connect( $host, $user, $pass );
 if( !$link )
@@ -20,8 +17,7 @@ if( !$link )
 }
 mysql_select_db( $db, $link ) or die( "cannot select DB" );            // Really should log this?
 
-//$sql = "select * from temperatures where date >= DATE(now())";
-$sql = "SELECT DATE(date) AS date, MIN(indoor_temp) AS indoor_min, MAX(indoor_temp) AS indoor_max, MIN(outdoor_temp) AS outdoor_min, MAX(outdoor_temp) AS outdoor_max FROM temperatures GROUP BY DATE(date)";
+$sql = "SELECT DATE(date) AS date, MIN(indoor_temp) AS indoor_min, MAX(indoor_temp) AS indoor_max, MIN(outdoor_temp) AS outdoor_min, MAX(outdoor_temp) AS outdoor_max FROM " . $table_prefix . "temperatures GROUP BY DATE(date)";
 $result = mysql_query( $sql );
 
 // Create and populate the pData object
@@ -45,7 +41,6 @@ while( $row = mysql_fetch_array( $result ) )
 	}
   else if( substr( $row['date'], 5, 2 ) != $old_month )
 	{ // Thereafter show only MM-DD when you show anything at all
-    //$MyData->addPoints( substr( $row['date'], 5, 5 ), "Labels" );
 		// Show month name ala "Dec"
     $MyData->addPoints( date("M", mktime( 0, 0, 0, substr( $row['date'], 5, 2 ), 1) ), "Labels" );
 	}

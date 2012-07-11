@@ -40,7 +40,7 @@ if( !$link )
 }
 mysql_select_db( $db, $link ) or die( "cannot select DB" );            // Really should log this?
 
-$sql = "SELECT date, heat_runtime, cool_runtime FROM thermo.run_times ORDER by date;";
+$sql = "SELECT date, heat_runtime, cool_runtime FROM " . $table_prefix . "run_times ORDER by date;";
 
 $result = mysql_query( $sql );
 

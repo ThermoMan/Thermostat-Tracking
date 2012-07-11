@@ -148,7 +148,7 @@ $sql = "SELECT b.foo as date, IFNULL(a.indoor_temp, 'VOID') as indoor_temp, IFNU
 . "SELECT CONCAT( '" . $show_date . " ', '23:30' ) "
 . ") b "
 . "LEFT JOIN  "
-. "thermo.temperatures a "
+. $table_prefix . "temperatures a "
 . "ON b.foo = DATE_FORMAT( a.date, '%Y-%m-%d %H:%i' );";
 
 $result = mysql_query( $sql );

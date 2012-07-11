@@ -145,7 +145,7 @@ foreach( array("2012-07-05", "2012-07-06") as $show_date )
   . "SELECT CONCAT( '" . $show_date . " ', '23:30' ) "
   . ") b "
   . "LEFT JOIN  "
-  . "thermo.temperatures a "
+  . $table_prefix . "temperatures a "
   . "ON b.foo = DATE_FORMAT( a.date, '%Y-%m-%d %H:%i' );";
 
   $result = mysql_query( $sql );
