@@ -18,5 +18,8 @@ $table_prefix = "thermo_";
 
 $timezone = "America/Chicago";
 
-
+// Set normal temperature range so the charts always scale the same way
+$normal_low = 70;
+$normal_high = 100;
+// Idea for future, have separate summer/winter values
 ?>

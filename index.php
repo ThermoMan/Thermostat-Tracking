@@ -3,6 +3,14 @@
   <title>Thermostat</title>
   <link rel="shortcut icon" href="./favicon.ico">
   <link rel="stylesheet"    href="t_css.css" type="text/css">
+
+	<script>
+	  function update_daily()
+		{
+		  html_text = "<img src=\'draw_daily.php?show_date=" + document.getElementById('show_date').value + "&show_cycles=" + document.getElementById('show_cycles').checked + "\' alt=\'The temperatures\'>";
+		  document.getElementById('daily_chart').innerHTML = html_text;
+		}
+	</script>
 </head>
 <body>
 <?php
@@ -12,23 +20,25 @@ REQUIRE "lib/t_lib.php";
 date_default_timezone_set( $timezone );
 $show_date = time();  // Start with today's date
 ?>
-Type a date and then click Show Chart.  If you're using Chrome, then the HTML5 pieces work, but not yet in Firefox 13<br>
-<button type="button" onclick="javascript: show_date.stepDown();">&lt;--</button>
+HTML5: Pick a date or click the increment/decrement buttons and the chart will auto update.  Works in Chrome, for Firefox 13 you have to type dates<br>
+<button type="button" onclick="javascript: show_date.stepDown(); update_daily();">&lt;--</button>
 <input id="show_date"
        type="date"
        value="<?php echo date( "Y-m-d", $show_date); ?>"
        max="<?php echo date( "Y-m-d", $show_date); ?>"
-       onInput="javascript: document.getElementById('daily_chart').innerHTML = '<img src=\'draw_daily.php?show_date='+document.getElementById('show_date').value+'\' alt=\'Chart\'>'; "
+			 onInput="javscript: update_daily();"
        step="1"/>
-<button type="button" onclick="javascript: document.getElementById('show_date').stepUp();">--&gt;</button>
-<button type="button" onclick="javascript: document.getElementById('daily_chart').innerHTML = '<img src=\'draw_daily.php?show_date='+document.getElementById('show_date').value+'\' alt=\'Chart\'>'; ">Show Chart</button>
+<button type="button" onclick="javascript: document.getElementById('show_date').stepUp();update_daily();">--&gt;</button>
+<input type="checkbox" id="show_cycles" name="show_cycles" onChange="javascript: update_daily();"/>Show Cycles
+<!-- Button is no longer needed as of 2012-07-12 -->
+<!-- <button type="button" onClick="javascript: update_daily();">Show Chart</button> -->
 
 <p>
 <div style="display: table-cell; padding: 10px; border: 2px solid rgb(255, 255, 255); vertical-align: middle; overflow: auto; background-image: url('lib/pChart2.1.3/examples/resources/dash.png');">
   <div style="font-size: 10px; opacity: 1;" id="render">
     <center>
       <div id="daily_chart" style="height: 430px; width: 900px;">
-        <img src="draw_daily.php?show_date=<?php echo date( "Y-m-d", $show_date); ?>" alt="Today's Temperatures">
+        <img src="draw_daily.php?show_date=<?php echo date( "Y-m-d", $show_date); ?>&show_cycles=false" alt="The temperatures">
       </div>
     </center>
   </div>
