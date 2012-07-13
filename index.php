@@ -4,13 +4,13 @@
   <link rel="shortcut icon" href="./favicon.ico">
   <link rel="stylesheet"    href="t_css.css" type="text/css">
 
-	<script>
-	  function update_daily()
-		{
-		  html_text = "<img src=\'draw_daily.php?show_date=" + document.getElementById('show_date').value + "&show_cycles=" + document.getElementById('show_cycles').checked + "\' alt=\'The temperatures\'>";
-		  document.getElementById('daily_chart').innerHTML = html_text;
-		}
-	</script>
+  <script>
+    function update_daily()
+    {
+      html_text = "<img src=\'draw_daily.php?show_date=" + document.getElementById('show_date').value + "&show_cycles=" + document.getElementById('show_cycles').checked + "\' alt=\'The temperatures\'>";
+      document.getElementById('daily_chart').innerHTML = html_text;
+    }
+  </script>
 </head>
 <body>
 <?php
@@ -26,7 +26,7 @@ HTML5: Pick a date or click the increment/decrement buttons and the chart will a
        type="date"
        value="<?php echo date( "Y-m-d", $show_date); ?>"
        max="<?php echo date( "Y-m-d", $show_date); ?>"
-			 onInput="javscript: update_daily();"
+       onInput="javscript: update_daily();"
        step="1"/>
 <button type="button" onclick="javascript: document.getElementById('show_date').stepUp();update_daily();">--&gt;</button>
 <input type="checkbox" id="show_cycles" name="show_cycles" onChange="javascript: update_daily();"/>Show Cycles
@@ -75,7 +75,7 @@ Try showing a range of dates
     <center>
       <div id="daily_chart" style="height: 329px; width: 900px;">
         <img src="draw_weekly.php?Indoor=1" alt="All Time Indoor History">
-			<div>
+      <div>
     </center>
   </div>
 </div>
@@ -87,7 +87,7 @@ Hi/Low temps
     <center>
       <div id="daily_chart" style="height: 329px; width: 900px;">
         <img src="draw_weekly.php?Indoor=0" alt="All Time Outdoor History">
-			<div>
+      <div>
     </center>
   </div>
 </div>

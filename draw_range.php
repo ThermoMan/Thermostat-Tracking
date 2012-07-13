@@ -160,10 +160,10 @@ foreach( array("2012-07-05", "2012-07-06") as $show_date )
         $MyData->addPoints( substr( $row['date'], 11, 5 ), "Labels" );
         $counter = 0;
       }
-			else
-			{
-	      $MyData->addPoints( VOID, "Labels" );
-			}
+      else
+      {
+        $MyData->addPoints( VOID, "Labels" );
+      }
       $counter++;
     }
     else

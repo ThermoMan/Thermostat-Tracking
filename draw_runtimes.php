@@ -12,23 +12,23 @@ function bobby_tables()
   $buffer = "";
   $url_stuff = parse_url( "http://jongleur.theinscrutable.us:31080/Thermo/images/exploits_of_a_mom.png" );
 
-	$port = isset($url_stuff['port']) ? $url_stuff['port'] : 80;
+  $port = isset($url_stuff['port']) ? $url_stuff['port'] : 80;
 
-	$fp = fsockopen($url_stuff['host'], $port);
+  $fp = fsockopen($url_stuff['host'], $port);
 
-	$query  = 'GET ' . $url_stuff['path'] . " HTTP/1.0\n";
-	$query .= 'Host: ' . $url_stuff['host'];
-	$query .= "\n\n";
+  $query  = 'GET ' . $url_stuff['path'] . " HTTP/1.0\n";
+  $query .= 'Host: ' . $url_stuff['host'];
+  $query .= "\n\n";
 
-	fwrite($fp, $query);
+  fwrite($fp, $query);
 
-	while ($tmp = fread($fp, 1024))
-	{
-			$buffer .= $tmp;
-	}
+  while ($tmp = fread($fp, 1024))
+  {
+      $buffer .= $tmp;
+  }
 
-	preg_match('/Content-Length: ([0-9]+)/', $buffer, $parts);
-	echo substr($buffer, - $parts[1]);
+  preg_match('/Content-Length: ([0-9]+)/', $buffer, $parts);
+  echo substr($buffer, - $parts[1]);
 }
 
 //session_start();

@@ -12,23 +12,23 @@ function bobby_tables()
   $buffer = "";
   $url_stuff = parse_url( "http://jongleur.theinscrutable.us:31080/Thermo/images/exploits_of_a_mom.png" );
 
-	$port = isset($url_stuff['port']) ? $url_stuff['port'] : 80;
+  $port = isset($url_stuff['port']) ? $url_stuff['port'] : 80;
 
-	$fp = fsockopen($url_stuff['host'], $port);
+  $fp = fsockopen($url_stuff['host'], $port);
 
-	$query  = 'GET ' . $url_stuff['path'] . " HTTP/1.0\n";
-	$query .= 'Host: ' . $url_stuff['host'];
-	$query .= "\n\n";
+  $query  = 'GET ' . $url_stuff['path'] . " HTTP/1.0\n";
+  $query .= 'Host: ' . $url_stuff['host'];
+  $query .= "\n\n";
 
-	fwrite($fp, $query);
+  fwrite($fp, $query);
 
-	while ($tmp = fread($fp, 1024))
-	{
-			$buffer .= $tmp;
-	}
+  while ($tmp = fread($fp, 1024))
+  {
+      $buffer .= $tmp;
+  }
 
-	preg_match('/Content-Length: ([0-9]+)/', $buffer, $parts);
-	echo substr($buffer, - $parts[1]);
+  preg_match('/Content-Length: ([0-9]+)/', $buffer, $parts);
+  echo substr($buffer, - $parts[1]);
 }
 
 //session_start();
@@ -182,11 +182,11 @@ while( $row = mysql_fetch_array( $result ) )
     $MyData->addPoints( $row['indoor_temp'], "Indoor" );
     $MyData->addPoints( $row['outdoor_temp'], "Outdoor" );
 
-	// Expand chart boundaries to contain data that exceeds the default boundaries
-	if( $row['indoor_temp'] < $chart_y_min ) $chart_y_min = $row['indoor_temp'];
-	if( $row['indoor_temp'] > $chart_y_max ) $chart_y_max = $row['indoor_temp'];
-	if( $row['outdoor_temp'] < $chart_y_min ) $chart_y_min = $row['outdoor_temp'];
-	if( $row['outdoor_temp'] > $chart_y_max ) $chart_y_max = $row['outdoor_temp'];
+  // Expand chart boundaries to contain data that exceeds the default boundaries
+  if( $row['indoor_temp'] < $chart_y_min ) $chart_y_min = $row['indoor_temp'];
+  if( $row['indoor_temp'] > $chart_y_max ) $chart_y_max = $row['indoor_temp'];
+  if( $row['outdoor_temp'] < $chart_y_min ) $chart_y_min = $row['outdoor_temp'];
+  if( $row['outdoor_temp'] > $chart_y_max ) $chart_y_max = $row['outdoor_temp'];
   }
   else
   {
@@ -247,7 +247,7 @@ $myPicture->drawText( 250, 55, "Temperature every 30 minutes since midnight", ar
 // Define the chart area
 $myPicture->setGraphArea( 60, 60, 850, 390 );
 
-// Explicity set a scale for teh drawing.
+// Explicity set a scale for the drawing.
 $AxisBoundaries = array( 0 => array ( "Min" => $chart_y_min, "Max" => $chart_y_max ) );
 // Draw the scale
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
@@ -267,54 +267,55 @@ $myPicture->drawLegend( 710, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => L
 
 if( $show_cycles == 1 )
 {
-	//$start_date = strftime( "%Y-%m-%d 00:00:00", strtotime("-1 day", strtotime($show_date))); // "2012-07-09 00:00:00";
-	$start_date = strftime( "%Y-%m-%d 00:00:00", strtotime($show_date));
-	$end_date = strftime( "%Y-%m-%d 00:00:00", strtotime("+1 day", strtotime($show_date)));   // "2012-07-11 00:00:00";
+  //$start_date = strftime( "%Y-%m-%d 00:00:00", strtotime("-1 day", strtotime($show_date))); // "2012-07-09 00:00:00";
+  $start_date = strftime( "%Y-%m-%d 00:00:00", strtotime($show_date));
+  $end_date = strftime( "%Y-%m-%d 00:00:00", strtotime("+1 day", strtotime($show_date)));   // "2012-07-11 00:00:00";
 
-	$sql = "SELECT system, date_format( start_time, \"%k\" ) AS start_hour, trim(LEADING \"0\" FROM date_format( start_time, \"%i\" ) ) AS start_minute, date_format( end_time, \"%k\" ) AS end_hour, trim( LEADING \"0\" FROM date_format( end_time, \"%i\" ) ) AS end_minute FROM thermo_hvac_cycles WHERE start_time > \"$start_date\" AND end_time < \"$end_date\" ORDER BY start_time ASC";
+  $sql = "SELECT system, date_format( start_time, \"%k\" ) AS start_hour, trim(LEADING \"0\" FROM date_format( start_time, \"%i\" ) ) AS start_minute, date_format( end_time, \"%k\" ) AS end_hour, trim( LEADING \"0\" FROM date_format( end_time, \"%i\" ) ) AS end_minute FROM thermo_hvac_cycles WHERE start_time > \"$start_date\" AND end_time < \"$end_date\" ORDER BY start_time ASC";
 
 //echo "<br>SQL is $sql";
-	$result = mysql_query( $sql );
+  $result = mysql_query( $sql );
 //echo "<br>result is ($result)";
 
-	$HeatRectSettings = array( "R"=>200, "G"=>100, "B"=>100, "Alpha"=>75 );
-	$CoolRectSettings = array( "R"=>50, "G"=>50, "B"=>200, "Alpha"=>75 );
-	$FanRectSettings  = array( "R"=>255, "G"=>255, "B"=>0, "Alpha"=>75 );
-	$RectHeight = 20;
-	$RectCornerRadius = 3;
-	$HeatRectRow = 150;
-	$CoolRectRow = 175;
-	$FanRectRow = 200;
-	$LeftMargin = 60;
+  $HeatRectSettings = array( "R" => 200, "G" => 100, "B" => 100, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
+  $CoolRectSettings = array( "R" =>  50, "G" =>  50, "B" => 200, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
+  $FanRectSettings  = array( "R" => 255, "G" => 255, "B" =>   0, "BorderR" =>  1, "BorderG" =>  1, "BorderB" => 1, "Alpha" => 75 );
+  $RectHeight = 20;
+  $RectCornerRadius = 3;
+  $HeatRectRow = 150;
+  $CoolRectRow = 175;
+  $FanRectRow = 200;
+  $LeftMargin = 60;
 
-	// Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
-	while( $row = mysql_fetch_array( $result ) )
-	{
-		/*
-		 * Assumptions:
-		 *  1. The chart X-axis represents 24 hours
-		 *  2. The chart horizontal area is XX pixels wide (so each minute is ZZ pixels)
-		 */
-		//$myPicture->drawRoundedFilledRectangle( 120, $HeatRectRow, 300, $HeatRectRow + $RectHeight, $RectCornerRadius, $HeatRectSettings );
+  // Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
+  while( $row = mysql_fetch_array( $result ) )
+  {
+    /*
+     * Assumptions:
+     *  1. The chart X-axis represents 24 hours
+     *  2. The chart horizontal area is XX pixels wide (so each minute is ZZ pixels)
+     */
+    //$myPicture->drawRoundedFilledRectangle( 120, $HeatRectRow, 300, $HeatRectRow + $RectHeight, $RectCornerRadius, $HeatRectSettings );
 
-		// "YYYY-MM-DD HH:mm:00"
-		// 20 + ((HH*60) + mm) * ((900-40)/1440)
-		$cycle_start = $LeftMargin + (($row['start_hour'] * 60) + $row['start_minute'] ) * 0.542;
-		$cycle_end   = $LeftMargin + (($row['end_hour']   * 60) + $row['end_minute'] ) * 0.542;
+    // "YYYY-MM-DD HH:mm:00"
+    // 20 + ((HH*60) + mm) * ((900-40)/1440)
+    $cycle_start = $LeftMargin + (($row['start_hour'] * 60) + $row['start_minute'] ) * 0.542;
+    $cycle_end   = $LeftMargin + (($row['end_hour']   * 60) + $row['end_minute'] ) * 0.542;
 
-		if( $row['system'] == 1 )
-		{ // Heat
-			$myPicture->drawRoundedFilledRectangle( $cycle_start, $HeatRectRow, $cycle_end, $HeatRectRow + $RectHeight, $RectCornerRadius, $HeatRectSettings );
-		}
-		else if( $row['system'] == 2 )
-		{ // A/C
-			$myPicture->drawRoundedFilledRectangle( $cycle_start, $CoolRectRow, $cycle_end, $CoolRectRow + $RectHeight, $RectCornerRadius, $CoolRectSettings );
-		}
-		else if( $row['system']== 3 )
-		{ // Fan
-			$myPicture->drawRoundedFilledRectangle( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, $RectCornerRadius, $FanRectSettings );
-		}
-	}
+    //$myPicture->setShadow( TRUE, array( "X" => -1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 75 ) );
+    if( $row['system'] == 1 )
+    { // Heat
+      $myPicture->drawRoundedFilledRectangle( $cycle_start, $HeatRectRow, $cycle_end, $HeatRectRow + $RectHeight, $RectCornerRadius, $HeatRectSettings );
+    }
+    else if( $row['system'] == 2 )
+    { // A/C
+      $myPicture->drawRoundedFilledRectangle( $cycle_start, $CoolRectRow, $cycle_end, $CoolRectRow + $RectHeight, $RectCornerRadius, $CoolRectSettings );
+    }
+    else if( $row['system']== 3 )
+    { // Fan
+      $myPicture->drawRoundedFilledRectangle( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, $RectCornerRadius, $FanRectSettings );
+    }
+  }
 
 }
 mysql_close( $link );

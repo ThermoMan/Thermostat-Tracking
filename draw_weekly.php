@@ -28,27 +28,27 @@ while( $row = mysql_fetch_array( $result ) )
 {
   /*
    *   There are too many dates to show them ALL on the x-axis - it turns into one black line.
-	 *
-	 *   The original logic was to search for the first of the month like this:
-	 *    else if( substr( $row['date'], 8, 2 ) == "01" )
-	 *
-	 *   However it turns out that sometimes there is NO data at all for a given date.
-	 * So the new logic is to look for when the month changes and show that date.
-	 */
+   *
+   *   The original logic was to search for the first of the month like this:
+   *    else if( substr( $row['date'], 8, 2 ) == "01" )
+   *
+   *   However it turns out that sometimes there is NO data at all for a given date.
+   * So the new logic is to look for when the month changes and show that date.
+   */
   if( $old_month == -1 )
-	{ // Do show the WHOLE date for the first item.
-		$MyData->addPoints( $row['date'], "Labels" );
-	}
+  { // Do show the WHOLE date for the first item.
+    $MyData->addPoints( $row['date'], "Labels" );
+  }
   else if( substr( $row['date'], 5, 2 ) != $old_month )
-	{ // Thereafter show only MM-DD when you show anything at all
-		// Show month name ala "Dec"
+  { // Thereafter show only MM-DD when you show anything at all
+    // Show month name ala "Dec"
     $MyData->addPoints( date("M", mktime( 0, 0, 0, substr( $row['date'], 5, 2 ), 1) ), "Labels" );
-	}
-	else
-	{ // Add a blank instead of text for some x-axis labels.
+  }
+  else
+  { // Add a blank instead of text for some x-axis labels.
     $MyData->addPoints( VOID, "Labels" );
-	}
-	$old_month = substr( $row['date'], 5, 2 );
+  }
+  $old_month = substr( $row['date'], 5, 2 );
 
 
   if( $_GET["Indoor"] == 1 )
