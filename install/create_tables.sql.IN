@@ -1,0 +1,73 @@
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+
+--
+database: `**REPLACE_DB_NAME**`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `**REPLACE_OBJECT_PREFIX**hvac_cycles`
+--
+
+CREATE TABLE IF NOT EXISTS `**REPLACE_OBJECT_PREFIX**hvac_cycles` (
+  `system` smallint(6) NOT NULL,
+  `start_time` datetime NOT NULL,
+  `end_time` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `**REPLACE_OBJECT_PREFIX**hvac_status`
+--
+
+CREATE TABLE IF NOT EXISTS `**REPLACE_OBJECT_PREFIX**hvac_status` (
+  `date` datetime NOT NULL,
+  `heat_status` tinyint(1) NOT NULL,
+  `cool_status` tinyint(1) NOT NULL,
+  `fan_status` tinyint(1) NOT NULL,
+  KEY `date` (`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `**REPLACE_OBJECT_PREFIX**run_times`
+--
+
+CREATE TABLE IF NOT EXISTS `**REPLACE_OBJECT_PREFIX**run_times` (
+  `date` date NOT NULL,
+  `heat_runtime` smallint(6) NOT NULL,
+  `cool_runtime` smallint(6) NOT NULL,
+  KEY `date` (`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `**REPLACE_OBJECT_PREFIX**temperatures`
+--
+
+CREATE TABLE IF NOT EXISTS `**REPLACE_OBJECT_PREFIX**temperatures` (
+  `date` datetime NOT NULL,
+  `indoor_temp` decimal(5,2) NOT NULL,
+  `outdoor_temp` decimal(5,2) NOT NULL,
+  KEY `date` (`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
