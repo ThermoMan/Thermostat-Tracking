@@ -9,26 +9,11 @@ include("lib/pChart2.1.3/class/pImage.class.php");
 
 function bobby_tables()
 {
-  $buffer = "";
-  $url_stuff = parse_url( "http://jongleur.theinscrutable.us:31080/Thermo/images/exploits_of_a_mom.png" );
-
-  $port = isset($url_stuff['port']) ? $url_stuff['port'] : 80;
-
-  $fp = fsockopen($url_stuff['host'], $port);
-
-  $query  = 'GET ' . $url_stuff['path'] . " HTTP/1.0\n";
-  $query .= 'Host: ' . $url_stuff['host'];
-  $query .= "\n\n";
-
-  fwrite($fp, $query);
-
-  while ($tmp = fread($fp, 1024))
-  {
-      $buffer .= $tmp;
-  }
-
-  preg_match('/Content-Length: ([0-9]+)/', $buffer, $parts);
-  echo substr($buffer, - $parts[1]);
+  $filename = "./images/exploits_of_a_mom.png";
+  $handle = fopen( $filename, "r" );
+  $contents = fread( $handle, filesize($filename) );
+  fclose( $handle );
+  echo $contents;
 }
 
 //session_start();
@@ -40,7 +25,15 @@ if( !$link )
 }
 mysql_select_db( $db, $link ) or die( "cannot select DB" );            // Really should log this?
 
-$sql = "SELECT date, heat_runtime, cool_runtime FROM " . $table_prefix . "run_times ORDER by date;";
+$show_date = $_GET["show_date"];
+$date_pattern = "/[2]{1}[0]{1}[0-9]{2}-[0-9]{2}-[0-9]{2}/";
+if( !preg_match( $date_pattern, $show_date ) )
+{
+  bobby_tables();
+  return;
+}
+
+$sql = "SELECT date, heat_runtime, cool_runtime FROM " . $table_prefix . "run_times ORDER by date ASC;";
 
 $result = mysql_query( $sql );
 
@@ -52,7 +45,7 @@ while( $row = mysql_fetch_array( $result ) )
     $MyData->addPoints( $row['date'], "Labels" );
 
   if( $row['heat_runtime'] != 'VOID' )
-  { // Assume that if one is bad, they both are.
+  { // Assume that if one data point is bad, they both are.
     $MyData->addPoints( $row['heat_runtime'], "Heat" );
     $MyData->addPoints( $row['cool_runtime'], "Cool" );
   }
@@ -64,17 +57,17 @@ while( $row = mysql_fetch_array( $result ) )
 }
 mysql_close( $link );
 
-// Attach the data series to the axis (by ordinal)
+// Attach the data series to the axis (by ordinal.  0 is X-axis)
 $MyData->setSerieOnAxis( "Heat", 0 );
 $MyData->setSerieOnAxis( "Cool", 0 );
 
 // Set line style, color, and alpha blending level
 $MyData->setSerieTicks( "Heat", 0 );  // 0 is a solid line
-$serieSettings = array( "R" => 150, "G" => 50, "B" => 80, "Alpha" => 100 );
+$serieSettings = array( "R" => 150, "G" => 50, "B" => 80, "Alpha" => 90 );
 $MyData->setPalette( "Heat", $serieSettings );
 
-$MyData->setSerieTicks( "Cool", 2 ); // n is length in pixels of dashes in line
-$serieSettings = array( "R" => 50, "G" => 150, "B" => 180, "Alpha" => 100 );
+//$MyData->setSerieTicks( "Cool", 0); // n is length in pixels of dashes in line
+$serieSettings = array( "R" => 50, "G" => 150, "B" => 180, "Alpha" => 90 );
 $MyData->setPalette( "Cool", $serieSettings );
 
 // Set names for Y-axis labels

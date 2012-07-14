@@ -7,7 +7,7 @@
   <script>
     function update_daily()
     {
-      html_text = "<img src=\'draw_daily.php?show_date=" + document.getElementById('show_date').value + "&show_cycles=" + document.getElementById('show_cycles').checked + "\' alt=\'The temperatures\'>";
+      html_text = "<img src=\'draw_daily.php?show_date=" + document.getElementById('show_date').value + "&show_cycles=" + document.getElementById('show_cycles').checked + "&nocache=" + Date.now() + "\' alt=\'The temperatures\'>";
       document.getElementById('daily_chart').innerHTML = html_text;
     }
   </script>
@@ -38,7 +38,7 @@ HTML5: Pick a date or click the increment/decrement buttons and the chart will a
   <div style="font-size: 10px; opacity: 1;" id="render">
     <center>
       <div id="daily_chart" style="height: 430px; width: 900px;">
-        <img src="draw_daily.php?show_date=<?php echo date( "Y-m-d", $show_date); ?>&show_cycles=false" alt="The temperatures">
+        <img src="draw_daily.php?show_date=<?php echo date( "Y-m-d", $show_date); ?>&show_cycles=false&nocache=<?php echo time() ?>" alt="The temperatures">
       </div>
     </center>
   </div>

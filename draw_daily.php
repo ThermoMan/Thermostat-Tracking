@@ -9,26 +9,11 @@ include("lib/pChart2.1.3/class/pImage.class.php");
 
 function bobby_tables()
 {
-  $buffer = "";
-  $url_stuff = parse_url( "http://jongleur.theinscrutable.us:31080/Thermo/images/exploits_of_a_mom.png" );
-
-  $port = isset($url_stuff['port']) ? $url_stuff['port'] : 80;
-
-  $fp = fsockopen($url_stuff['host'], $port);
-
-  $query  = 'GET ' . $url_stuff['path'] . " HTTP/1.0\n";
-  $query .= 'Host: ' . $url_stuff['host'];
-  $query .= "\n\n";
-
-  fwrite($fp, $query);
-
-  while ($tmp = fread($fp, 1024))
-  {
-      $buffer .= $tmp;
-  }
-
-  preg_match('/Content-Length: ([0-9]+)/', $buffer, $parts);
-  echo substr($buffer, - $parts[1]);
+  $filename = "./images/exploits_of_a_mom.png";
+  $handle = fopen( $filename, "r" );
+  $contents = fread( $handle, filesize($filename) );
+  fclose( $handle );
+  echo $contents;
 }
 
 //session_start();
