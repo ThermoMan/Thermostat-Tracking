@@ -270,7 +270,8 @@ if( $show_cycles == 1 )
   $HeatRectRow = 150;
   $CoolRectRow = 175;
   $FanRectRow = 200;
-  $LeftMargin = 60;
+  $LeftMargin = 69;
+  $PixelsPerMinute = 0.5425;
 
   // Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
   while( $row = mysql_fetch_array( $result ) )
@@ -284,8 +285,8 @@ if( $show_cycles == 1 )
 
     // "YYYY-MM-DD HH:mm:00"
     // 20 + ((HH*60) + mm) * ((900-40)/1440)
-    $cycle_start = $LeftMargin + (($row['start_hour'] * 60) + $row['start_minute'] ) * 0.542;
-    $cycle_end   = $LeftMargin + (($row['end_hour']   * 60) + $row['end_minute'] ) * 0.542;
+    $cycle_start = $LeftMargin + (($row['start_hour'] * 60) + $row['start_minute'] ) * $PixelsPerMinute;
+    $cycle_end   = $LeftMargin + (($row['end_hour']   * 60) + $row['end_minute'] ) * $PixelsPerMinute;
 
     //$myPicture->setShadow( TRUE, array( "X" => -1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 75 ) );
     if( $row['system'] == 1 )
@@ -301,7 +302,6 @@ if( $show_cycles == 1 )
       $myPicture->drawRoundedFilledRectangle( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, $RectCornerRadius, $FanRectSettings );
     }
   }
-
 }
 mysql_close( $link );
 
