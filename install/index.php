@@ -6,12 +6,13 @@ if (version_compare(PHP_VERSION, '4.3.3') < 0)
   die('You are running an unsupported PHP version. Please upgrade to PHP 4.3.3 or higher before trying to 3M-50 Thermostat Tracking');
 }
 
+$software = "3M-50-Thermostat-Tracking";
 // The software is actually version 1.0, but the addition of the installer and some changes to the charts warrant a new number.
 $version = "v1.1";
 echo "This script will install 3M-50 Thermostat Tracking software version $version";
 // The hard coded version number in this file should match the label applied in git.
 
-// This script needs to re-runable during one session without having to delete the previous work and start from scratch
+// This script needs to re-runnable during one session without having to delete the previous work and start from scratch
 // So it needs a state flag to see how far it has progressed
 // Set the flag to a numeric value based on how many steps are to be done and decrement when one is complete.
 $install_present_step = 10;
@@ -41,14 +42,14 @@ function check_file( $filename )
 }
 // Check for presence of expected directories (pChart directory must be preset, but do not check for every file in there)
 $fatal_error = 0;
-check_dir( "../images" ); // This is separate from the resources diretory to make moving to other static object easier later on.
+check_dir( "../images" ); // This is separate from the resources directory to make moving to other static object easier later on.
 check_dir( "../install" );
 check_dir( "../scripts" );
 check_dir( "../lib" );
 check_dir( "../resources" );  // Place keeper for CSS and JavaScript files
 
 // Check for presence of expected files (check for every file that is unique to this program)
-check_file( "../install/index.php" ); // This file (yuo're making sure it's in the right place, because duh, it exists)
+check_file( "../install/index.php" ); // This file (you’re making sure it's in the right place, because duh, it exists)
 check_file( "../draw_daily.php" );
 check_file( "../draw_range.php" );
 check_file( "../draw_runtimes.php" );
@@ -96,22 +97,33 @@ $replace_list = array(
 "**REPLACE_DB_NAME**" => $db_name,
 "**REPLACE_OBJECT_PREFIX**" => $db_object_prefix);
 
+function replace_names( $filename, $replace_list )
+{
+  // Open the file
+  // Read in the file (it is expected to be reasonably sized, not some monstrous thing)
+  // Find instances of text from column 1 and replace them with text from column 2
+  // Write out the file using the filename minus the ".IN" suffix as the new name
+  //   Do overwrite without warning any previous file with that name.
+}
+
 // Create the file "create_tables.sql" from the file "create_tables.sql.IN"
 replace_names( "create_tables.sql.IN", $replace_list );
 
 check_file( "../install/create_tables.sql" );
 run_sql( "create_tables.sql" );
-// On succesful run, copy the generated SQL to the log file so that even after the install directory is deleted it's there for reference.
+// On successful run, copy the generated SQL to the log file so that even after the install directory is deleted it's there for reference.
 
 
 // Need a meta data table that contains the version number in case future installs need to alter the table to update.
-
+$sql = "insert into " . $db_object_prefix . "meta ( key, value ) values ( \"version\", $version )";
+// Run that SQL
+// This is the INSTALL script so we can assume there is no pre-existing value to deal with.  In the future an update.php type script will have to care.
 
 // Reset fatal_error flag and test thermostat config
 
 // Ask for thermostat config information (IP address, etc...)
 // Communicate with thermostat and get firmware version number (as proof of connection)
-// Do I need to check the stat firmware revision level for compatibility?
+// Do I need to check the stat firmware (or API) revision level for compatibility?
 
 
 // Reset fatal_error flag and write the config.php file
@@ -128,8 +140,8 @@ run_sql( "create_tables.sql" );
 // Check the schedules to see if they are in there.
 // Wait one minute to see if the status update has created a record "select count(*) from ..." should come back with a number > 0
 
-echo "<br>You have succesfully installed the $software.  It is collecting data and will have useful charts available in a a few hours.";
+echo "<br>You have successfully installed the $software software.  It is collecting data and will have useful charts available in a a few hours.";
 echo "<br>Please delete the /install directory before continuing";
-
+// Add routines to the other .php files that block execution if the /install directory is still present.
 
 ?>
