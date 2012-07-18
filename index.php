@@ -73,7 +73,7 @@ Try showing a range of dates
 <div style="display: table-cell; padding: 10px; border: 2px solid rgb(255, 255, 255); vertical-align: middle; overflow: auto; background-image: url('lib/pChart2.1.3/examples/resources/dash.png');">
   <div style="font-size: 10px; opacity: 1;" id="render">
     <center>
-      <div id="daily_chart" style="height: 329px; width: 900px;">
+      <div id="daily_chart" style="height: 430px; width: 900px;">
         <img src="draw_weekly.php?Indoor=1" alt="All Time Indoor History">
       <div>
     </center>
@@ -85,7 +85,7 @@ Hi/Low temps
 <div style="display: table-cell; padding: 10px; border: 2px solid rgb(255, 255, 255); vertical-align: middle; overflow: auto; background-image: url('lib/pChart2.1.3/examples/resources/dash.png');">
   <div style="font-size: 10px; opacity: 1;" id="render">
     <center>
-      <div id="daily_chart" style="height: 329px; width: 900px;">
+      <div id="daily_chart" style="height: 430px; width: 900px;">
         <img src="draw_weekly.php?Indoor=0" alt="All Time Outdoor History">
       <div>
     </center>

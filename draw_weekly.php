@@ -98,7 +98,7 @@ $MyData->setSerieDescription( "Labels", "Days" );
 $MyData->setAbscissa( "Labels" );
 
 
-$myPicture = new pImage( 900, 330, $MyData ); // Create the pChart object
+$myPicture = new pImage( 900, 430, $MyData ); // Create the pChart object
 $myPicture->Antialias = TRUE;                 // Turn off Antialiasing
 
 // Draw the background
@@ -107,22 +107,22 @@ $myPicture->drawFilledRectangle( 0, 0, 900, 430, $Settings );
 
 // Overlay with a gradient
 $Settings = array( "StartR" => 219, "StartG" => 231, "StartB" => 139, "EndR" => 1, "EndG" => 138, "EndB" => 68, "Alpha" => 50 );
-$myPicture->drawGradientArea( 0, 0, 900, 330, DIRECTION_VERTICAL, $Settings );
+$myPicture->drawGradientArea( 0, 0, 900, 430, DIRECTION_VERTICAL, $Settings );
 $Settings = array( "StartR" => 0, "StartG" => 0, "StartB" => 0, "EndR" => 50, "EndG" => 50, "EndB" => 50, "Alpha" => 80 );
 $myPicture->drawGradientArea( 0, 0, 900,  20, DIRECTION_VERTICAL, $Settings );
 
 // Add a border to the picture
-$myPicture->drawRectangle( 0, 0, 899, 329, array( "R" => 0, "G" => 0, "B" => 0 ) );
+$myPicture->drawRectangle( 0, 0, 899, 429, array( "R" => 0, "G" => 0, "B" => 0 ) );
 
 // Write the picture title
-$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
+$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
 $myPicture->drawText( 10, 13, "Show the historic temperatures", array( "R" => 255, "G" => 255, "B" => 255) );
 
 // Write the chart title
-$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
+$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
 $myPicture->drawText( 250, 55, "Min/Max for each day in the record", array( "FontSize" => 12, "Align" => TEXT_ALIGN_BOTTOMMIDDLE ) );
 
-$myPicture->setGraphArea( 60, 60, 850, 290 );   // Define the chart area
+$myPicture->setGraphArea( 60, 60, 850, 390 );   // Define the chart area
 
 // Draw the scale
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
@@ -131,7 +131,7 @@ $myPicture->drawScale( $scaleSettings );
 
 // Write the chart legend
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 8 ) );
-$myPicture->drawLegend( 510, 312, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL ) );
+$myPicture->drawLegend( 510, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL ) );
 
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
 $myPicture->drawScale( array( "DrawSubTicks" => TRUE ) );

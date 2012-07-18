@@ -217,11 +217,11 @@ $myPicture->drawRectangle( 0, 0, 899, 429, array( "R" => 0, "G" => 0, "B" => 0 )
 
 // Write the picture title
 //$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/Silkscreen.ttf", "FontSize" => 8 ) );
-$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
+$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
 $myPicture->drawText( 10, 13, "Show temperatures for ".$dates, array( "R" => 255, "G" => 255, "B" => 255) );
 
 // Write the chart title
-$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
+$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
 $myPicture->drawText( 250, 55, "Temperature every 30 minutes across the span of dates", array( "FontSize" => 12, "Align" => TEXT_ALIGN_BOTTOMMIDDLE ) );
 
 // Define the chart area

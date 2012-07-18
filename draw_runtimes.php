@@ -98,7 +98,7 @@ $myPicture->drawGradientArea( 0, 0, 900,  20, DIRECTION_VERTICAL, $Settings );
 $myPicture->drawRectangle( 0, 0, 899, 429, array( "R" => 0, "G" => 0, "B" => 0 ) );
 
 // Write the picture title
-$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
+$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
 $myPicture->drawText( 10, 13, "HVAC run times", array( "R" => 255, "G" => 255, "B" => 255) );
 
 // Define shadows under series lines
