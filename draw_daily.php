@@ -25,7 +25,13 @@ if( !$link )
 }
 mysql_select_db( $db, $link ) or die( "cannot select DB" );            // Really should log this?
 
-$show_date = $_GET["show_date"];
+// Set default date to today
+date_default_timezone_set( $timezone );
+$show_date = date( "Y-m-d" );
+if( isset( $_GET["show_date"] ) )
+{ // Use provided date
+  $show_date = $_GET["show_date"];
+}
 $date_pattern = "/[2]{1}[0]{1}[0-9]{2}-[0-9]{2}-[0-9]{2}/";
 if( !preg_match( $date_pattern, $show_date ) )
 {
@@ -33,12 +39,32 @@ if( !preg_match( $date_pattern, $show_date ) )
   return;
 }
 
+// Set default cycle display to none
 $show_cycles = 0;
-if( $_GET["show_cycles"] == "true" )
+if( isset( $_GET["show_cycles"] ) )
 {
+  if( $_GET["show_cycles"] == "true" )
+  {
   $show_cycles = 1;
+  }
 }
 
+/*
+ *   This is really ugly SQL.  To fix it, the database needs three sections.
+ *
+ * Section 1 has to do with the collection of data.  That is _mostly_ what is going on in there now.
+ *
+ * Section 2 will have to do with the presentation of the data in charts.  For instance that hvac_cycles table
+ *           exists for two reasons.  Firstly it keeps the 'per minute' table lightweight and secondly it makes charting easier.
+ *           If the application adds notificaitons (for instance power out or over temperature situations) that is reporting
+ *           and will go here
+ *
+ * Section 3 will be for the management of the website that presents the data.  If there will be user registration, it will go here
+ *
+ *   So to apply that logic to the SQL below, the reporting section will have a table that contains the 48 half-hour timestamps.
+ * They will probably be stored as text in teh same fashion that the CONCAT() function makes them.  Then the SQL will change to
+ * a full outer join and be much easier to read.
+ */
 $sql = "SELECT b.foo as date, IFNULL(a.indoor_temp, 'VOID') as indoor_temp, IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp "
 . "FROM "
 . "( "
@@ -250,6 +276,16 @@ $myPicture->setShadow( FALSE );
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 8 ) );
 $myPicture->drawLegend( 710, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL ) );
 
+/*
+ * This representation of cycle runtimes has two serious omissions.
+ *
+ * Omission 1 is that presently running cycles are not shown since the data is soruced from the completed cycle table.
+ *            to fix that a small query on the per minute table with a start time of the last stop from the first SQL
+ *            should be added.  The display should indicate this is open ended (lighter color perhaps or use static images?)
+ *
+ * Omission 2 is that for complete days cyceles that span midnight are not shown at all - neither on the day they start nor
+ *            on the day they end.
+ */
 if( $show_cycles == 1 )
 {
   //$start_date = strftime( "%Y-%m-%d 00:00:00", strtotime("-1 day", strtotime($show_date))); // "2012-07-09 00:00:00";
@@ -258,9 +294,7 @@ if( $show_cycles == 1 )
 
   $sql = "SELECT system, date_format( start_time, \"%k\" ) AS start_hour, trim(LEADING \"0\" FROM date_format( start_time, \"%i\" ) ) AS start_minute, date_format( end_time, \"%k\" ) AS end_hour, trim( LEADING \"0\" FROM date_format( end_time, \"%i\" ) ) AS end_minute FROM thermo_hvac_cycles WHERE start_time > \"$start_date\" AND end_time < \"$end_date\" ORDER BY start_time ASC";
 
-//echo "<br>SQL is $sql";
   $result = mysql_query( $sql );
-//echo "<br>result is ($result)";
 
   $HeatRectSettings = array( "R" => 200, "G" => 100, "B" => 100, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
   $CoolRectSettings = array( "R" =>  50, "G" =>  50, "B" => 200, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
@@ -272,6 +306,16 @@ if( $show_cycles == 1 )
   $FanRectRow = 200;
   $LeftMargin = 69;
   $PixelsPerMinute = 0.5425;
+  /*
+   * Why 0.5425?
+   *
+   * The chart area boundary is defined as 900px wide.
+   * There are 118px that are not part of the chart (so take them out)
+   * There are 1440 minutes in a day
+   * (900 - 118) / 1440 = .5430
+   *
+   * With post applied fudge factor to make it look better on screen.
+   */
 
   // Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
   while( $row = mysql_fetch_array( $result ) )
@@ -281,10 +325,8 @@ if( $show_cycles == 1 )
      *  1. The chart X-axis represents 24 hours
      *  2. The chart horizontal area is XX pixels wide (so each minute is ZZ pixels)
      */
-    //$myPicture->drawRoundedFilledRectangle( 120, $HeatRectRow, 300, $HeatRectRow + $RectHeight, $RectCornerRadius, $HeatRectSettings );
 
-    // "YYYY-MM-DD HH:mm:00"
-    // 20 + ((HH*60) + mm) * ((900-40)/1440)
+    // "YYYY-MM-DD HH:mm:00"  There are NO seconds in these data points.
     $cycle_start = $LeftMargin + (($row['start_hour'] * 60) + $row['start_minute'] ) * $PixelsPerMinute;
     $cycle_end   = $LeftMargin + (($row['end_hour']   * 60) + $row['end_minute'] ) * $PixelsPerMinute;
 
@@ -305,7 +347,5 @@ if( $show_cycles == 1 )
 }
 mysql_close( $link );
 
-// Render the picture (choose the best way)
 $myPicture->autoOutput();
-
 ?>
