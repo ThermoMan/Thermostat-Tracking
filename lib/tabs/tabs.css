@@ -1,0 +1,78 @@
+ /* Add fonts to tab to match those in the charting package */
+@font-face
+{
+  font-family: theTabFonts;
+  src: url( "../fonts/Copperplate_Gothic_Light.ttf" );
+}
+
+div.content
+{
+  /* border: #48f solid 3px; */
+  border: #AAB757 solid 3px;  /* This is the color of the main border around the tab content */
+  clear: left;
+  padding: 1em;
+  height: 560px;    /* This sets the vertical height of the tab content area - regardless of the content vertical height */
+  overflow: scroll; /* In case the content is taller than the named height, allow the content area to scroll */
+  width: 930px;     /* Set the horizontal width of teh tab content area */
+}
+
+div.content.inactive {
+  display: none;
+}
+
+ol#toc
+{
+  font-family: theTabFonts;
+  font-size: small;
+  height: 2em;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+ol#toc a
+{
+  /* background: #bdf url(tabs.gif); */
+  background: #AAB757 url(tabs2.gif); /* The entire graphic of the tab */
+  /* color: #008; */
+  color: #000008;  /* This is the tab title text color */
+  display: block;
+  float: left;
+  height: 2em;
+  padding-left: 10px;
+  text-decoration: none;
+}
+
+ol#toc a:hover {
+    background-color: #3af;
+    background-position: 0 -120px;
+}
+
+ol#toc a:hover span {
+    background-position: 100% -120px;
+}
+
+ol#toc li {
+    float: left;
+    margin: 0 1px 0 0;
+}
+
+ol#toc li a.active {
+    background-color: #48f;
+    background-position: 0 -60px;
+    color: #fff;
+    font-weight: bold;
+}
+
+ol#toc li a.active span {
+    background-position: 100% -60px;
+}
+
+ol#toc span
+{
+  /* background: url(tabs.gif) 100% 0; */
+  background: url(tabs2.gif) 100% 0;  /* The graphic behind the text portion of the tab */
+  display: block;
+  line-height: 2em;
+  padding-right: 10px;
+}
