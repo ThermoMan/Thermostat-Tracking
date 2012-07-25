@@ -32,119 +32,21 @@ $dates = "";
 foreach( array("2012-07-05", "2012-07-06") as $show_date )
 {
   $dates .= $show_date . "   ";
-  $sql = "SELECT b.foo as date, IFNULL(a.indoor_temp, 'VOID') as indoor_temp, IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp "
-  . "FROM "
-  . "( "
-  . "SELECT CONCAT( '" . $show_date . " ', '00:00' ) AS foo "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '00:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '01:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '01:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '02:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '02:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '03:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '03:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '04:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '04:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '05:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '05:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '06:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '06:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '07:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '07:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '08:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '08:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '09:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '09:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '10:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '10:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '11:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '11:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '12:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '12:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '13:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '13:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '14:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '14:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '15:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '15:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '16:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '16:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '17:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '17:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '18:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '18:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '19:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '19:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '20:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '20:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '21:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '21:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '22:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '22:30' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '23:00' ) "
-  . "UNION "
-  . "SELECT CONCAT( '" . $show_date . " ', '23:30' ) "
-  . ") b "
-  . "LEFT JOIN  "
-  . $table_prefix . "temperatures a "
-  . "ON b.foo = DATE_FORMAT( a.date, '%Y-%m-%d %H:%i' );";
 
+  $sql = "SELECT CONCAT( '$show_date', ' ', b.time ) AS date, IFNULL(a.indoor_temp, 'VOID') as indoor_temp, IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp "
+  . "FROM " . $table_prefix . "time_index b "
+  . "LEFT JOIN " . $table_prefix . "temperatures a "
+  . "ON a.date = CONCAT( '$show_date', ' ', b.time );";
   $result = mysql_query( $sql );
 
   $counter = 0;
   while( $row = mysql_fetch_array( $result ) )
   {
-    if( substr( $row['date'], 13, 3 ) == ":00" )
+    if( substr( $row["date"], 13, 3 ) == ":00" )
     {
       if( is_int( $counter / 4 ) )
       {
-        $MyData->addPoints( substr( $row['date'], 11, 5 ), "Labels" );
+        $MyData->addPoints( substr( $row["date"], 11, 5 ), "Labels" );
         $counter = 0;
       }
       else
@@ -158,10 +60,10 @@ foreach( array("2012-07-05", "2012-07-06") as $show_date )
       $MyData->addPoints( VOID, "Labels" );
     }
 
-    if( $row['indoor_temp'] != 'VOID' )
+    if( $row["indoor_temp"] != "VOID" )
     {
-      $MyData->addPoints( $row['indoor_temp'], "Indoor" );
-      $MyData->addPoints( $row['outdoor_temp'], "Outdoor" );
+      $MyData->addPoints( $row["indoor_temp"], "Indoor" );
+      $MyData->addPoints( $row["outdoor_temp"], "Outdoor" );
     }
     else
     {
@@ -216,7 +118,6 @@ $myPicture->drawGradientArea( 0, 0, 900,  20, DIRECTION_VERTICAL, $Settings );
 $myPicture->drawRectangle( 0, 0, 899, 429, array( "R" => 0, "G" => 0, "B" => 0 ) );
 
 // Write the picture title
-//$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/Silkscreen.ttf", "FontSize" => 8 ) );
 $myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
 $myPicture->drawText( 10, 13, "Show temperatures for ".$dates, array( "R" => 255, "G" => 255, "B" => 255) );
 
@@ -243,8 +144,5 @@ $myPicture->setShadow( FALSE );
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 8 ) );
 $myPicture->drawLegend( 710, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL ) );
 
-
-// Render the picture (choose the best way)
 $myPicture->autoOutput();
-
 ?>
