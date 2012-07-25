@@ -17,10 +17,12 @@ $show_date = time();  // Start with today's date
   <script type="text/javascript">
     function update_daily_chart()
     {
-      var show_date_string = "show_date=" + document.getElementById('show_date').value;
-      var show_cycle_string = "show_cycles=" + document.getElementById('show_cycles').checked;
+      var show_date_string = "show_date=" + document.getElementById( "show_date" ).value;
+      var show_heat_cycle_string = "show_heat_cycles=" + document.getElementById( "show_heat_cycles" ).checked;
+      var show_cool_cycle_string = "show_cool_cycles=" + document.getElementById( "show_cool_cycles" ).checked;
+      var show_fan_cycle_string  = "show_fan_cycles="  + document.getElementById( "show_fan_cycles" ).checked;
       var no_cache_string = "nocache=<?php echo time() ?>";
-      var url_string = "draw_daily.php" + "?" + show_date_string + "&" + show_cycle_string + "&" + no_cache_string;
+      var url_string = "draw_daily.php" + "?" + show_date_string + "&" + show_heat_cycle_string  + "&" + show_cool_cycle_string  + "&" + show_fan_cycle_string + "&" + no_cache_string;
       document.getElementById( "daily_chart_image" ).src = url_string;
     }
 
@@ -86,16 +88,20 @@ $show_date = time();  // Start with today's date
     </div>
   </div>
   <button type="button" onclick="javascript: show_date.stepDown(); update_daily_chart();">&lt;--</button>
-  <input id="show_date" type="date" value="<?php echo date( "Y-m-d", $show_date); ?>" max="<?php echo date( "Y-m-d", $show_date); ?>" onInput="javascript: update_daily_chart();" step="1"/>
+  <input type="date" id="show_date" value="<?php echo date( "Y-m-d", $show_date); ?>" max="<?php echo date( "Y-m-d", $show_date); ?>" onInput="javascript: update_daily_chart();" step="1"/>
   <button type="button" name="show_date" onclick="javascript: document.getElementById('show_date').stepUp();update_daily_chart();">--&gt;</button>
-  <input type="checkbox" id="show_cycles"  name="show_cycles"  onChange="javascript: update_daily_chart();"/>Show Cycles
-  <input type="checkbox" id="auto_refresh" name="auto_refresh" onChange="javascript: timedRefresh();"/>Auto refresh (every 20 minutes)
+  <input type="checkbox" id="show_heat_cycles" name="show_heat_cycles" onChange="javascript: update_daily_chart();"/>Show Heat Cycles
+  <input type="checkbox" id="show_cool_cycles" name="show_cool_cycles" onChange="javascript: update_daily_chart();"/>Show Cool Cycles
+  <input type="checkbox" id="show_fan_cycles"  name="show_fan_cycles"  onChange="javascript: update_daily_chart();"/>Show Fan Cycles
+  <input type="checkbox" id="auto_refresh"     name="auto_refresh"     onChange="javascript: timedRefresh();"/>Auto refresh (every 20 minutes)
 
   <!-- This initialization script must fall AFTER declaration of date input box -->
   <script type="text/javascript">
     // Set initial values for chart
-    document.getElementById('show_date').value = "<?php echo date( "Y-m-d", $show_date); ?>";
-    document.getElementById('show_cycles').checked = false;
+    document.getElementById("show_date").value = "<?php echo date( "Y-m-d", $show_date); ?>";
+    document.getElementById("show_heat_cycles").checked = false;
+    document.getElementById("show_cool_cycles").checked = false;
+    document.getElementById("show_fan_cycles").checked = false;
 
     // Need to add a check here for present day.  Only present day is actually changing so don't bother with refresh on historic data
     update_daily_chart(); // Draw the chart
@@ -183,7 +189,7 @@ $show_date = time();  // Start with today's date
   $base_url = "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=";
   $url = $base_url . $ZIP;
   $html = file_get_html( $url );
-  foreach($html->find('div[id=nowTemp]') as $key => $info)
+  foreach($html->find("div[id=nowTemp]") as $key => $info)
   {
   //  echo "<br>" .($key + 1).'. '.$info->plaintext;
     $str = $info->plaintext;
@@ -223,7 +229,7 @@ $show_date = time();  // Start with today's date
 <!-- This following scripts MUST be dead last for the tab library to work properly -->
 <script src="lib/tabs/activatables.js" type="text/javascript"></script>
 <script type="text/javascript">
-  activatables('page', ['page-1', 'page-2', 'page-3', 'page-4', 'page-5', 'page-6', 'page-7']);
+  activatables("page", ["page-1", "page-2", "page-3", "page-4", "page-5", "page-6", "page-7"]);
 </script>
 </body>
 </html>
