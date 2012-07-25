@@ -201,7 +201,7 @@ $myPicture->drawLegend( 710, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => L
  *            to fix that a small query on the per minute table with a start time of the last stop from the first SQL
  *            should be added.  The display should indicate this is open ended (lighter color perhaps or use static images?)
  *
- * Omission 2 is that for complete days cyceles that span midnight are not shown at all - neither on the day they start nor
+ * Omission 2 is that for complete days cycles that span midnight are not shown at all - neither on the day they start nor
  *            on the day they end.
  */
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
@@ -214,17 +214,24 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
 
   $result = mysql_query( $sql );
 
-  $HeatRectSettings = array( "R" => 200, "G" => 100, "B" => 100, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
-  $CoolRectSettings = array( "R" =>  50, "G" =>  50, "B" => 200, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
-  $FanRectSettings  = array( "R" => 255, "G" => 255, "B" =>   0, "BorderR" =>  1, "BorderG" =>  1, "BorderB" => 1, "Alpha" => 75 );
+  //$HeatRectSettings = array( "R" => 200, "G" => 100, "B" => 100, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
+  //$CoolRectSettings = array( "R" =>  50, "G" =>  50, "B" => 200, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
+  //$FanRectSettings  = array( "R" => 255, "G" => 255, "B" =>   0, "BorderR" =>  1, "BorderG" =>  1, "BorderB" => 1, "Alpha" => 75 );
+  $HeatGradientSettings = array( "StartR" => 200, "StartG" => 100, "StartB" => 100, "Alpha" => 65, "Levels" => 90, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0  );
+  $CoolGradientSettings = array( "StartR" =>  50, "StartG" =>  50, "StartB" => 200, "Alpha" => 65, "Levels" => 90, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0  );
+  $FanGradientSettings  = array( "StartR" => 255, "StartG" => 255, "StartB" =>   0, "Alpha" => 65, "Levels" => 90, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0  );
   $RectHeight = 20;
-  $RectCornerRadius = 3;
+  //$RectCornerRadius = 3;
   $HeatRectRow = 150;
   $CoolRectRow = 175;
   $FanRectRow = 200;
   $LeftMargin = 69;
   $PixelsPerMinute = 0.5425;
   /*
+   * Assumptions:
+   *  1. The chart X-axis represents 24 hours
+   *  2. The chart horizontal area is 782 pixels wide (so each pixel represents 1.84 minutes)
+   *
    * Why 0.5425?
    *
    * The chart area boundary is defined as 900px wide.
@@ -232,38 +239,36 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
    * There are 1440 minutes in a day
    * (900 - 118) / 1440 = .5430
    *
-   * With post applied fudge factor to make it look better on screen.
+   * With post applied fudge factor ( -0.0005) to make it look better on screen.
    */
 
   // Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
   while( $row = mysql_fetch_array( $result ) )
   {
-    /*
-     * Assumptions:
-     *  1. The chart X-axis represents 24 hours
-     *  2. The chart horizontal area is XX pixels wide (so each minute is ZZ pixels)
-     */
 
     // "YYYY-MM-DD HH:mm:00"  There are NO seconds in these data points.
     $cycle_start = $LeftMargin + (($row["start_hour"] * 60) + $row["start_minute"] ) * $PixelsPerMinute;
-    $cycle_end   = $LeftMargin + (($row["end_hour"]   * 60) + $row["end_minute"] ) * $PixelsPerMinute;
+    $cycle_end   = $LeftMargin + (($row["end_hour"]   * 60) + $row["end_minute"] )   * $PixelsPerMinute;
 
     //$myPicture->setShadow( TRUE, array( "X" => -1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 75 ) );
     if( $row["system"] == 1 && $show_heat_cycles == 1 )
     { // Heat
-      $myPicture->drawRoundedFilledRectangle( $cycle_start, $HeatRectRow, $cycle_end, $HeatRectRow + $RectHeight, $RectCornerRadius, $HeatRectSettings );
+      //$myPicture->drawRoundedFilledRectangle( $cycle_start, $HeatRectRow, $cycle_end, $HeatRectRow + $RectHeight, $RectCornerRadius, $HeatRectSettings );
+      $myPicture->drawGradientArea( $cycle_start, $HeatRectRow, $cycle_end, $HeatRectRow + $RectHeight, DIRECTION_HORIZONTAL, $HeatGradientSettings );
     }
     else if( $row["system"] == 2 && $show_cool_cycles == 1 )
     { // A/C
-      $myPicture->drawRoundedFilledRectangle( $cycle_start, $CoolRectRow, $cycle_end, $CoolRectRow + $RectHeight, $RectCornerRadius, $CoolRectSettings );
+      //$myPicture->drawRoundedFilledRectangle( $cycle_start, $CoolRectRow, $cycle_end, $CoolRectRow + $RectHeight, $RectCornerRadius, $CoolRectSettings );
+      $myPicture->drawGradientArea( $cycle_start, $CoolRectRow, $cycle_end, $CoolRectRow + $RectHeight, DIRECTION_HORIZONTAL, $CoolGradientSettings );
     }
     else if( $row["system"]== 3 && $show_fan_cycles == 1 )
     { // Fan
-      $myPicture->drawRoundedFilledRectangle( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, $RectCornerRadius, $FanRectSettings );
+      //$myPicture->drawRoundedFilledRectangle( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, $RectCornerRadius, $FanRectSettings );
+      $myPicture->drawGradientArea( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, DIRECTION_HORIZONTAL, $FanGradientSettings );
     }
   }
 }
 mysql_close( $link );
 
-$myPicture->autoOutput();
+$myPicture->autoOutput( "images/daily_chart.png" );
 ?>
