@@ -1,0 +1,19 @@
+# Updated July, 2012
+
+DirectoryIndex index.php
+
+<Files *>
+order deny,allow
+
+<Files "config.php">
+Order Allow,Deny
+Deny from All
+</Files>
+
+# This prevents web browsers or spiders from seeing your .htaccess directives:
+
+<Files .htaccess>
+deny from all
+</Files>
+
+# End of file
