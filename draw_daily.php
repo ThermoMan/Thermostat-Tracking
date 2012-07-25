@@ -40,17 +40,33 @@ if( !preg_match( $date_pattern, $show_date ) )
 }
 
 // Set default cycle display to none
-$show_cycles = 0;
-if( isset( $_GET["show_cycles"] ) )
+$show_heat_cycles = 0;
+if( isset( $_GET["show_heat_cycles"] ) )
 {
-  if( $_GET["show_cycles"] == "true" )
+  if( $_GET["show_heat_cycles"] == "true" )
   {
-  $show_cycles = 1;
+    $show_heat_cycles = 1;
+  }
+}
+$show_cool_cycles = 0;
+if( isset( $_GET["show_cool_cycles"] ) )
+{
+  if( $_GET["show_cool_cycles"] == "true" )
+  {
+    $show_cool_cycles = 1;
+  }
+}
+$show_fan_cycles = 0;
+if( isset( $_GET["show_fan_cycles"] ) )
+{
+  if( $_GET["show_fan_cycles"] == "true" )
+  {
+    $show_fan_cycles = 1;
   }
 }
 
 /*
- *   This is really ugly SQL.  To fix it, the database needs three sections.
+ *   The SQL is still not as pretty as it could be.  The conversion to a 3 section system is starting though.
  *
  * Section 1 has to do with the collection of data.  That is _mostly_ what is going on in there now.
  *
@@ -58,115 +74,17 @@ if( isset( $_GET["show_cycles"] ) )
  *           exists for two reasons.  Firstly it keeps the 'per minute' table lightweight and secondly it makes charting easier.
  *           If the application adds notificaitons (for instance power out or over temperature situations) that is reporting
  *           and will go here
+ *           The new table time_index has been added to replace a really long nasty SQL section of hard-coded time stamps.  The
+ *           table name ought to reflect the function. Perhaps should be renamed to chart_time_index?  And don't forget the
+ *           global table name prefix either!
  *
  * Section 3 will be for the management of the website that presents the data.  If there will be user registration, it will go here
  *
- *   So to apply that logic to the SQL below, the reporting section will have a table that contains the 48 half-hour timestamps.
- * They will probably be stored as text in teh same fashion that the CONCAT() function makes them.  Then the SQL will change to
- * a full outer join and be much easier to read.
  */
-$sql = "SELECT b.foo as date, IFNULL(a.indoor_temp, 'VOID') as indoor_temp, IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp "
-. "FROM "
-. "( "
-. "SELECT CONCAT( '" . $show_date . " ', '00:00' ) AS foo "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '00:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '01:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '01:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '02:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '02:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '03:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '03:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '04:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '04:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '05:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '05:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '06:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '06:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '07:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '07:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '08:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '08:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '09:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '09:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '10:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '10:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '11:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '11:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '12:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '12:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '13:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '13:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '14:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '14:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '15:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '15:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '16:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '16:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '17:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '17:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '18:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '18:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '19:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '19:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '20:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '20:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '21:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '21:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '22:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '22:30' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '23:00' ) "
-. "UNION "
-. "SELECT CONCAT( '" . $show_date . " ', '23:30' ) "
-. ") b "
-. "LEFT JOIN  "
-. $table_prefix . "temperatures a "
-. "ON b.foo = DATE_FORMAT( a.date, '%Y-%m-%d %H:%i' );";
+$sql = "SELECT CONCAT( '$show_date', ' ', b.time ) AS date, IFNULL(a.indoor_temp, 'VOID') as indoor_temp, IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp "
+. "FROM " . $table_prefix . "time_index b "
+. "LEFT JOIN " . $table_prefix . "temperatures a "
+. "ON a.date = CONCAT( '$show_date', ' ', b.time );";
 
 $result = mysql_query( $sql );
 
@@ -179,25 +97,25 @@ $chart_y_max = $normal_high;
 
 while( $row = mysql_fetch_array( $result ) )
 {
-  if( substr( $row['date'], 13, 3 ) == ":00" )
+  if( substr( $row["date"], 13, 3 ) == ":00" )
   {
-    $MyData->addPoints( substr( $row['date'], 11, 5 ), "Labels" );
+    $MyData->addPoints( substr( $row["date"], 11, 5 ), "Labels" );
   }
   else
   {
     $MyData->addPoints( VOID, "Labels" );
   }
 
-  if( $row['indoor_temp'] != 'VOID' )
+  if( $row["indoor_temp"] != "VOID" )
   {
-    $MyData->addPoints( $row['indoor_temp'], "Indoor" );
-    $MyData->addPoints( $row['outdoor_temp'], "Outdoor" );
+    $MyData->addPoints( $row["indoor_temp"], "Indoor" );
+    $MyData->addPoints( $row["outdoor_temp"], "Outdoor" );
 
   // Expand chart boundaries to contain data that exceeds the default boundaries
-  if( $row['indoor_temp'] < $chart_y_min ) $chart_y_min = $row['indoor_temp'];
-  if( $row['indoor_temp'] > $chart_y_max ) $chart_y_max = $row['indoor_temp'];
-  if( $row['outdoor_temp'] < $chart_y_min ) $chart_y_min = $row['outdoor_temp'];
-  if( $row['outdoor_temp'] > $chart_y_max ) $chart_y_max = $row['outdoor_temp'];
+  if( $row["indoor_temp"] < $chart_y_min ) $chart_y_min = $row["indoor_temp"];
+  if( $row["indoor_temp"] > $chart_y_max ) $chart_y_max = $row["indoor_temp"];
+  if( $row["outdoor_temp"] < $chart_y_min ) $chart_y_min = $row["outdoor_temp"];
+  if( $row["outdoor_temp"] > $chart_y_max ) $chart_y_max = $row["outdoor_temp"];
   }
   else
   {
@@ -286,7 +204,7 @@ $myPicture->drawLegend( 710, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => L
  * Omission 2 is that for complete days cyceles that span midnight are not shown at all - neither on the day they start nor
  *            on the day they end.
  */
-if( $show_cycles == 1 )
+if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
 {
   //$start_date = strftime( "%Y-%m-%d 00:00:00", strtotime("-1 day", strtotime($show_date))); // "2012-07-09 00:00:00";
   $start_date = strftime( "%Y-%m-%d 00:00:00", strtotime($show_date));
@@ -327,19 +245,19 @@ if( $show_cycles == 1 )
      */
 
     // "YYYY-MM-DD HH:mm:00"  There are NO seconds in these data points.
-    $cycle_start = $LeftMargin + (($row['start_hour'] * 60) + $row['start_minute'] ) * $PixelsPerMinute;
-    $cycle_end   = $LeftMargin + (($row['end_hour']   * 60) + $row['end_minute'] ) * $PixelsPerMinute;
+    $cycle_start = $LeftMargin + (($row["start_hour"] * 60) + $row["start_minute"] ) * $PixelsPerMinute;
+    $cycle_end   = $LeftMargin + (($row["end_hour"]   * 60) + $row["end_minute"] ) * $PixelsPerMinute;
 
     //$myPicture->setShadow( TRUE, array( "X" => -1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 75 ) );
-    if( $row['system'] == 1 )
+    if( $row["system"] == 1 && $show_heat_cycles == 1 )
     { // Heat
       $myPicture->drawRoundedFilledRectangle( $cycle_start, $HeatRectRow, $cycle_end, $HeatRectRow + $RectHeight, $RectCornerRadius, $HeatRectSettings );
     }
-    else if( $row['system'] == 2 )
+    else if( $row["system"] == 2 && $show_cool_cycles == 1 )
     { // A/C
       $myPicture->drawRoundedFilledRectangle( $cycle_start, $CoolRectRow, $cycle_end, $CoolRectRow + $RectHeight, $RectCornerRadius, $CoolRectSettings );
     }
-    else if( $row['system']== 3 )
+    else if( $row["system"]== 3 && $show_fan_cycles == 1 )
     { // Fan
       $myPicture->drawRoundedFilledRectangle( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, $RectCornerRadius, $FanRectSettings );
     }
