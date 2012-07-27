@@ -4,14 +4,19 @@ REQUIRE "config.php";
 REQUIRE "lib/t_lib.php";
 
 date_default_timezone_set( $timezone );
-$show_date = time();  // Start with today's date
+$show_date = date( "Y-m-d", time() );  // Start with today's date
+if( strftime( "%H%M" ) <= "0059" )
+{ // If there is not enough (3 data points is "enough") data to make a meaningful chart, default to yesterday
+  $show_date =  date( "Y-m-d", strtotime( "-1 day", time() ) );  // Start with yesterday's date
+}
 ?>
 
 <html>
 <head>
   <meta http-equiv=Content-Type content="text/html; charset=utf-8">
-  <title>Thermostat</title>
-  <link href="/Thermo/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+  <title>3M-50 Thermostat Tracking</title>
+  <link href="favicon.ico" rel="shortcut icon" type="image/x-icon" />
+  <link href="resources/thermo.css" rel="stylesheet" type="text/css" />
   <link href="lib/tabs/tabs.css" rel="stylesheet" type="text/css" />  <!-- Add tab library -->
 
   <script type="text/javascript">
@@ -21,7 +26,7 @@ $show_date = time();  // Start with today's date
       var show_heat_cycle_string = "show_heat_cycles=" + document.getElementById( "show_heat_cycles" ).checked;
       var show_cool_cycle_string = "show_cool_cycles=" + document.getElementById( "show_cool_cycles" ).checked;
       var show_fan_cycle_string  = "show_fan_cycles="  + document.getElementById( "show_fan_cycles" ).checked;
-      var no_cache_string = "nocache=<?php echo time() ?>";
+      var no_cache_string = "nocache=" + Math.random(); // Browsers are very clever with image caching.  In this case it breaks the web page function.
       var url_string = "draw_daily.php" + "?" + show_date_string + "&" + show_heat_cycle_string  + "&" + show_cool_cycle_string  + "&" + show_fan_cycle_string + "&" + no_cache_string;
       document.getElementById( "daily_chart_image" ).src = url_string;
     }
@@ -32,8 +37,7 @@ $show_date = time();  // Start with today's date
       // Save value (either true or false) for next time (keep cookie up to ten days)
       setCookie( "auto_refresh", document.getElementById( "auto_refresh" ).checked, 10 );
 
-      var loc_string = "" + location; // Turn location into a string so we can check for page number
-      if( document.getElementById( "auto_refresh" ).checked == true && loc_string.indexOf( "page-1" ) > 0 )
+      if( document.getElementById( "auto_refresh" ).checked == true )
       {
         update_daily_chart();
         setTimeout( "timedRefresh();", refreshInterval );
@@ -67,6 +71,7 @@ $show_date = time();  // Start with today's date
 </head>
 
 <body>
+<p>You are looking at a development system.  If something doesn't look right, don't complain.</p>
 
 <ol id="toc">
   <li><a href="#page-1"><span>Daily Detail</span></a></li>
@@ -75,20 +80,16 @@ $show_date = time();  // Start with today's date
   <li><a href="#page-4"><span>Indoor Historic</span></a></li>
   <li><a href="#page-5"><span>Outdoor Historic</span></a></li>
   <li><a href="#page-6"><span>Misc Junk</span></a></li>
-  <li><a href="#page-7"><span>About</span></a></li>
+  <li><a href="#page-7"><span><img src="images/info.png" alt="icon: about"/> About</span></a></li>
 </ol>
 
 <div class="content" id="page-1">
-  <p>
-  <div style="display: table-cell; padding: 10px; border: 2px solid rgb(255, 255, 255); vertical-align: middle; overflow: auto; background-image: url('lib/pChart2.1.3/examples/resources/dash.png');">
-    <div style="font-size: 10px; opacity: 1;">
-      <div style="height: 430px; width: 900px;">
-        <img src="draw_daily.php?show_date=<?php echo date( "Y-m-d", $show_date); ?>" id="daily_chart_image" alt="The temperatures">
-      </div>
-    </div>
+  <div class="thermo_chart">
+    <img src="draw_daily.php?show_date=<?php echo $show_date; ?>" id="daily_chart_image" alt="The temperatures">
   </div>
   <button type="button" onclick="javascript: show_date.stepDown(); update_daily_chart();">&lt;--</button>
-  <input type="date" id="show_date" value="<?php echo date( "Y-m-d", $show_date); ?>" max="<?php echo date( "Y-m-d", $show_date); ?>" onInput="javascript: update_daily_chart();" step="1"/>
+  <!-- Need to change the max value to a date computed by Javascript so it stays current -->
+  <input type="date" id="show_date" value="<?php echo $show_date; ?>" max="<?php echo $show_date; ?>" onInput="javascript: update_daily_chart();" step="1"/>
   <button type="button" name="show_date" onclick="javascript: document.getElementById('show_date').stepUp();update_daily_chart();">--&gt;</button>
   <input type="checkbox" id="show_heat_cycles" name="show_heat_cycles" onChange="javascript: update_daily_chart();"/>Show Heat Cycles
   <input type="checkbox" id="show_cool_cycles" name="show_cool_cycles" onChange="javascript: update_daily_chart();"/>Show Cool Cycles
@@ -98,7 +99,7 @@ $show_date = time();  // Start with today's date
   <!-- This initialization script must fall AFTER declaration of date input box -->
   <script type="text/javascript">
     // Set initial values for chart
-    document.getElementById("show_date").value = "<?php echo date( "Y-m-d", $show_date); ?>";
+    document.getElementById("show_date").value = "<?php echo $show_date; ?>";
     document.getElementById("show_heat_cycles").checked = false;
     document.getElementById("show_cool_cycles").checked = false;
     document.getElementById("show_fan_cycles").checked = false;
@@ -118,48 +119,28 @@ $show_date = time();  // Start with today's date
 </div>
 
 <div class="content" id="page-2">
-  <p>
-  <div style="display: table-cell; padding: 10px; border: 2px solid rgb(255, 255, 255); vertical-align: middle; overflow: auto; background-image: url('lib/pChart2.1.3/examples/resources/dash.png');">
-    <div style="font-size: 10px; opacity: 1;">
-      <div style="height: 430px; width: 900px;">
-        <img src="draw_runtimes.php?show_date=<?php echo date( "Y-m-d", $show_date); ?>" alt="HVAC Runtimes">
-      </div>
-    </div>
+  <div class="thermo_chart">
+    <img src="draw_runtimes.php" alt="HVAC Runtimes">
   </div>
 </div>
 
 <div class="content" id="page-3">
-  <p>
-  <div style="display: table-cell; padding: 10px; border: 2px solid rgb(255, 255, 255); vertical-align: middle; overflow: auto; background-image: url('lib/pChart2.1.3/examples/resources/dash.png');">
-    <div style="font-size: 10px; opacity: 1;">
-      <div style="height: 430px; width: 900px;">
-        <img src="draw_range.php?show_date=<?php echo date( "Y-m-d", $show_date); ?>" alt="Several Days Temperature History">
-      </div>
-    </div>
+  <div class="thermo_chart">
+    <img src="draw_range.php?show_date=<?php echo $show_date; ?>" alt="Several Days Temperature History">
   </div>
   Try showing a range of dates
 </div>
 
 <div class="content" id="page-4">
-  <p>
-  <div style="display: table-cell; padding: 10px; border: 2px solid rgb(255, 255, 255); vertical-align: middle; overflow: auto; background-image: url('lib/pChart2.1.3/examples/resources/dash.png');">
-    <div style="font-size: 10px; opacity: 1;">
-      <div style="height: 430px; width: 900px;">
-        <img src="draw_weekly.php?Indoor=1" alt="All Time Indoor History">
-      </div>
-    </div>
+  <div class="thermo_chart">
+    <img src="draw_weekly.php?Indoor=1" alt="All Time Indoor History">
   </div>
   Hi/Low temps
 </div>
 
 <div class="content" id="page-5">
-  <p>
-  <div style="display: table-cell; padding: 10px; border: 2px solid rgb(255, 255, 255); vertical-align: middle; overflow: auto; background-image: url('lib/pChart2.1.3/examples/resources/dash.png');">
-    <div style="font-size: 10px; opacity: 1;">
-      <div style="height: 430px; width: 900px;">
-        <img src="draw_weekly.php?Indoor=0" alt="All Time Outdoor History">
-      </div>
-    </div>
+  <div class="thermo_chart">
+    <img src="draw_weekly.php?Indoor=0" alt="All Time Outdoor History">
   </div>
 </div>
 
@@ -215,14 +196,16 @@ $show_date = time();  // Start with today's date
   <p>
   <p>This project also uses code from the following external projects
   <ul>
-    <li><a target="_blank" href="http://sourceforge.net/projects/simplehtmldom/">PHP Simple HTML DOM Parser</a></li>
-    <li><a target="_blank" href="http://www.pchart.net/">pChart</a></li>
-    <li><a target="_blank" href="http://blixt.org/articles/tabbed-navigation-using-css#section=introduction">Blixt tab library</a></li>
+    <li><a target="_blank" href="http://sourceforge.net/projects/simplehtmldom/">PHP Simple HTML DOM Parser</a>.</li>
+    <li><a target="_blank" href="http://www.pchart.net/">pChart</a>.</li>
+    <li><a target="_blank" href="http://blixt.org/articles/tabbed-navigation-using-css#section=introduction">Blixt tab library</a>.</li>
+    <li><a target="_blank" href="http://www.veryicon.com/icons/folder/leopard-folder-replacements/">Free icons from Very Icon</a>.  These icons were made by <a target="_blank" href="http://jasonh1234.deviantart.com">jasonh1234</a>.</li>
   </ul>
+  <p>This project is based on the <a target="_blank" href="http://www.radiothermostat.com/filtrete/products/3M-50/">Filtrete 3M Radio Thermostat</a>.
   <br><br><br>
   <div style="text-align: center;">
-    <a target="_blank" href="http://validator.w3.org/check?uri=referer"><img style="border:0;width:88px;height:31px" src="images/valid-html5.png" alt="Valid HTML 5"/></a>
-    <a target="_blank" href="http://jigsaw.w3.org/css-validator/check/referer"><img style="border:0;width:88px;height:31px" src="http://jigsaw.w3.org/css-validator/images/vcss" alt="Valid CSS!"/></a>
+    <a target="_blank" href="http://validator.w3.org/check?uri=referer"><img style="border:0;width:88px;height:31px;" src="images/valid-html5.png" alt="Valid HTML 5"/></a>
+    <a target="_blank" href="http://jigsaw.w3.org/css-validator/check/referer"><img style="border:0;width:88px;height:31px;" src="http://jigsaw.w3.org/css-validator/images/vcss" alt="Valid CSS!"/></a>
   </div>
 </div>
 
