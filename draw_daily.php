@@ -16,8 +16,6 @@ function bobby_tables()
   echo $contents;
 }
 
-//session_start();
-
 $link = mysql_connect( $host, $user, $pass );
 if( !$link )
 {
@@ -195,22 +193,31 @@ $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_ar
 $myPicture->drawLegend( 710, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL ) );
 
 /*
- * This representation of cycle runtimes has two serious omissions.
+ * This representation of cycle runtimes has one serious omission.
  *
  * Omission 1 is that presently running cycles are not shown since the data is soruced from the completed cycle table.
  *            to fix that a small query on the per minute table with a start time of the last stop from the first SQL
  *            should be added.  The display should indicate this is open ended (lighter color perhaps or use static images?)
- *
- * Omission 2 is that for complete days cycles that span midnight are not shown at all - neither on the day they start nor
- *            on the day they end.
  */
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
-{
-  //$start_date = strftime( "%Y-%m-%d 00:00:00", strtotime("-1 day", strtotime($show_date))); // "2012-07-09 00:00:00";
-  $start_date = strftime( "%Y-%m-%d 00:00:00", strtotime($show_date));
-  $end_date = strftime( "%Y-%m-%d 00:00:00", strtotime("+1 day", strtotime($show_date)));   // "2012-07-11 00:00:00";
+{ // For a $show_date of "2012-07-10" get the start and end bounding datetimes
+  $start_date = strftime( "%Y-%m-%d 00:00:00", strtotime($show_date));  // "2012-07-10 00:00:00";
+  // $end_date = strftime( "%Y-%m-%d 00:00:00", strtotime("+1 day", strtotime($show_date)));   // "2012-07-11 00:00:00";
+  $end_date = strftime( "%Y-%m-%d 23:59:59", strtotime($show_date));    // "2012-07-10 23:59:59";
 
-  $sql = "SELECT system, date_format( start_time, \"%k\" ) AS start_hour, trim(LEADING \"0\" FROM date_format( start_time, \"%i\" ) ) AS start_minute, date_format( end_time, \"%k\" ) AS end_hour, trim( LEADING \"0\" FROM date_format( end_time, \"%i\" ) ) AS end_minute FROM thermo_hvac_cycles WHERE start_time > \"$start_date\" AND end_time < \"$end_date\" ORDER BY start_time ASC";
+  /*
+   * This SQL now includes cycles that start on the previous night or end on the following morning.  The
+   * actual returned values are bounded by 00:00 and 23:59
+   *
+   * Ought to differentiate the open ended cycles somehow?
+   */
+  $sql = "SELECT system, "
+  . "DATE_FORMAT( GREATEST( start_time, '$start_date' ), '%k' ) AS start_hour, "
+  . "TRIM(LEADING '0' FROM DATE_FORMAT( GREATEST( start_time, '$start_date' ), '%i' ) ) AS start_minute, "
+  . "DATE_FORMAT( LEAST( end_time, '$end_date' ), '%k' ) AS end_hour, "
+  . "TRIM( LEADING '0' FROM DATE_FORMAT( LEAST( end_time, '$end_date' ), '%i' ) ) AS end_minute "
+  . "FROM " . $table_prefix . "hvac_cycles "
+  . "WHERE end_time > '$start_date' AND start_time < '$end_date' ORDER BY start_time ASC";
 
   $result = mysql_query( $sql );
 
@@ -267,6 +274,15 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
       $myPicture->drawGradientArea( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, DIRECTION_HORIZONTAL, $FanGradientSettings );
     }
   }
+
+  // If $start_date is today then also look in the hvac_status table and see if there is an open ended run going on right now.
+  /*
+  $sql = "SELECT MIN(date) FROM thermo_hvac_status WHERE heat_status = 1 and date(date) = '$start_date'";
+  $result = mysql_query( $sql );
+  $row = mysql_fetch_array( $result ); // I expect either zero or one row from the SQL
+  */
+  // From that date roll forward and see if there is more than once cycle to add
+
 }
 mysql_close( $link );
 
