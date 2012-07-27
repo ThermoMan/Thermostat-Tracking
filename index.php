@@ -31,6 +31,16 @@ if( strftime( "%H%M" ) <= "0059" )
       document.getElementById( "daily_chart_image" ).src = url_string;
     }
 
+
+    function update_multi_chart()
+    {
+      var from_date_string = "from_date=" + document.getElementById( "from_date" ).value;
+      var to_date_string = "to_date=" + document.getElementById( "to_date" ).value;
+      var no_cache_string = "nocache=" + Math.random(); // Browsers are very clever with image caching.  In this case it breaks the web page function.
+      var url_string = "draw_range.php" + "?" + from_date_string + "&" + to_date_string  + "&" + no_cache_string;
+      document.getElementById( "multi_chart_image" ).src = url_string;
+    }
+
     var refreshInterval = 20 * 60 * 1000;  // It's measured in milliseconds and I want a unit of minutes.
     function timedRefresh()
     {
@@ -39,6 +49,10 @@ if( strftime( "%H%M" ) <= "0059" )
 
       if( document.getElementById( "auto_refresh" ).checked == true )
       {
+        /*
+         * Need to add a check here for present day.  Only present day actually has changing data
+         * so don't bother with refresh on historic data.  But do leave the refresh flag set for later.
+         */
         update_daily_chart();
         setTimeout( "timedRefresh();", refreshInterval );
       }
@@ -74,18 +88,18 @@ if( strftime( "%H%M" ) <= "0059" )
 <p>You are looking at a development system.  If something doesn't look right, don't complain.</p>
 
 <ol id="toc">
-  <li><a href="#page-1"><span>Daily Detail</span></a></li>
-  <li><a href="#page-2"><span>HVAC Runtime</span></a></li>
-  <li><a href="#page-3"><span>Multiple Days (example)</span></a></li>
-  <li><a href="#page-4"><span>Indoor Historic</span></a></li>
-  <li><a href="#page-5"><span>Outdoor Historic</span></a></li>
-  <li><a href="#page-6"><span>Misc Junk</span></a></li>
-  <li><a href="#page-7"><span><img src="images/info.png" alt="icon: about"/> About</span></a></li>
+  <li><a href="#daily"><span>Daily Detail</span></a></li>
+  <li><a href="#hvac"><span>HVAC Runtime</span></a></li>
+  <li><a href="#indoor"><span>Indoor Historic</span></a></li>
+  <li><a href="#outdoor"><span>Outdoor Historic</span></a></li>
+  <li><a href="#multiple"><span>Multiple Days (example)</span></a></li>
+  <li><a href="#misc"><span>Misc Junk</span></a></li>
+  <li><a href="#about"><span><img src="images/info.png" alt="icon: about"/> About</span></a></li>
 </ol>
 
-<div class="content" id="page-1">
+<div class="content" id="daily">
   <div class="thermo_chart">
-    <img src="draw_daily.php?show_date=<?php echo $show_date; ?>" id="daily_chart_image" alt="The temperatures">
+    <img id="daily_chart_image" src="draw_daily.php?show_date=<?php echo $show_date; ?>" alt="The temperatures">
   </div>
   <button type="button" onclick="javascript: show_date.stepDown(); update_daily_chart();">&lt;--</button>
   <!-- Need to change the max value to a date computed by Javascript so it stays current -->
@@ -104,7 +118,6 @@ if( strftime( "%H%M" ) <= "0059" )
     document.getElementById("show_cool_cycles").checked = false;
     document.getElementById("show_fan_cycles").checked = false;
 
-    // Need to add a check here for present day.  Only present day is actually changing so don't bother with refresh on historic data
     update_daily_chart(); // Draw the chart
 
     if( getCookie( "auto_refresh" ) == "true" )
@@ -118,33 +131,34 @@ if( strftime( "%H%M" ) <= "0059" )
   <br>Missing values are where Windows Task Scheduler is demonstrating itself to be an inferior way of executing a task.
 </div>
 
-<div class="content" id="page-2">
+<div class="content" id="hvac">
   <div class="thermo_chart">
     <img src="draw_runtimes.php" alt="HVAC Runtimes">
   </div>
 </div>
 
-<div class="content" id="page-3">
+<div class="content" id="multiple">
   <div class="thermo_chart">
-    <img src="draw_range.php?show_date=<?php echo $show_date; ?>" alt="Several Days Temperature History">
+    <img id="multi_chart_image" src="draw_range.php?from_date=<?php echo $show_date; ?>&to_date=<?php echo $show_date; ?>" alt="Several Days Temperature History">
   </div>
-  Try showing a range of dates
+  From date <input type="date" id="from_date" value="<?php echo $show_date; ?>" max="<?php echo $show_date; ?>" onInput="javascript: update_multi_chart();" step="1"/>
+  to date <input type="date" id="to_date" value="<?php echo $show_date; ?>" max="<?php echo $show_date; ?>" onInput="javascript: update_multi_chart();" step="1"/>
 </div>
 
-<div class="content" id="page-4">
+<div class="content" id="indoor">
   <div class="thermo_chart">
     <img src="draw_weekly.php?Indoor=1" alt="All Time Indoor History">
   </div>
   Hi/Low temps
 </div>
 
-<div class="content" id="page-5">
+<div class="content" id="outdoor">
   <div class="thermo_chart">
     <img src="draw_weekly.php?Indoor=0" alt="All Time Outdoor History">
   </div>
 </div>
 
-<div class="content" id="page-6">
+<div class="content" id="misc">
   <?php
 
   echo "<br>Alternative sources of outdoor temp - need a voting system to pick the consensus temp with a preference for one particular sensor.<p>";
@@ -188,7 +202,7 @@ if( strftime( "%H%M" ) <= "0059" )
   <br><input type="range" min="0" max="10" step="2" value="6">
 </div>
 
-<div class="content" id="page-7">
+<div class="content" id="about">
   <p>
   <p>Source code for this project can be found on <a target="_blank" href="https://github.com/ThermoMan/3M-50-Thermostat-Tracking">github</a>
   <p>
@@ -212,7 +226,7 @@ if( strftime( "%H%M" ) <= "0059" )
 <!-- This following scripts MUST be dead last for the tab library to work properly -->
 <script src="lib/tabs/activatables.js" type="text/javascript"></script>
 <script type="text/javascript">
-  activatables("page", ["page-1", "page-2", "page-3", "page-4", "page-5", "page-6", "page-7"]);
+  activatables("tab", ["daily", "hvac", "multiple", "indoor", "outdoor", "misc", "about"]);
 </script>
 </body>
 </html>
