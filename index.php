@@ -139,7 +139,7 @@ if( strftime( "%H%M" ) <= "0059" )
 
 <div class="content" id="multiple">
   <div class="thermo_chart">
-    <img id="multi_chart_image" src="draw_range.php?from_date=<?php echo $show_date; ?>&to_date=<?php echo $show_date; ?>" alt="Several Days Temperature History">
+    <img id="multi_chart_image" src="draw_range.php?from_date=<?php echo $show_date; ?>&amp;to_date=<?php echo $show_date; ?>" alt="Several Days Temperature History">
   </div>
   From date <input type="date" id="from_date" value="<?php echo $show_date; ?>" max="<?php echo $show_date; ?>" onInput="javascript: update_multi_chart();" step="1"/>
   to date <input type="date" id="to_date" value="<?php echo $show_date; ?>" max="<?php echo $show_date; ?>" onInput="javascript: update_multi_chart();" step="1"/>
