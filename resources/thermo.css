@@ -1,0 +1,13 @@
+/* Main app specific css file */
+
+div.thermo_chart
+{
+  height: 430px; 
+  width: 900px; 
+  display: table-cell; 
+  padding: 10px; 
+  border: 2px solid rgb(255, 255, 255); 
+  vertical-align: middle; 
+  overflow: auto; 
+  background-image: url('lib/pChart2.1.3/examples/resources/dash.png');
+}
