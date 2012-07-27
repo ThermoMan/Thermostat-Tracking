@@ -1,10 +1,11 @@
- /* Add fonts to tab to match those in the charting package */
+/* ThermoMan: Add fonts to tab to match those in the charting package */
 @font-face
 {
   font-family: theTabFonts;
   src: url( "../fonts/Copperplate_Gothic_Light.ttf" );
 }
 
+/*  ThermoMan: modified to match color scheme of my applicaiton */
 div.content
 {
   /* border: #48f solid 3px; */
@@ -30,6 +31,7 @@ ol#toc
   padding: 0;
 }
 
+/*  ThermoMan: modified to match color scheme of my applicaiton */
 ol#toc a
 {
   /* background: #bdf url(tabs.gif); */
@@ -57,17 +59,19 @@ ol#toc li {
     margin: 0 1px 0 0;
 }
 
-ol#toc li a.active {
-    background-color: #48f;
-    background-position: 0 -60px;
-    color: #fff;
-    font-weight: bold;
+ol#toc li a.active
+{
+  background-color: #48f;
+  background-position: 0 -60px;
+  color: #fff;
+  /* font-weight: bold; */
 }
 
 ol#toc li a.active span {
     background-position: 100% -60px;
 }
 
+/*  ThermoMan: modified to match color scheme of my applicaiton */
 ol#toc span
 {
   /* background: url(tabs.gif) 100% 0; */
@@ -75,4 +79,12 @@ ol#toc span
   display: block;
   line-height: 2em;
   padding-right: 10px;
+}
+
+/* ThermoMan: Added for tab icon support */
+ol#toc span img
+{
+  height: 24px;
+  width: 24px;
+  vertical-align: middle;
 }
