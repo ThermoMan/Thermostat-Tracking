@@ -1,35 +1,49 @@
 <?php
-REQUIRE "lib/t_lib.php";
-REQUIRE "config.php";
+REQUIRE "common.php";
 
 // pChart library inclusions
 include("lib/pChart2.1.3/class/pData.class.php");
 include("lib/pChart2.1.3/class/pDraw.class.php");
 include("lib/pChart2.1.3/class/pImage.class.php");
 
-function bobby_tables()
-{
-  $filename = "./images/exploits_of_a_mom.png";
-  $handle = fopen( $filename, "r" );
-  $contents = fread( $handle, filesize($filename) );
-  fclose( $handle );
-  echo $contents;
-}
+connect_to_db();
 
-//session_start();
-
-$link = mysql_connect( $host, $user, $pass );
-if( !$link )
-{
-  die( "Could not connect: <no error message provided to hackers>"  );
+$from_date = date( "Y-m-d" );
+if( isset( $_GET["from_date"] ) )
+{ // Use provided date
+  $from_date = $_GET["from_date"];
 }
-mysql_select_db( $db, $link ) or die( "cannot select DB" );            // Really should log this?
+if( ! validate_date( $from_date ) ) return;
+
+$to_date = date( "Y-m-d" );
+if( isset( $_GET["to_date"] ) )
+{ // Use provided date
+  $to_date = $_GET["to_date"];
+}
+if( ! validate_date( $to_date ) ) return;
+
+
+// OK, now that we have a bounding range of dates, build an array of all the dates in the range
+$check_date = $from_date;
+$days = array( $check_date );
+$dayCount = 1;
+while( $check_date != $to_date )
+{
+
+  $check_date = date ("Y-m-d", strtotime ("+1 day", strtotime($check_date)));
+  array_push( $days, $check_date ) ;
+
+  if( $dayCount++ > 31 )
+  { // Bust out if there are too many days requested
+    break;
+  }
+}
 
 // Create and populate the pData object
 $MyData = new pData();
 
 $dates = "";
-foreach( array("2012-07-05", "2012-07-06") as $show_date )
+foreach( $days as $show_date )
 {
   $dates .= $show_date . "   ";
 
@@ -44,7 +58,7 @@ foreach( array("2012-07-05", "2012-07-06") as $show_date )
   {
     if( substr( $row["date"], 13, 3 ) == ":00" )
     {
-      if( is_int( $counter / 4 ) )
+      if( is_int( $counter / $dayCount ) )
       {
         $MyData->addPoints( substr( $row["date"], 11, 5 ), "Labels" );
         $counter = 0;
@@ -73,7 +87,7 @@ foreach( array("2012-07-05", "2012-07-06") as $show_date )
   }
 }
 
-mysql_close( $link );
+disconnect_from_db();
 
 // Attach the data series to the axis (by ordinal)
 $MyData->setSerieOnAxis( "Indoor", 0 );
