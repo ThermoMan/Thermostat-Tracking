@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS `**REPLACE_OBJECT_PREFIX**temperatures` (
   `date` datetime NOT NULL,
   `indoor_temp` decimal(5,2) NOT NULL,
   `outdoor_temp` decimal(5,2) NOT NULL,
+  `set_point` decimal(5,2) DEFAULT NULL,
   KEY `date` (`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
