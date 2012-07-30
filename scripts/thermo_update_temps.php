@@ -14,13 +14,21 @@ mysql_select_db( $db, $link ) or die( "cannot select DB" );            // Really
 
 $stat = new Stat( $thermostatIP, $ZIP );
 
-$stat->getTemp();
+$stat->getStat();
 $outside = $stat->getOutdoorTemp();
 // Log the indoor and outdoor temperatures for this half-hour increment
-$sql = "INSERT INTO " . $table_prefix . "temperatures ( date, indoor_temp, outdoor_temp ) VALUES ( concat( substr( now( ) , 1, 17 ) , \"00\" ) , ".$stat->temp.", ".$outside.")";
- echo "Here is the SQL: " . $sql;
+$target = $stat->t_cool;
+if( $stat->tmode == 1 )
+{
+  $target = $stat->t_heat;
+}
+$sql = "INSERT INTO " . $table_prefix . "temperatures ( date, indoor_temp, outdoor_temp, set_point ) VALUES ( CONCAT( SUBSTR( NOW() , 1, 17 ) , \"00\" ) , " . $stat->temp . ", " . $outside . ", " . $target ." )";
+
+
+
+// echo "Here is the SQL: " . $sql;
 $result = mysql_query( $sql );
-echo "Result is: " . $result;
+//echo "Result is: " . $result;
 
 $stat->getDataLog();
 // Log the runtimes for yesterday and today
