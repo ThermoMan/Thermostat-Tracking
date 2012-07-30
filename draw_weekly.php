@@ -23,6 +23,10 @@ $result = mysql_query( $sql );
 // Create and populate the pData object
 $MyData = new pData();
 
+// Set default boundaries for chart
+$chart_y_min = $normal_low;
+$chart_y_max = $normal_high;
+
 $old_month = -1;
 while( $row = mysql_fetch_array( $result ) )
 {
@@ -55,11 +59,15 @@ while( $row = mysql_fetch_array( $result ) )
   {
     $MyData->addPoints( $row['indoor_min'], "Indoor Min" );
     $MyData->addPoints( $row['indoor_max'], "Indoor Max" );
+    if( $row["indoor_min"] < $chart_y_min ) $chart_y_min = $row["indoor_min"];
+    if( $row["indoor_max"] > $chart_y_max ) $chart_y_max = $row["indoor_max"];
   }
   else
   {
     $MyData->addPoints( $row['outdoor_min'], "Outdoor Min" );
     $MyData->addPoints( $row['outdoor_max'], "Outdoor Max" );
+    if( $row["outdoor_min"] < $chart_y_min ) $chart_y_min = $row["outdoor_min"];
+    if( $row["outdoor_max"] > $chart_y_max ) $chart_y_max = $row["outdoor_max"];
   }
 }
 mysql_close( $link );
@@ -124,9 +132,11 @@ $myPicture->drawText( 250, 55, "Min/Max for each day in the record", array( "Fon
 
 $myPicture->setGraphArea( 60, 60, 850, 390 );   // Define the chart area
 
+// Explicity set a scale for the drawing.
+$AxisBoundaries = array( 0 => array ( "Min" => $chart_y_min, "Max" => $chart_y_max ) );
 // Draw the scale
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
-$scaleSettings = array( "GridR" => 200, "GridG" => 200, "GridB" => 200, "DrawSubTicks" => TRUE, "CycleBackground" => TRUE );
+$scaleSettings = array( "Mode" => SCALE_MODE_MANUAL, "ManualScale" => $AxisBoundaries, "GridR" => 200, "GridG" => 200, "GridB" => 200, "DrawSubTicks" => TRUE, "CycleBackground" => TRUE );
 $myPicture->drawScale( $scaleSettings );
 
 // Write the chart legend
@@ -134,7 +144,7 @@ $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_ar
 $myPicture->drawLegend( 510, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL ) );
 
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
-$myPicture->drawScale( array( "DrawSubTicks" => TRUE ) );
+//$myPicture->drawScale( array( "DrawSubTicks" => TRUE ) );
 $myPicture->setShadow( TRUE, array( "X" => 1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 10 ) );
 $myPicture->drawBarChart();
 $myPicture->setShadow( FALSE );
