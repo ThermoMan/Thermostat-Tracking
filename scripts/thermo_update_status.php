@@ -2,12 +2,11 @@
 REQUIRE "lib/t_lib.php";
 REQUIRE "config.php";
 
-// session_start();
-
-function session_upkeep( $table_prefix )
+function session_upkeep()
 {
-	$sql = "select date, heat_status, cool_status, fan_status from " . $table_prefix . "hvac_status order by date asc";
-//echo "The SQL is $sql";
+  global $table_prefix;
+
+  $sql = "SELECT date, heat_status, cool_status, fan_status FROM " . $table_prefix . "hvac_status ORDER BY date ASC";
 	$result = mysql_query( $sql );
 
 
@@ -27,7 +26,7 @@ function session_upkeep( $table_prefix )
 				$heat_on = 0;
 				$heat_end = $row['date'];
 
-				$sql_heat = "insert into " . $table_prefix . "hvac_cycles (system, start_time, end_time) values (".$heat_system.", \"".$heat_start."\", \"".$heat_end."\")";
+        $sql_heat = "INSERT INTO " . $table_prefix . "hvac_cycles (system, start_time, end_time) VALUES (".$heat_system.", \"".$heat_start."\", \"".$heat_end."\")";
 				mysql_query( $sql_heat );
 			}
 		}
@@ -43,36 +42,23 @@ function session_upkeep( $table_prefix )
 
 		if( $cool_on == 1 )
 		{
-//			echo "<br>Cool is presently on";
 			if( $row['cool_status'] == 0 )
 			{
-//				echo " | Cool turning off";
 				$cool_on = 0;
 				$cool_end = $row['date'];
 
-				$sql_cool = "insert into " . $table_prefix . "hvac_cycles (system, start_time, end_time) values (".$cool_system.", \"".$cool_start."\", \"".$cool_end."\")";
-//				echo "(SQL = $sql_cool)";
+        $sql_cool = "INSERT INTO " . $table_prefix . "hvac_cycles (system, start_time, end_time) VALUES (".$cool_system.", \"".$cool_start."\", \"".$cool_end."\")";
 				mysql_query( $sql_cool );
 			}
-//			else
-//			{
-//				echo " | Cool staying on";
-//			}
 		}
 
 		if( $cool_on == 0 )
 		{
-//			echo "<br>Cool is presently off";
 			if( $row['cool_status'] == 1 )
 			{
-//				echo " | Cool turning on";
 				$cool_on = 1;
 				$cool_start = $row['date'];
 			}
-//			else
-//			{
-//				echo " | Cool staying off";
-//			}
 		}
 
 		if( $fan_on == 1 )
@@ -82,7 +68,7 @@ function session_upkeep( $table_prefix )
 				$fan_on = 0;
 				$fan_end = $row['date'];
 
-				$sql_fan = "insert into " . $table_prefix . "hvac_cycles (system, start_time, end_time) values (".$fan_system.", \"".$fan_start."\", \"".$fan_end."\")";
+        $sql_fan = "INSERT INTO " . $table_prefix . "hvac_cycles (system, start_time, end_time) VALUES (".$fan_system.", \"".$fan_start."\", \"".$fan_end."\")";
 				mysql_query( $sql_fan );
 			}
 		}
@@ -97,11 +83,13 @@ function session_upkeep( $table_prefix )
 		}
 	}
 
-	// This cleanup code is dangerous and requires that this routine run while no part of the HVAC is running
-	// Consider this.  If the fan is still on after the compressor has quit.  All of the run records that are part of
-	// the fan's current run session will be deleted, leaving an inital status of running creating a bad situation
-	// for the next time this script runs.
-	$sql = "delete from " . $table_prefix . "hvac_status where date <= (select max(end_time) from " . $table_prefix . "hvac_cycles)";
+  /*
+   * This cleanup code is dangerous and requires that this routine run while no part of the HVAC is running
+   * Consider this.  If the fan is still on after the compressor has quit.  All of the run records that are part of
+   * the fan's current run session will be deleted, leaving an inital status of running creating a bad situation
+   * for the next time this script runs.
+   */
+  $sql = "DELETE FROM " . $table_prefix . "hvac_status WHERE date <= (SELECT MAX(end_time) FROM " . $table_prefix . "hvac_cycles)";
 	$result = mysql_query( $sql );
 
 }
@@ -134,17 +122,12 @@ $fan_status = $stat->fstate;
 // Log the runtimes for yesterday and today
 $sql = "INSERT INTO " . $table_prefix . "hvac_status (date, heat_status, cool_status, fan_status ) VALUES ( concat( substr( now( ) , 1, 17 ) , \"00\" ) , ".$heat_status.", ".$cool_status.", ".$fan_status." )";
 
-//echo "Here is the SQL: " . $sql;
 $result = mysql_query( $sql );
-//echo "Result is: " . $result;
 
 if( ($heat_status + $cool_status + $fan_status) == 0 )
 { // Only when EVERYTHING is off can the upkeep scripts be run.
-//  echo "Doing upkeep";
-  session_upkeep( $table_prefix );  // Not sure why, but subroutine thinks this variable is undefined.
+  session_upkeep();
 }
-
-
 
 mysql_close( $link );
 
