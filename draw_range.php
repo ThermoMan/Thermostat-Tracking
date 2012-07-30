@@ -22,7 +22,6 @@ if( isset( $_GET["to_date"] ) )
 }
 if( ! validate_date( $to_date ) ) return;
 
-
 // OK, now that we have a bounding range of dates, build an array of all the dates in the range
 $check_date = $from_date;
 $days = array( $check_date );
@@ -41,6 +40,10 @@ while( $check_date != $to_date )
 
 // Create and populate the pData object
 $MyData = new pData();
+
+// Set default boundaries for chart
+$chart_y_min = $normal_low;
+$chart_y_max = $normal_high;
 
 $dates = "";
 foreach( $days as $show_date )
@@ -78,6 +81,12 @@ foreach( $days as $show_date )
     {
       $MyData->addPoints( $row["indoor_temp"], "Indoor" );
       $MyData->addPoints( $row["outdoor_temp"], "Outdoor" );
+
+      // Expand chart boundaries to contain data that exceeds the default boundaries
+      if( $row["indoor_temp"] < $chart_y_min ) $chart_y_min = $row["indoor_temp"];
+      if( $row["indoor_temp"] > $chart_y_max ) $chart_y_max = $row["indoor_temp"];
+      if( $row["outdoor_temp"] < $chart_y_min ) $chart_y_min = $row["outdoor_temp"];
+      if( $row["outdoor_temp"] > $chart_y_max ) $chart_y_max = $row["outdoor_temp"];
     }
     else
     {
@@ -142,9 +151,11 @@ $myPicture->drawText( 250, 55, "Temperature every 30 minutes across the span of 
 // Define the chart area
 $myPicture->setGraphArea( 60, 60, 850, 390 );
 
+// Explicity set a scale for the drawing.
+$AxisBoundaries = array( 0 => array ( "Min" => $chart_y_min, "Max" => $chart_y_max ) );
 // Draw the scale
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
-$scaleSettings = array( "XMargin" => 10, "YMargin" => 10, "Floating" => FALSE, "GridR" => 200, "GridG" => 200, "GridB" => 200, "DrawSubTicks" => TRUE, "CycleBackground" => TRUE );
+$scaleSettings = array( "Mode" => SCALE_MODE_MANUAL, "ManualScale" => $AxisBoundaries, "XMargin" => 10, "YMargin" => 10, "Floating" => FALSE, "GridR" => 200, "GridG" => 200, "GridB" => 200, "DrawSubTicks" => TRUE, "CycleBackground" => TRUE );
 $myPicture->drawScale( $scaleSettings );
 
 // Define shadows under series lines
