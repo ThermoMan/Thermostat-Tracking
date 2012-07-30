@@ -125,7 +125,7 @@ class Stat
 
   public function getOutdoorTemp()
   {
-    $html = file_get_html( "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=75075" );
+    $html = file_get_html( "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=" . $this->ZIP );
     $outdoorTemp = "-999";
     foreach($html->find('div[id=nowTemp]') as $key => $info)
     {
