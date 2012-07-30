@@ -1,41 +1,19 @@
 <?php
-REQUIRE "lib/t_lib.php";
-REQUIRE "config.php";
+REQUIRE "common.php";
 
 // pChart library inclusions
 include("lib/pChart2.1.3/class/pData.class.php");
 include("lib/pChart2.1.3/class/pDraw.class.php");
 include("lib/pChart2.1.3/class/pImage.class.php");
 
-function bobby_tables()
-{
-  $filename = "./images/exploits_of_a_mom.png";
-  $handle = fopen( $filename, "r" );
-  $contents = fread( $handle, filesize($filename) );
-  fclose( $handle );
-  echo $contents;
-}
+connect_to_db();
 
-$link = mysql_connect( $host, $user, $pass );
-if( !$link )
-{
-  die( "Could not connect: <no error message provided to hackers>"  );
-}
-mysql_select_db( $db, $link ) or die( "cannot select DB" );            // Really should log this?
-
-// Set default date to today
-date_default_timezone_set( $timezone );
 $show_date = date( "Y-m-d" );
 if( isset( $_GET["show_date"] ) )
 { // Use provided date
   $show_date = $_GET["show_date"];
 }
-$date_pattern = "/[2]{1}[0]{1}[0-9]{2}-[0-9]{2}-[0-9]{2}/";
-if( !preg_match( $date_pattern, $show_date ) )
-{
-  bobby_tables();
-  return;
-}
+if( ! validate_date( $show_date ) ) return;
 
 // Set default cycle display to none
 $show_heat_cycles = 0;
@@ -178,7 +156,7 @@ $myPicture->setGraphArea( 60, 60, 850, 390 );
 $AxisBoundaries = array( 0 => array ( "Min" => $chart_y_min, "Max" => $chart_y_max ) );
 // Draw the scale
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
-$scaleSettings = array( "Mode"=>SCALE_MODE_MANUAL, "ManualScale"=>$AxisBoundaries, "XMargin" => 10, "YMargin" => 10, "Floating" => FALSE, "GridR" => 200, "GridG" => 200, "GridB" => 200, "DrawSubTicks" => TRUE, "CycleBackground" => TRUE );
+$scaleSettings = array( "Mode" => SCALE_MODE_MANUAL, "ManualScale" => $AxisBoundaries, "XMargin" => 10, "YMargin" => 10, "Floating" => FALSE, "GridR" => 200, "GridG" => 200, "GridB" => 200, "DrawSubTicks" => TRUE, "CycleBackground" => TRUE );
 $myPicture->drawScale( $scaleSettings );
 
 // Define shadows under series lines
@@ -284,7 +262,7 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
   // From that date roll forward and see if there is more than once cycle to add
 
 }
-mysql_close( $link );
+disconnect_from_db();
 
 $myPicture->autoOutput( "images/daily_chart.png" );
 ?>
