@@ -101,37 +101,26 @@ class Stat
     curl_close($this->ch);
   }
 
-  public function getOutdoorTemp2()
+  public function getOutdoorTemp()
   {
-    //$opts = array('http' => array( 'user_agent' => 'PHP libxml agent', )  );
-    //$context = stream_context_create( $opts );
-    //libxml_set_streams_context( $context );
+    global $weather_underground_api_key;
+    $outdoorTemp = -999;
 
+    // Old API that was open to everyone
+    //$base_url = "http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=";
+    //$url = $base_url . $this->ZIP;
+
+    // New API that requires registration
+    $url = "http://api.wunderground.com/api/" . $weather_underground_api_key . "/conditions/q/" . $this->ZIP . ".xml";
     $doc = new DOMDocument();
-    if( $doc->load( 'http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=' . $this->ZIP, LIBXML_NOERROR ) )
+    if( $doc->load( $url, LIBXML_NOERROR ) )
     {
       $locs = $doc->getElementsByTagName( "current_observation" );
       foreach( $locs as $loc )
       {
         $outdoorTemp =  $loc->getElementsByTagName( "temp_f" )->item(0)->nodeValue; // . "&deg; F";
+      //$outdoorTemp =  $loc->getElementsByTagName( "temp_c" )->item(0)->nodeValue; // . "&deg; C";
       }
-    }
-    else
-    {
-      $outdoorTemp = "-999";
-    }
-    return $outdoorTemp;
-  }
-
-  public function getOutdoorTemp()
-  {
-    $html = file_get_html( "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=" . $this->ZIP );
-    $outdoorTemp = "-999";
-    foreach($html->find('div[id=nowTemp]') as $key => $info)
-    {
-      $str = $info->plaintext;
-      $matches = preg_split( "/[\s]*[ &][\s]*/", $str );
-      $outdoorTemp = $matches[2];
     }
     return $outdoorTemp;
   }

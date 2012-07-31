@@ -160,41 +160,10 @@ if( strftime( "%H%M" ) <= "0059" )
 
 <div class="content" id="misc">
   <?php
-
-  echo "<br>Alternative sources of outdoor temp - need a voting system to pick the consensus temp with a preference for one particular sensor.<p>";
-
-  $doc = new DOMDocument();
-  $base_url = "http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=";
-  $url = $base_url . $ZIP;
-  if( $doc->load( $url, LIBXML_NOERROR ) )
-  {
-    $locs = $doc->getElementsByTagName( "current_observation" );
-    foreach( $locs as $loc )
-    {
-      $outdoorTemp =  $loc->getElementsByTagName( "temp_f" )->item(0)->nodeValue; // . "&deg; F";
-    }
-  }
-  else
-  {
-    $outdoorTemp = "-999";
-  }
-  echo "<br>Weather Underground outdoor temp is " . $base_url . "ZIP &lt;" . $outdoorTemp . "&gt;";
-
-  // Create DOM from URL
-  $base_url = "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=";
-  $url = $base_url . $ZIP;
-  $html = file_get_html( $url );
-  foreach($html->find("div[id=nowTemp]") as $key => $info)
-  {
-  //  echo "<br>" .($key + 1).'. '.$info->plaintext;
-    $str = $info->plaintext;
-    $matches = preg_split( "/[\s]*[ &][\s]*/", $str );
-    $outdoorTemp2 = $matches[2];
-
-  }
-  echo "<br>Weather Underground OTHER outdoor temp is " . $base_url . "ZIP &lt;" . $outdoorTemp2 . "&gt;";
-
-
+    $outside = -999;
+    $stat = new Stat( $thermostatIP, $ZIP );
+    $outside = $stat->getOutdoorTemp();
+    echo "<br>External temperature is " . $outside;
   ?>
   <br><br><br>
   <br>These next fields don't do anything, they are just HTML5 for play.
@@ -210,10 +179,10 @@ if( strftime( "%H%M" ) <= "0059" )
   <p>
   <p>This project also uses code from the following external projects
   <ul>
-    <li><a target="_blank" href="http://sourceforge.net/projects/simplehtmldom/">PHP Simple HTML DOM Parser</a>.</li>
     <li><a target="_blank" href="http://www.pchart.net/">pChart</a>.</li>
     <li><a target="_blank" href="http://blixt.org/articles/tabbed-navigation-using-css#section=introduction">Blixt tab library</a>.</li>
     <li><a target="_blank" href="http://www.veryicon.com/icons/folder/leopard-folder-replacements/">Free icons from Very Icon</a>.  These icons were made by <a target="_blank" href="http://jasonh1234.deviantart.com">jasonh1234</a>.</li>
+    <li>The external temperatures come from the <a target="_blank" href="http://www.wunderground.com/weather/api/">Weather Underground API</a></li>
   </ul>
   <p>This project is based on the <a target="_blank" href="http://www.radiothermostat.com/filtrete/products/3M-50/">Filtrete 3M Radio Thermostat</a>.
   <br><br><br>
