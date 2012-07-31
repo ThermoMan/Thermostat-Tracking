@@ -1,26 +1,29 @@
-/* ThermoMan: Add fonts to tab to match those in the charting package */
+/* ThermoMan: Add fonts to tab-js library to match those in the charting package */
 @font-face
 {
   font-family: theTabFonts;
   src: url( "../fonts/Copperplate_Gothic_Light.ttf" );
 }
 
-/*  ThermoMan: modified to match color scheme of my applicaiton */
+/* ThermoMan:
+ *   Modified to match color scheme of my application
+ *   Modified to not occupy entire page width
+ */
 div.content
 {
-  /* border: #48f solid 3px; */
-  border: #AAB757 solid 3px;  /* This is the color of the main border around the tab content */
+  border: #448873 solid 3px;  /* This is the color of the main border around the tab content */
   clear: left;
-  padding: 1em;
+  /*padding: 1em;*/ /* Removed to give more room to actual content and to allow the "toolbar" to look appropriate */
   height: 560px;    /* This sets the vertical height of the tab content area - regardless of the content vertical height */
   overflow: scroll; /* In case the content is taller than the named height, allow the content area to scroll */
-  width: 930px;     /* Set the horizontal width of teh tab content area */
+  width: 940px;     /* Set the horizontal width of the tab content area */
 }
 
 div.content.inactive {
   display: none;
 }
 
+/* ThermoMan: Add font reference. */
 ol#toc
 {
   font-family: theTabFonts;
@@ -31,23 +34,27 @@ ol#toc
   padding: 0;
 }
 
-/*  ThermoMan: modified to match color scheme of my applicaiton */
+/* ThermoMan: Modified to match color scheme of my application. */
+/* These are the settings for the non-selected tabs */
 ol#toc a
 {
-  /* background: #bdf url(tabs.gif); */
-  background: #AAB757 url(tabs2.gif); /* The entire graphic of the tab */
-  /* color: #008; */
-  color: #000008;  /* This is the tab title text color */
+  /* The selected tab upper left corner seems to always work regardless of this setting */
+  /* background: transparent url(tabs2.png) 100% 0px;*/   /* This makes the non-selected tab upper RIGHT corner work correctly */
+  background: transparent url(tabs2.png) 0% 0px;          /* This makes the non-selected tab upper LEFT corner work correctly */
+  color: #000000;  /* This is the tab title text color */
   display: block;
   float: left;
   height: 2em;
-  padding-left: 10px;
   text-decoration: none;
+  padding-left: 10px;   /* Do not place this in the "toc span" section it squares off the upper left corner completely! */
 }
 
-ol#toc a:hover {
-    background-color: #3af;
-    background-position: 0 -120px;
+ol#toc a:hover
+{
+  /* The hover changes do not impact the selected tab at all. */
+  /*background-color: #3af;*/             /* Removed to make non-selected tab with hover upper left corner work correctly */
+  background-position:   0% -120px;       /* This makes the non-selected tab with hover upper LEFT corner work correctly */
+  /*background-position: 100% -120px;*/   /* This makes the non-selected tab with hover upper RIGHT corner work correctly */
 }
 
 ol#toc a:hover span {
@@ -59,32 +66,31 @@ ol#toc li {
     margin: 0 1px 0 0;
 }
 
+/* These are the settings for the selected tab */
 ol#toc li a.active
 {
-  background-color: #48f;
-  background-position: 0 -60px;
-  color: #fff;
-  /* font-weight: bold; */
+  /*background-color: #48f;*/           /* Removed to make that selected tab upper left corner work correctly */
+  background-position: 0% -60px;        /* This makes the selected tab upper LEFT corner work correctly */
+  /*background-position: 100% -60px;*/  /* This makes the selected tab upper RIGHT corner work correctly */
+  color: #FFFFFF;                       /* Set active tab font color to white for emphasis, but not bold as it moves the tabs */
 }
 
 ol#toc li a.active span {
     background-position: 100% -60px;
 }
 
-/*  ThermoMan: modified to match color scheme of my applicaiton */
 ol#toc span
 {
-  /* background: url(tabs.gif) 100% 0; */
-  background: url(tabs2.gif) 100% 0;  /* The graphic behind the text portion of the tab */
+  background: url(tabs2.png) 100% 0px;
   display: block;
   line-height: 2em;
-  padding-right: 10px;
+  padding-right: 10px;  /* Do not place this in generic "toc a" section it makes the right hand edges funky! */
 }
 
-/* ThermoMan: Added for tab icon support */
+/* ThermoMan: Added for tab icon support. */
 ol#toc span img
 {
   height: 24px;
   width: 24px;
-  vertical-align: middle;
+  vertical-align: top;
 }

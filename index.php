@@ -85,8 +85,6 @@ if( strftime( "%H%M" ) <= "0059" )
 </head>
 
 <body>
-<p>You are looking at a development system.  If something doesn't look right, don't complain.</p>
-
 <ol id="toc">
   <li><a href="#daily"><span>Daily Detail</span></a></li>
   <li><a href="#hvac"><span>HVAC Runtime</span></a></li>
@@ -98,9 +96,7 @@ if( strftime( "%H%M" ) <= "0059" )
 </ol>
 
 <div class="content" id="daily">
-  <div class="thermo_chart">
-    <img id="daily_chart_image" src="draw_daily.php?show_date=<?php echo $show_date; ?>" alt="The temperatures">
-  </div>
+  <div class="toolbar">
   <button type="button" onclick="javascript: show_date.stepDown(); update_daily_chart();">&lt;--</button>
   <!-- Need to change the max value to a date computed by Javascript so it stays current -->
   <input type="date" id="show_date" value="<?php echo $show_date; ?>" max="<?php echo $show_date; ?>" onInput="javascript: update_daily_chart();" step="1"/>
@@ -109,6 +105,11 @@ if( strftime( "%H%M" ) <= "0059" )
   <input type="checkbox" id="show_cool_cycles" name="show_cool_cycles" onChange="javascript: update_daily_chart();"/>Show Cool Cycles
   <input type="checkbox" id="show_fan_cycles"  name="show_fan_cycles"  onChange="javascript: update_daily_chart();"/>Show Fan Cycles
   <input type="checkbox" id="auto_refresh"     name="auto_refresh"     onChange="javascript: timedRefresh();"/>Auto refresh (every 20 minutes)
+  </div>
+  <br>
+  <div class="thermo_chart">
+    <img id="daily_chart_image" src="draw_daily.php?show_date=<?php echo $show_date; ?>" alt="The temperatures">
+  </div>
 
   <!-- This initialization script must fall AFTER declaration of date input box -->
   <script type="text/javascript">
@@ -132,12 +133,20 @@ if( strftime( "%H%M" ) <= "0059" )
 </div>
 
 <div class="content" id="hvac">
+  <div class="toolbar">
+    &nbsp;
+  </div>
+  <br>
   <div class="thermo_chart">
     <img src="draw_runtimes.php" alt="HVAC Runtimes">
   </div>
 </div>
 
 <div class="content" id="multiple">
+  <div class="toolbar">
+    &nbsp;
+  </div>
+  <br>
   <div class="thermo_chart">
     <img id="multi_chart_image" src="draw_range.php?from_date=<?php echo $show_date; ?>&amp;to_date=<?php echo $show_date; ?>" alt="Several Days Temperature History">
   </div>
@@ -146,6 +155,10 @@ if( strftime( "%H%M" ) <= "0059" )
 </div>
 
 <div class="content" id="indoor">
+  <div class="toolbar">
+    &nbsp;
+  </div>
+  <br>
   <div class="thermo_chart">
     <img src="draw_weekly.php?Indoor=1" alt="All Time Indoor History">
   </div>
@@ -153,25 +166,37 @@ if( strftime( "%H%M" ) <= "0059" )
 </div>
 
 <div class="content" id="outdoor">
+  <div class="toolbar">
+    &nbsp;
+  </div>
+  <br>
   <div class="thermo_chart">
     <img src="draw_weekly.php?Indoor=0" alt="All Time Outdoor History">
   </div>
 </div>
 
 <div class="content" id="misc">
+  <div class="toolbar">
   <?php
     $outside = -999;
     $stat = new Stat( $thermostatIP, $ZIP );
     $outside = $stat->getOutdoorTemp();
-    echo "<br>External temperature is " . $outside;
+      echo "External temperature is " . $outside;
   ?>
-  <br><br><br>
-  <br>These next fields don't do anything, they are just HTML5 for play.
-  <br><input type="number" min="0" max="10" step="2" value="6">
-  <br><input type="range" min="0" max="10" step="2" value="6">
+    Some text here
+    <input type="number" min="0" max="10" step="2" value="6">
+    <input type="range" min="0" max="10" step="2" value="6">
+  </div>
+  <br>
+  <br><br>
+  <br>These fields don't do anything, they are just HTML5 for play.  They work in Chrome and Safari (on the Mac).  They are known to not work in Firefox 14 on Windows.
 </div>
 
 <div class="content" id="about">
+  <div class="toolbar">
+    &nbsp;
+  </div>
+  <br>
   <p>
   <p>Source code for this project can be found on <a target="_blank" href="https://github.com/ThermoMan/3M-50-Thermostat-Tracking">github</a>
   <p>

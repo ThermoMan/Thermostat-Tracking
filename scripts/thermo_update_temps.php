@@ -16,6 +16,7 @@ $stat = new Stat( $thermostatIP, $ZIP );
 
 $stat->getStat();
 $outside = $stat->getOutdoorTemp();
+
 // Log the indoor and outdoor temperatures for this half-hour increment
 $target = $stat->t_cool;
 if( $stat->tmode == 1 )
