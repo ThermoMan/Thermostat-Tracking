@@ -1,5 +1,4 @@
 <?php
-REQUIRE "simple_html_dom.php";
 
 class Stat
 {
@@ -228,33 +227,33 @@ According to /tstat/help  2012/7/6
 CC = changed feature
 several DELETED?
 
-!! /}ir_baffle	      get	set
-   /datalog	get	      x
-!! /dehumidifier	    get	set
-!! /ext_dehumidifier	get	set
-   /errstatus					get	 x
-   /eventlog					get	 x
-   /fmode							get	set
-!! /fan_ctime					get	set
-   /help							get	 x
-   /hold							get	set
-   /humidity					get	 x
-!! /hvac_recovery			get	set
-!! /hvac_settings			get	 x
-CC /humidifier				get	set
-   /led	 							x 	set
-!! /lock							get	set
-   /model							get	 x
-!! /night_light				get	set
-   /override					get	 x
-   /power							get	set
-   /beep	 						x 	set
-   /uma	 							x 	set
-   /pma	 							x 	set
-   /temp							get	 x
-!! /differential			get	set
-   /time/day					get	 x
-   /time/hour					get	 x
+!! /}ir_baffle        get set
+   /datalog get       x
+!! /dehumidifier      get set
+!! /ext_dehumidifier  get set
+   /errstatus         get  x
+   /eventlog          get  x
+   /fmode             get set
+!! /fan_ctime         get set
+   /help              get  x
+   /hold              get set
+   /humidity          get  x
+!! /hvac_recovery     get set
+!! /hvac_settings     get  x
+CC /humidifier        get set
+   /led               x   set
+!! /lock              get set
+   /model             get  x
+!! /night_light       get set
+   /override          get  x
+   /power             get set
+   /beep              x   set
+   /uma               x   set
+   /pma               x   set
+   /temp              get  x
+!! /differential      get set
+   /time/day          get  x
+   /time/hour         get  x
    /time
 
 */
@@ -404,14 +403,14 @@ echo "<tr><td>this->passphrase</td><td>" . "MASKED" . "</td><td>password (not sh
     $this->override = $obj->{"override"};     // Present override status 0 = off, 1 = on
     $this->hold = $obj->{"hold"};             // Present hold status 0 = off, 1 = on
 
-		if( $this->tmode == 1 )
-		{ // mode 1 is heat
+    if( $this->tmode == 1 )
+    { // mode 1 is heat
       $this->t_heat = $obj->{"t_heat"};       // Present heat target temperature in deg F
-		}
-		else if( $this->tmode == 2 )
-		{ // mode 2 is cool
+    }
+    else if( $this->tmode == 2 )
+    { // mode 2 is cool
       $this->t_cool = $obj->{"t_cool"};       // Present cool target temperature in deg F
-		}
+    }
 
     $this->tstate = $obj->{"tstate"};         // Present heater/compressor state 0 = off, 1 = heating, 2 = cooling
     $this->fstate = $obj->{"fstate"};         // Present fan state 0 = off, 1 = on
