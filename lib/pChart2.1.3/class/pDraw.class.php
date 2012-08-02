@@ -1624,6 +1624,9 @@
      $Surrounding = isset($Format["Surrounding"]) ? $Format["Surrounding"] : NULL;
      $Style = isset($Format["Style"]) ? $Format["Style"] : LEGEND_ROUND;
      $Mode  = isset($Format["Mode"]) ? $Format["Mode"] : LEGEND_VERTICAL;
+     // Rats, failed attempt to add alignment to text (need to mov the little color code indicators too)
+     //$Align = isset($Format["Align"]) ? $Format["Align"] : TEXT_ALIGN_MIDDLELEFT;
+     $Align = TEXT_ALIGN_MIDDLELEFT;
 
      if ( $Surrounding != NULL ) { $BorderR = $R + $Surrounding; $BorderG = $G + $Surrounding; $BorderB = $B + $Surrounding; }
 
@@ -1730,7 +1733,7 @@
           {
            $Lines = preg_split("/\n/",$Serie["Description"]);
            foreach($Lines as $Key => $Value)
-            $this->drawText($X+$IconAreaWidth+4,$Y+$IconAreaHeight/2+(($this->FontSize+3)*$Key),$Value,array("R"=>$FontR,"G"=>$FontG,"B"=>$FontB,"Align"=>TEXT_ALIGN_MIDDLELEFT,"FontSize"=>$FontSize,"FontName"=>$FontName));
+            $this->drawText($X+$IconAreaWidth+4,$Y+$IconAreaHeight/2+(($this->FontSize+3)*$Key),$Value,array("R"=>$FontR,"G"=>$FontG,"B"=>$FontB,"Align"=>$Align,"FontSize"=>$FontSize,"FontName"=>$FontName));
 
            $Y=$Y+max($this->FontSize*count($Lines),$IconAreaHeight) + 5;
           }
@@ -1740,7 +1743,7 @@
            $Width = "";
            foreach($Lines as $Key => $Value)
             {
-             $BoxArray = $this->drawText($X+$IconAreaWidth+4,$Y+$IconAreaHeight/2+(($this->FontSize+3)*$Key),$Value,array("R"=>$FontR,"G"=>$FontG,"B"=>$FontB,"Align"=>TEXT_ALIGN_MIDDLELEFT,"FontSize"=>$FontSize,"FontName"=>$FontName));
+             $BoxArray = $this->drawText($X+$IconAreaWidth+4,$Y+$IconAreaHeight/2+(($this->FontSize+3)*$Key),$Value,array("R"=>$FontR,"G"=>$FontG,"B"=>$FontB,"Align"=>$Align,"FontSize"=>$FontSize,"FontName"=>$FontName));
              $Width[] = $BoxArray[1]["X"];
             }
            $X=max($Width)+2+$XStep;
