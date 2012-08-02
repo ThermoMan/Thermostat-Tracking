@@ -103,6 +103,7 @@ class Stat
   public function getOutdoorTemp()
   {
     global $weather_underground_api_key;
+    global $units;
     $outdoorTemp = -999;
 
     // Old API that was open to everyone
