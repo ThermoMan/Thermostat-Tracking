@@ -117,8 +117,14 @@ class Stat
       $locs = $doc->getElementsByTagName( "current_observation" );
       foreach( $locs as $loc )
       {
-        $outdoorTemp =  $loc->getElementsByTagName( "temp_f" )->item(0)->nodeValue; // . "&deg; F";
-      //$outdoorTemp =  $loc->getElementsByTagName( "temp_c" )->item(0)->nodeValue; // . "&deg; C";
+        if( $units == "F")
+        {
+          $outdoorTemp =  $loc->getElementsByTagName( "temp_f" )->item(0)->nodeValue; // . "&deg; F";
+        }
+        else
+        { // If it's not F assume it is C (what, you want Kelvin?)
+          $outdoorTemp =  $loc->getElementsByTagName( "temp_c" )->item(0)->nodeValue; // . "&deg; C";
+        }
       }
     }
     return $outdoorTemp;

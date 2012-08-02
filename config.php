@@ -21,6 +21,10 @@ $timezone = "America/Chicago";
 // Set normal temperature range so the charts always scale the same way
 $normal_low = 70;
 $normal_high = 100;
+
 // Idea for future, have separate summer/winter values
 $weather_underground_api_key = "0000000000000000";
+
+// Choose "F" or "C"
+$units = "F";
 ?>
