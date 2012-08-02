@@ -27,4 +27,25 @@ $weather_underground_api_key = "0000000000000000";
 
 // Choose "F" or "C"
 $units = "F";
+
+/*
+ * The following ought to be stored in the DB with a config page
+ *
+ * But before it can be remotely configurable there has to be an ID/PW system for some tabs
+ * I guess a tab woudl have to contain an iframe and the iframe has a page that checks permissions.
+ */
+
+// These fetures are place-keepers and not yet functional
+$send_end_of_day_email = "Y";     // "Y" or "N"
+$send_eod_email_time = "0800";    // format is HHMM (24-hour) as text string
+$send_eod_email_address = "thestalwart1-stat@yahoo.com";
+/*
+ * Add a check at the end of the one per minute task to see if time now == $send_eod_email_time
+ * The better way woudl be to use Windows Scheduler to create a task to run at the named time
+ *  In order to implement that, need to store Windows ID and Password to be able to write the
+ *  command line necesary to change the existing schedule.  Those two items shoudl be in this
+ *  config file on the theory that the file system is slightly more secure than a DB that is
+ *  already available online.  Make sure to use a non-privilaged account.
+ *  Man, I've GOT to port this to Linux.  But that means buying another server at home?  Ugh.
+ */
 ?>
