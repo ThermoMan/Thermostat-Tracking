@@ -122,7 +122,7 @@ class Stat
           $outdoorTemp =  $loc->getElementsByTagName( "temp_f" )->item(0)->nodeValue; // . "&deg; F";
         }
         else
-        { // If it's not F assume it is C (what, you want Kelvin?)
+        { // If it's not F assume it is C (what, you want Kelvin or Rankine?)
           $outdoorTemp =  $loc->getElementsByTagName( "temp_c" )->item(0)->nodeValue; // . "&deg; C";
         }
       }
