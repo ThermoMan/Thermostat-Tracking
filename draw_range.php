@@ -140,13 +140,17 @@ $myPicture->drawGradientArea( 0, 0, 900,  20, DIRECTION_VERTICAL, $Settings );
 // Add a border to the picture
 $myPicture->drawRectangle( 0, 0, 899, 429, array( "R" => 0, "G" => 0, "B" => 0 ) );
 
+// Set font for all descriptive text
+$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 10 ) );
+
 // Write the picture title
-$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
-$myPicture->drawText( 10, 13, "Show temperatures for ".$dates, array( "R" => 255, "G" => 255, "B" => 255) );
+$myPicture->drawText( 10, 14, "Show temperatures for " . $from_date . " - " . $to_date, array( "R" => 255, "G" => 255, "B" => 255) );
 
 // Write the chart title
-$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
-$myPicture->drawText( 250, 55, "Temperature every 30 minutes across the span of dates", array( "FontSize" => 12, "Align" => TEXT_ALIGN_BOTTOMMIDDLE ) );
+$myPicture->drawText( 60, 55, "Temperature every 30 minutes across the span of dates", array( "FontSize" => 12, "Align" => TEXT_ALIGN_BOTTOMLEFT ) );
+
+// Write the picture timestamp
+$myPicture->drawText( 680, 14, "Last update " . date( "Y-m-d H:i" ), array( "R" => 255, "G" => 255, "B" => 255) );
 
 // Define the chart area
 $myPicture->setGraphArea( 60, 60, 850, 390 );
