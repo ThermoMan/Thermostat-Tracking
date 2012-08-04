@@ -1,5 +1,12 @@
 /* Main app specific css file */
 
+@font-face
+{
+  font-family: theToolbarFonts; /* Borrow font from the pChart library */
+  src: url( "../lib/pChart2.1.3/fonts/pf_arma_five.ttf" );
+}
+
+
 div.thermo_chart
 {
   position: relative;
@@ -26,5 +33,8 @@ div.toolbar
   display: table-cell; 
   /* border: 1px solid rgb( 0, 0, 0 ); */
   background: #448873;  /* Match color of selected tab. */
-  vertical-align: middle; 
+  vertical-align: middle;
+  font-family: theToolbarFonts;
+  font-size: 0.5em;
 }
+
