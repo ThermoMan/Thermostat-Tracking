@@ -47,6 +47,12 @@ ol#toc a
   height: 2em;
   text-decoration: none;
   padding-left: 10px;   /* Do not place this in the "toc span" section it squares off the upper left corner completely! */
+
+  /* Aha, I found the fix for the upper right corner not looking properly */
+  /* -moz-border-radius: 10px;    */ /* May or may not be needed */
+  /* -webkit-border-radius: 10px; */ /* May or may not be needed */
+  /* Here is the reference for the rounded corners - http://tympanus.net/codrops/2010/06/07/fancy-sliding-form-with-jquery/ */
+  border-radius: 8px 8px 0px 0px;
 }
 
 ol#toc a:hover
@@ -63,7 +69,7 @@ ol#toc a:hover span {
 
 ol#toc li {
     float: left;
-    margin: 0 1px 0 0;
+    margin: 0px 1px 0px 0px;
 }
 
 /* These are the settings for the selected tab */
