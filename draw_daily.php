@@ -1,11 +1,6 @@
 <?php
 REQUIRE "common.php";
 
-// pChart library inclusions
-include("lib/pChart2.1.3/class/pData.class.php");
-include("lib/pChart2.1.3/class/pDraw.class.php");
-include("lib/pChart2.1.3/class/pImage.class.php");
-
 connect_to_db();
 
 $show_date = date( "Y-m-d" );
@@ -60,7 +55,7 @@ if( isset( $_GET["show_fan_cycles"] ) )
 $sql = "SELECT CONCAT( '$show_date', ' ', b.time ) AS date, IFNULL(a.indoor_temp, 'VOID') as indoor_temp, IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp "
 . "FROM " . $table_prefix . "time_index b "
 . "LEFT JOIN " . $table_prefix . "temperatures a "
-. "ON a.date = CONCAT( '$show_date', ' ', b.time );";
+. "ON a.date = TIMESTAMP( '$show_date', b.time );";
 
 $result = mysql_query( $sql );
 
@@ -141,13 +136,17 @@ $myPicture->drawGradientArea( 0, 0, 900,  20, DIRECTION_VERTICAL, $Settings );
 // Add a border to the picture
 $myPicture->drawRectangle( 0, 0, 899, 429, array( "R" => 0, "G" => 0, "B" => 0 ) );
 
+// Set font for all descriptive text
+$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 10 ) );
+
 // Write the picture title
-$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
-$myPicture->drawText( 10, 13, "Show temperatures for ".$show_date, array( "R" => 255, "G" => 255, "B" => 255) );
+$myPicture->drawText( 10, 14, "Show temperatures for " . $show_date, array( "R" => 255, "G" => 255, "B" => 255) );
+
+// Write the picture timestamp
+$myPicture->drawText( 680, 14, "Last update " . date( "Y-m-d H:i" ), array( "R" => 255, "G" => 255, "B" => 255) );
 
 // Write the chart title
-$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 8 ) );
-$myPicture->drawText( 250, 55, "Temperature every 30 minutes since midnight", array( "FontSize" => 12, "Align" => TEXT_ALIGN_BOTTOMMIDDLE ) );
+$myPicture->drawText( 60, 55, "Temperature every 30 minutes since midnight", array( "FontSize" => 12, "Align" => TEXT_ALIGN_BOTTOMLEFT ) );
 
 // Define the chart area
 $myPicture->setGraphArea( 60, 60, 850, 390 );
@@ -166,7 +165,7 @@ $myPicture->drawLineChart( array( "DisplayValues" => FALSE, "DisplayColor" => DI
 // No more shadows (so they only apply to the lines)
 $myPicture->setShadow( FALSE );
 
-// Write the chart legend
+// Write the chart legend (same font as scale, but slightly larger size)
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 8 ) );
 $myPicture->drawLegend( 710, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL ) );
 
@@ -199,6 +198,7 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
 
   $result = mysql_query( $sql );
 
+  // The rounded corners look so much better, but the run times are so short that the rounds seldom appear.
   //$HeatRectSettings = array( "R" => 200, "G" => 100, "B" => 100, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
   //$CoolRectSettings = array( "R" =>  50, "G" =>  50, "B" => 200, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
   //$FanRectSettings  = array( "R" => 255, "G" => 255, "B" =>   0, "BorderR" =>  1, "BorderG" =>  1, "BorderB" => 1, "Alpha" => 75 );
@@ -211,18 +211,18 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
   $CoolRectRow = 175;
   $FanRectRow = 200;
   $LeftMargin = 69;
-  $PixelsPerMinute = 0.5425;
+  $PixelsPerMinute = 0.5354;
   /*
    * Assumptions:
    *  1. The chart X-axis represents 24 hours
    *  2. The chart horizontal area is 782 pixels wide (so each pixel represents 1.84 minutes)
    *
-   * Why 0.5425?
+   * Why 0.5354?
    *
    * The chart area boundary is defined as 900px wide.
-   * There are 118px that are not part of the chart (so take them out)
+   * There are 70 pixels left of the 00:00.  There are 59 pixels to the right of 24:00
    * There are 1440 minutes in a day
-   * (900 - 118) / 1440 = .5430
+   * (900 - (70 + 59)) / 1440 = .5354
    *
    * With post applied fudge factor ( -0.0005) to make it look better on screen.
    */
