@@ -2,6 +2,10 @@
 REQUIRE "config.php";
 REQUIRE "lib/t_lib.php";
 
+// pChart library inclusions
+include("lib/pChart2.1.3/class/pData.class.php");
+include("lib/pChart2.1.3/class/pDraw.class.php");
+include("lib/pChart2.1.3/class/pImage.class.php");
 
 function bobby_tables()
 {
