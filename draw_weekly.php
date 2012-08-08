@@ -69,22 +69,25 @@ while( $row = mysql_fetch_array( $result ) )
   }
   $old_month = substr( $row["date"], 5, 2 );
 
-  $MyData->addPoints( $row[ $column1 ], $series1 );
-  $MyData->addPoints( $row[ $column2 ], $series2 );
+  // The fake 1.5 degree difference forced into teh data here is to prevent a charting bug from inverting the colors in some regions where the low and high are the same (data collection error)
+  $MyData->addPoints( $row[ $column1 ] - 0.75, $series1 );
+  $MyData->addPoints( $row[ $column2 ] + 0.75, $series2 );
   if( $row[ $column1 ] < $chart_y_min ) $chart_y_min = $row[ $column1 ];
   if( $row[ $column2 ] > $chart_y_max ) $chart_y_max = $row[ $column2 ];
 }
 disconnect_from_db();
 
 
+// These are not needed in the ZoneChart version of the graph
 // Set line style, color, and alpha blending level  (both charts use the same line styles)
-$serieSettingsMin = array( "R" => 100, "G" => 100, "B" => 230, "Alpha" => 100 );
-$serieSettingsMax = array( "R" => 230, "G" => 100, "B" => 100, "Alpha" => 100 );
+//$serieSettingsMin = array( "R" => 100, "G" => 100, "B" => 230, "Alpha" => 100 );
+//$serieSettingsMax = array( "R" => 230, "G" => 100, "B" => 100, "Alpha" => 100 );
+//$MyData->setPalette( $series1, $serieSettingsMin );
+//$MyData->setPalette( $series2, $serieSettingsMax );
 
-$MyData->setSerieOnAxis( $series1, 0 ); // Attach the data series to the axis (by ordinal)
+// Attach the data series to the axis (by ordinal)
+$MyData->setSerieOnAxis( $series1, 0 );
 $MyData->setSerieOnAxis( $series2, 0 );
-$MyData->setPalette( $series1, $serieSettingsMin );
-$MyData->setPalette( $series2, $serieSettingsMax );
 
 // Set names for Y-axis labels
 $MyData->setAxisName( 0, "Temperatures" );
@@ -136,16 +139,23 @@ $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_ar
  */
 if( $indoor == 1 )
 { // Each letter in the font I've picked is 10 pixels wide.
-  $myPicture->drawLegend( 665, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL, "Align" => TEXT_ALIGN_BOTTOMRIGHT ) );
+// No need to put a hi/low legend on a zone chart
+//  $myPicture->drawLegend( 665, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL, "Align" => TEXT_ALIGN_BOTTOMRIGHT ) );
+  $Settings = array( "AreaR" => 100, "AreaG" => 100, "AreaB" => 200, "AreaAlpha" => 80 );
 }
 else
 {
-  $myPicture->drawLegend( 645, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL, "Align" => TEXT_ALIGN_BOTTOMRIGHT ) );
+//  $myPicture->drawLegend( 645, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL, "Align" => TEXT_ALIGN_BOTTOMRIGHT ) );
+  $Settings = array( "AreaR" => 200, "AreaG" => 100, "AreaB" => 100, "AreaAlpha" => 80 );
 }
 
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
 $myPicture->setShadow( TRUE, array( "X" => 1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 10 ) );
-$myPicture->drawLineChart();  // Used to be a bar chart, but once you get a few months in there it gets far too busy looking.
+//$myPicture->drawLineChart();  // Used to be a bar chart, but once you get a few months in there it gets far too busy looking.
+$myPicture->drawZoneChart( $series1, $series2, $Settings );
+//$serieSettingsMin = array( "R" => 100, "G" => 100, "B" => 230, "Alpha" => 100 );
+//$serieSettingsMax = array( "R" => 230, "G" => 100, "B" => 100, "Alpha" => 100 );
+
 
 $myPicture->setShadow( TRUE, array( "X" => 1, "Y" => 1, "R" => 0, "G" =>0 , "B" =>0 , "Alpha" => 10 ) );
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/Forgotte.ttf", "FontSize" => 11 ) );
