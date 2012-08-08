@@ -35,7 +35,7 @@ $units = "F";
  * I guess a tab woudl have to contain an iframe and the iframe has a page that checks permissions.
  */
 
-// These fetures are place-keepers and not yet functional
+// These features are place-keepers and not yet functional
 $send_end_of_day_email = "Y";     // "Y" or "N"
 $send_eod_email_time = "0800";    // format is HHMM (24-hour) as text string
 $send_eod_email_address = "thestalwart1-stat@yahoo.com";
