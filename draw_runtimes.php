@@ -1,5 +1,5 @@
 <?php
-REQUIRE "common.php";
+require "common.php";
 
 connect_to_db();
 
@@ -40,16 +40,16 @@ while( $row = mysql_fetch_array( $result ) )
   // There can be too many dates to show them ALL on the x-axis - it turns into one black line.
   if( $first )
   { // Do show the WHOLE date for the first item.
-    $MyData->addPoints( $row["date"], "Labels" );
+    $MyData->addPoints( $row[ "date" ], "Labels" );
     $first = false;
   }
   else
   { // Thereafter show only MM-DD when you show anything at all
     if( $days > 14 )
     { // When showing more than two weeks of data only show Sundays
-      if( date_format( date_create($row['date']), "N" ) == 7 )
+      if( date_format( date_create($row[ "date" ]), "N" ) == 7 )
       { // Show the date only for the first day of each week
-        $MyData->addPoints( substr( $row['date'], 5, 5 ), "Labels" );
+        $MyData->addPoints( substr( $row[ "date" ], 5, 5 ), "Labels" );
       }
       else
       { // Placekeeper for non-shown dates
@@ -58,22 +58,21 @@ while( $row = mysql_fetch_array( $result ) )
     }
     else
     { // Show every day when you are looking at two weeks or less
-      $MyData->addPoints( substr( $row['date'], 5, 5 ), "Labels" );
+      $MyData->addPoints( substr( $row[ "date" ], 5, 5 ), "Labels" );
     }
   }
 
-  if( $row["heat_runtime"] != "VOID" )
-  { // Assume that if one data point is bad, they all are.
-    $MyData->addPoints( $row["heat_runtime"], "Heat" );
-    if( $row["heat_runtime"] > $chart_runtime_max ) $chart_runtime_max = $row["heat_runtime"];
+  if( $row[ "heat_runtime" ] != "VOID" )
+  { // Assume that if one data point is good, they all are.
+    $MyData->addPoints( $row[ "heat_runtime" ], "Heat" );
+    $MyData->addPoints( $row[ "cool_runtime" ], "Cool" );
+    if( $row[ "heat_runtime" ] > $chart_runtime_max ) $chart_runtime_max = $row[ "heat_runtime" ];
+    if( $row[ "cool_runtime" ] > $chart_runtime_max ) $chart_runtime_max = $row[ "cool_runtime" ];
 
-    $MyData->addPoints( $row["cool_runtime"], "Cool" );
-    if( $row["cool_runtime"] > $chart_runtime_max ) $chart_runtime_max = $row["cool_runtime"];
-
-    $MyData->addPoints( $row["outdoor_min"], "Low Temperature" );
-    $MyData->addPoints( $row["outdoor_max"], "High Temperature" );
-    if( $row["outdoor_min"] < $chart_temp_min ) $chart_temp_min = $row["outdoor_min"];
-    if( $row["outdoor_max"] > $chart_temp_max ) $chart_temp_max = $row["outdoor_max"];
+    $MyData->addPoints( $row[ "outdoor_min" ], "Low Temperature" );
+    $MyData->addPoints( $row[ "outdoor_max" ], "High Temperature" );
+    if( $row[ "outdoor_min" ] < $chart_temp_min ) $chart_temp_min = $row[ "outdoor_min" ];
+    if( $row[ "outdoor_max" ] > $chart_temp_max ) $chart_temp_max = $row[ "outdoor_max" ];
   }
   else
   {
@@ -101,10 +100,11 @@ $MyData->setPalette( "Heat", $serieSettings );
 $serieSettings = array( "R" => 50, "G" => 150, "B" => 180, "Alpha" => 90 );
 $MyData->setPalette( "Cool", $serieSettings );
 
-$serieSettings = array( "R" => 175, "G" => 75, "B" => 105, "Alpha" => 100 );
-$MyData->setPalette( "High Temperature", $serieSettings );
-$serieSettings = array( "R" => 75, "G" => 105, "B" => 175, "Alpha" => 100 );
-$MyData->setPalette( "Low Temperature", $serieSettings );
+// This palette setting not needed for a zone chart
+//$serieSettings = array( "R" => 175, "G" => 75, "B" => 105, "Alpha" => 100 );
+//$MyData->setPalette( "High Temperature", $serieSettings );
+//$serieSettings = array( "R" => 75, "G" => 105, "B" => 175, "Alpha" => 100 );
+//$MyData->setPalette( "Low Temperature", $serieSettings );
 
 // Set names for Y-axis labels
 $MyData->setAxisName( 0, "Minutes" );
@@ -151,24 +151,26 @@ $AxisBoundaries = array( 0 => array ( "Min" => $chart_runtime_min, "Max" => $cha
 // Draw the scale
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
 $Settings = array("Pos"=>SCALE_POS_LEFTRIGHT, "Mode"=>SCALE_MODE_MANUAL, "ManualScale"=>$AxisBoundaries, "LabelingMethod"=>LABELING_ALL, "GridR"=>255, "GridG"=>255, "GridB"=>255, "GridAlpha"=>50, "TickR"=>0, "TickG"=>0, "TickB"=>0, "TickAlpha"=>50, "LabelRotation"=>0, "CycleBackground"=>1, "DrawXLines"=>1, "DrawSubTicks"=>1, "SubTickR"=>255, "SubTickG"=>0, "SubTickB"=>0, "SubTickAlpha"=>50, "DrawYLines"=>ALL);
-$myPicture->drawScale($Settings);
+$myPicture->drawScale( $Settings );
 
 // Define shadows under series lines
 $myPicture->setShadow( FALSE, array( "X" => 1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 40 ) );
 
-// Draw the outdoor max temperature as a filled line chart
-$MyData->setSerieDrawable( "Heat", FALSE );
-$MyData->setSerieDrawable( "Cool", FALSE );
-$MyData->setSerieDrawable( "High Temperature", TRUE );
-$MyData->setSerieDrawable( "Low Temperature", TRUE );
-$myPicture->drawAreaChart();
+// Draw the outdoor max temperature as a filled line chart.
+//$MyData->setSerieDrawable( "Heat", FALSE );
+//$MyData->setSerieDrawable( "Cool", FALSE );
+//$MyData->setSerieDrawable( "High Temperature", TRUE );
+//$MyData->setSerieDrawable( "Low Temperature", TRUE );
+//$myPicture->drawAreaChart();
+// Draw the outdoor max temperature as a zone chart.
+$myPicture->drawZoneChart( "Low Temperature", "High Temperature", array( "AxisID" => 1, "AreaR" => 175, "AreaG" => 75, "AreaB" => 75, "AreaAlpha" => 80 ) );
 
 // Draw the run times as bar charts
 $MyData->setSerieDrawable( "Heat", TRUE );
 $MyData->setSerieDrawable( "Cool", TRUE );
 $MyData->setSerieDrawable( "High Temperature", FALSE );
 $MyData->setSerieDrawable( "Low Temperature", FALSE );
-$myPicture->drawBarChart( array( "Gradient" => 1, "AroundZero" => TRUE, "Interleave" => 5 ) );
+$myPicture->drawBarChart( array( "Gradient" => 1, "AroundZero" => TRUE, "Interleave" => 2 ) );
 
 // Write the chart legend
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 8 ) );
