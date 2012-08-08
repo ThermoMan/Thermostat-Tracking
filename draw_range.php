@@ -1,11 +1,6 @@
 <?php
 REQUIRE "common.php";
 
-// pChart library inclusions
-include("lib/pChart2.1.3/class/pData.class.php");
-include("lib/pChart2.1.3/class/pDraw.class.php");
-include("lib/pChart2.1.3/class/pImage.class.php");
-
 connect_to_db();
 
 $from_date = date( "Y-m-d" );
