@@ -39,6 +39,8 @@ $units = "F";
 $send_end_of_day_email = "Y";     // "Y" or "N"
 $send_eod_email_time = "0800";    // format is HHMM (24-hour) as text string
 $send_eod_email_address = "thestalwart1-stat@yahoo.com";
+$send_eod_email_smtp = "";
+$send_eod_email_pw = "";
 /*
  * Add a check at the end of the one per minute task to see if time now == $send_eod_email_time
  * The better way woudl be to use Windows Scheduler to create a task to run at the named time

@@ -1,6 +1,6 @@
 <?php
-REQUIRE "lib/t_lib.php";
-REQUIRE "config.php";
+require "../lib/t_lib.php";
+require "../config.php";
 
 $link = mysql_connect( $host, $user, $pass );
 if( !$link )
@@ -27,7 +27,7 @@ $sql = "INSERT INTO " . $table_prefix . "temperatures ( date, indoor_temp, outdo
 
 
 
-// echo "Here is the SQL: " . $sql;
+//echo "Here is the SQL: " . $sql;
 $result = mysql_query( $sql );
 //echo "Result is: " . $result;
 

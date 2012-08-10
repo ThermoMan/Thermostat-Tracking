@@ -1,6 +1,6 @@
 <?php
-REQUIRE "lib/t_lib.php";
-REQUIRE "config.php";
+require "../lib/t_lib.php";
+require "../config.php";
 
 function session_upkeep()
 {
