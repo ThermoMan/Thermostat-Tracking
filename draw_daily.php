@@ -1,5 +1,5 @@
 <?php
-REQUIRE "common.php";
+require "common.php";
 
 connect_to_db();
 

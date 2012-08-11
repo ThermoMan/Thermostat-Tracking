@@ -114,7 +114,6 @@ $MyData->setAxisName( 1, "Degrees" );
 $MyData->setSerieDescription( "The days" );
 $MyData->setAbscissa( "Labels" );
 
-
 // Create the pChart object
 $myPicture = new pImage( 900, 430, $MyData );
 
@@ -136,6 +135,9 @@ $myPicture->drawRectangle( 0, 0, 899, 429, array( "R" => 0, "G" => 0, "B" => 0 )
 
 // Set font for all descriptive text
 $myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 10 ) );
+
+// Write the picture timestamp
+$myPicture->drawText( 680, 14, "Last update " . date( "Y-m-d H:i" ), array( "R" => 255, "G" => 255, "B" => 255) );
 
 // Write the picture title
 $myPicture->drawText( 10, 14, "HVAC run times", array( "R" => 255, "G" => 255, "B" => 255) );
@@ -173,8 +175,8 @@ $MyData->setSerieDrawable( "Low Temperature", FALSE );
 $myPicture->drawBarChart( array( "Gradient" => 1, "AroundZero" => TRUE, "Interleave" => 2 ) );
 
 // Write the chart legend
-$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 8 ) );
-$myPicture->drawLegend( 745, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL ) );
+//$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 8 ) );
+//$myPicture->drawLegend( 745, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL ) );
 
 $myPicture->autoOutput();
 ?>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <?php
-REQUIRE "config.php";
-REQUIRE "lib/t_lib.php";
+require "config.php";
+require "lib/t_lib.php";
 
 date_default_timezone_set( $timezone );
 $show_date = date( "Y-m-d", time() );  // Start with today's date
@@ -29,6 +29,7 @@ if( strftime( "%H%M" ) <= "0059" )
       var no_cache_string = "nocache=" + Math.random(); // Browsers are very clever with image caching.  In this case it breaks the web page function.
       var url_string = "draw_daily.php" + "?" + show_date_string + "&" + show_heat_cycle_string  + "&" + show_cool_cycle_string  + "&" + show_fan_cycle_string + "&" + no_cache_string;
       document.getElementById( "daily_chart_image" ).src = url_string;
+      showRefreshTime();
     }
 
 
@@ -49,12 +50,17 @@ if( strftime( "%H%M" ) <= "0059" )
 
       if( document.getElementById( "auto_refresh" ).checked == true )
       {
+        document.getElementById( "daily_update" ).style.visibility = "visible";
         /*
          * Need to add a check here for present day.  Only present day actually has changing data
          * so don't bother with refresh on historic data.  But do leave the refresh flag set for later.
          */
         update_daily_chart();
         setTimeout( "timedRefresh();", refreshInterval );
+      }
+      else
+      {
+        document.getElementById( "daily_update" ).style.visibility = "hidden";
       }
     }
 
@@ -81,17 +87,34 @@ if( strftime( "%H%M" ) <= "0059" )
       }
       return NULL;
     }
+
+    /*
+     * Either set up a countdown timer that both updates this clock AND triggers the chart update when hitting 0
+     * or set up a second timer that is a countdown clock and hope it stays in sync with the update routine.
+     */
+    function showRefreshTime()
+    {
+      var today = new Date();
+      var h = "" + today.getHours();
+      var m = "" + today.getMinutes();
+      //var s = today.getSeconds();
+      if( h < 10 ) h = "0" + h;
+      if( m < 10 ) m = "0" + m;
+
+      document.getElementById( "daily_update" ).innerHTML = "Countdown to refresh: " + h + ":" + m;
+    }
+
   </script>
 </head>
 
 <body>
 <ol id="toc">
+  <li><a href="#dashboard"><span>Dashboard</span></a></li>
   <li><a href="#daily"><span>Daily Detail</span></a></li>
   <li><a href="#hvac"><span>HVAC Runtime</span></a></li>
   <li><a href="#indoor"><span>Indoor Historic</span></a></li>
   <li><a href="#outdoor"><span>Outdoor Historic</span></a></li>
   <li><a href="#multiple"><span>Multiple Days (example)</span></a></li>
-  <li><a href="#misc"><span>Misc Junk</span></a></li>
   <li><a href="#about"><span><img src="images/info.png" alt="icon: about"/> About</span></a></li>
 </ol>
 
@@ -105,6 +128,7 @@ if( strftime( "%H%M" ) <= "0059" )
   <input type="checkbox" id="show_cool_cycles" name="show_cool_cycles" onChange="javascript: update_daily_chart();"/>Show Cool Cycles
   <input type="checkbox" id="show_fan_cycles"  name="show_fan_cycles"  onChange="javascript: update_daily_chart();"/>Show Fan Cycles
   <input type="checkbox" id="auto_refresh"     name="auto_refresh"     onChange="javascript: timedRefresh();"/>Auto refresh (every 20 minutes)
+    <span id="daily_update" style="float: right; vertical-align: middle; visibility: hidden;">Countdown to refresh: 00:00</span>
   </div>
   <br>
   <div class="thermo_chart">
@@ -127,9 +151,8 @@ if( strftime( "%H%M" ) <= "0059" )
       timedRefresh(); // So start the timer too
     }
   </script>
-
-  <br>HTML5: Pick a date or click the increment/decrement buttons and the chart will auto update.  Works in Chrome, for Firefox 14 you have to type dates<br>
-  <br>Missing values are where Windows Task Scheduler is demonstrating itself to be an inferior way of executing a task.
+  HTML5 components tested to work in Chrome, Safari (Mac), Android 4.0.4 default browser.
+  <br>Really does need a "Refresh Now" button.
 </div>
 
 <div class="content" id="hvac">
@@ -143,15 +166,17 @@ if( strftime( "%H%M" ) <= "0059" )
 </div>
 
 <div class="content" id="multiple">
+  <!-- Show initial range as from 3 days ago through today -->
   <div class="toolbar">
-    &nbsp;
+    From date <input type="date" id="from_date" value="<?php echo date( "Y-m-d", time() - 259000 ); ?>" max="<?php echo $show_date; ?>" onInput="javascript: update_multi_chart();" step="1"/>
+    to date <input type="date" id="to_date" value="<?php echo $show_date; ?>" max="<?php echo $show_date; ?>" onInput="javascript: update_multi_chart();" step="1"/>
   </div>
   <br>
   <div class="thermo_chart">
-    <img id="multi_chart_image" src="draw_range.php?from_date=<?php echo $show_date; ?>&amp;to_date=<?php echo $show_date; ?>" alt="Several Days Temperature History">
+    <img id="multi_chart_image" src="draw_range.php?from_date=<?php echo date( "Y-m-d", time() - 259000 ); ?>&amp;to_date=<?php echo $show_date; ?>" alt="Several Days Temperature History">
   </div>
-  From date <input type="date" id="from_date" value="<?php echo $show_date; ?>" max="<?php echo $show_date; ?>" onInput="javascript: update_multi_chart();" step="1"/>
-  to date <input type="date" id="to_date" value="<?php echo $show_date; ?>" max="<?php echo $show_date; ?>" onInput="javascript: update_multi_chart();" step="1"/>
+  Show an hour glass cursor while the chart is updating?  Sometimes it is not obvious that an update is happening and it can be slow.
+  <br>Missing values are where Windows Task Scheduler is demonstrating itself to be an inferior way of executing a task.
 </div>
 
 <div class="content" id="indoor">
@@ -162,7 +187,6 @@ if( strftime( "%H%M" ) <= "0059" )
   <div class="thermo_chart">
     <img src="draw_weekly.php?Indoor=1" alt="All Time Indoor History">
   </div>
-  Hi/Low temps
 </div>
 
 <div class="content" id="outdoor">
@@ -173,23 +197,6 @@ if( strftime( "%H%M" ) <= "0059" )
   <div class="thermo_chart">
     <img src="draw_weekly.php?Indoor=0" alt="All Time Outdoor History">
   </div>
-</div>
-
-<div class="content" id="misc">
-  <div class="toolbar">
-  <?php
-    $outside = -999;
-    $stat = new Stat( $thermostatIP, $ZIP );
-    $outside = $stat->getOutdoorTemp();
-      echo "External temperature is " . $outside;
-  ?>
-    Some text here
-    <input type="number" min="0" max="10" step="2" value="6">
-    <input type="range" min="0" max="10" step="2" value="6">
-  </div>
-  <br>
-  <br><br>
-  <br>These fields don't do anything, they are just HTML5 for play.  They work in Chrome and Safari (on the Mac).  They are known to not work in Firefox 14 on Windows.
 </div>
 
 <div class="content" id="about">
@@ -217,10 +224,26 @@ if( strftime( "%H%M" ) <= "0059" )
   </div>
 </div>
 
+<div class="content" id="dashboard">
+  <div class="toolbar">
+    &nbsp;
+  </div>
+  For now this is a place keeper.  Please look at the other tabs for the data.
+  <br><br><br><br>
+  <!-- <br>The heater is <span id="heat_state">unknown</span> -->
+  <!-- <br>The compressor is <span id="cool_state">unknown</span> -->
+  <!-- <br>The fan is <span id="fan_state">unknown</span> -->
+</div>
+
+<!-- Kick off dashboard refresh timers -->
+<script type="text/javascript">
+// setTimeout( "updateStatus();", updateStatusInterval );
+</script>
+
 <!-- This following scripts MUST be dead last for the tab library to work properly -->
 <script src="lib/tabs/activatables.js" type="text/javascript"></script>
 <script type="text/javascript">
-  activatables("tab", ["daily", "hvac", "multiple", "indoor", "outdoor", "misc", "about"]);
+  activatables( "tab", ["dashboard", "daily", "hvac", "multiple", "indoor", "outdoor", "about"] );
 </script>
 </body>
 </html>
