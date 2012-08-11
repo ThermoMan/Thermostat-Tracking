@@ -127,7 +127,7 @@ $myPicture->setGraphArea( 60, 60, 850, 390 );   // Define the chart area
 $AxisBoundaries = array( 0 => array ( "Min" => $chart_y_min, "Max" => $chart_y_max ) );
 // Draw the scale
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
-$scaleSettings = array( "Mode" => SCALE_MODE_MANUAL, "ManualScale" => $AxisBoundaries, "GridR" => 200, "GridG" => 200, "GridB" => 200, "DrawSubTicks" => TRUE, "CycleBackground" => TRUE );
+$scaleSettings = array( "Mode" => SCALE_MODE_MANUAL, "ManualScale" => $AxisBoundaries, "GridR" => 200, "GridG" => 200, "GridB" => 200, "LabelingMethod" => LABELING_DIFFERENT, "DrawSubTicks" => TRUE, "CycleBackground" => TRUE );
 $myPicture->drawScale( $scaleSettings );
 
 // Write the chart legend

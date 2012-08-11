@@ -1,5 +1,5 @@
 <?php
-REQUIRE "common.php";
+require "common.php";
 
 connect_to_db();
 
@@ -113,8 +113,6 @@ $MyData->setAxisName( 0, "Temperatures" );
 $MyData->setSerieDescription( "Labels", "The march of the hours" );
 $MyData->setAbscissa( "Labels" );
 
-
-
 // Create the pChart object
 $myPicture = new pImage( 900, 430, $MyData );
 
@@ -154,7 +152,7 @@ $myPicture->setGraphArea( 60, 60, 850, 390 );
 $AxisBoundaries = array( 0 => array ( "Min" => $chart_y_min, "Max" => $chart_y_max ) );
 // Draw the scale
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
-$scaleSettings = array( "Mode" => SCALE_MODE_MANUAL, "ManualScale" => $AxisBoundaries, "XMargin" => 10, "YMargin" => 10, "Floating" => FALSE, "GridR" => 200, "GridG" => 200, "GridB" => 200, "DrawSubTicks" => TRUE, "CycleBackground" => TRUE );
+$scaleSettings = array( "Mode" => SCALE_MODE_MANUAL, "ManualScale" => $AxisBoundaries, "XMargin" => 10, "YMargin" => 10, "Floating" => FALSE, "GridR" => 200, "GridG" => 200, "GridB" => 200, "LabelingMethod" => LABELING_DIFFERENT, "DrawSubTicks" => TRUE, "CycleBackground" => TRUE );
 $myPicture->drawScale( $scaleSettings );
 
 // Define shadows under series lines

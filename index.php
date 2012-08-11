@@ -115,7 +115,7 @@ if( strftime( "%H%M" ) <= "0059" )
   <li><a href="#indoor"><span>Indoor Historic</span></a></li>
   <li><a href="#outdoor"><span>Outdoor Historic</span></a></li>
   <li><a href="#multiple"><span>Multiple Days (example)</span></a></li>
-  <li><a href="#about"><span><img src="images/info.png" alt="icon: about"/> About</span></a></li>
+  <li><a href="#about"><span><img src="images/Info.png" alt="icon: about"/> About</span></a></li>
 </ol>
 
 <div class="content" id="daily">
@@ -207,7 +207,8 @@ if( strftime( "%H%M" ) <= "0059" )
   <p>
   <p>Source code for this project can be found on <a target="_blank" href="https://github.com/ThermoMan/3M-50-Thermostat-Tracking">github</a>
   <p>
-  <br>The foundation for this project is a Windows Home Server v1 running <a target="_blank" href="http://www.apachefriends.org/en/xampp.html">xampp</a>. The web server is <a target="_blank" href="http://www.apache.org">apache</a> and code is written in <a target="_blank" href="http://www.php.net">php</a> and stores data in a <a target="_blank" href="http://www.mysql.com">MySQL</a> database. I used <a target="_blank" href="http://www.winscp.net">WinSCP</a> to connect to <a target="_blank" href="http://filezilla-project.org">FileZilla</a> and edited the code using <a target="_blank" href="http://www.textpad.com">TextPad</a>.
+  <br>The project originated on Windows Home Server v1 running <a target="_blank" href="http://www.apachefriends.org/en/xampp.html">xampp</a>. Migrated to a "real host" to solve issues with Windows Scheduler.
+  <br>I used <a target="_blank" href="http://www.winscp.net">WinSCP</a> to connect and edited the code using <a target="_blank" href="http://www.textpad.com">TextPad</a>.
   <p>
   <p>This project also uses code from the following external projects
   <ul>

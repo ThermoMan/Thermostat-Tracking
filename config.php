@@ -14,7 +14,7 @@ $pass = "password";
 // Database name.  Default is "thermo"
 $db = "thermo";
 // Prefix to attach to all table/procedure names to make unique in unknown environment.
-$table_prefix = "thermo_";
+$table_prefix = "thermo__";
 
 $timezone = "America/Chicago";
 
