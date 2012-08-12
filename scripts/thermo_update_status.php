@@ -1,6 +1,5 @@
 <?php
-require "../lib/t_lib.php";
-require "../config.php";
+require "../common.php";
 
 function session_upkeep()
 {
@@ -94,13 +93,7 @@ function session_upkeep()
 
 }
 
-$link = mysql_connect( $host, $user, $pass );
-if( !$link )
-{
-  die( "Could not connect: " . mysql_error() );
-}
-
-mysql_select_db( $db, $link ) or die( "cannot select DB" );            // Really should log this?
+connect_to_db();
 
 $stat = new Stat( $thermostatIP, $ZIP );
 
@@ -129,6 +122,6 @@ if( ($heat_status + $cool_status + $fan_status) == 0 )
   session_upkeep();
 }
 
-mysql_close( $link );
+disconnect_from_db();
 
 ?>

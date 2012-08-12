@@ -1,11 +1,11 @@
 <?php
-REQUIRE "config.php";
-REQUIRE "lib/t_lib.php";
+require "config.php";
+require "lib/t_lib.php";
 
 // pChart library inclusions
-include("lib/pChart2.1.3/class/pData.class.php");
-include("lib/pChart2.1.3/class/pDraw.class.php");
-include("lib/pChart2.1.3/class/pImage.class.php");
+include( "lib/pChart2.1.3/class/pData.class.php" );
+include( "lib/pChart2.1.3/class/pDraw.class.php" );
+include( "lib/pChart2.1.3/class/pImage.class.php" );
 
 function bobby_tables()
 {
@@ -30,6 +30,9 @@ function connect_to_db()
     die( "Could not connect: <no error message provided to hackers>"  );
   }
   mysql_select_db( $db, $link ) or die( "cannot select DB" );            // Really should log this?
+
+  global $timezone;
+  mysql_query( "SET time_zone = '$timezone'" );
 }
 
 function disconnect_from_db()
@@ -52,7 +55,7 @@ function validate_date( $some_date )
 
 // Common code that should run for EVERY page follows here
 
-// Set default date to today
+global $timezone;
 date_default_timezone_set( $timezone );
 
 

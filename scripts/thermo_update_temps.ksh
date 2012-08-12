@@ -1,5 +1,5 @@
 #!/usr/bin/ksh
 
-cd ~/freitag.theinscrutable.us/thermo/scripts
+cd /YOUR WEB SERVER/thermo/scripts
 
-/usr/local/bin/php ~/freitag.theinscrutable.us/thermo/scripts/thermo_update_temps.php
+/usr/local/bin/php /YOUR WEB SERVER/thermo/scripts/thermo_update_temps.php
