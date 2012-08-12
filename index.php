@@ -176,7 +176,6 @@ if( strftime( "%H%M" ) <= "0059" )
     <img id="multi_chart_image" src="draw_range.php?from_date=<?php echo date( "Y-m-d", time() - 259000 ); ?>&amp;to_date=<?php echo $show_date; ?>" alt="Several Days Temperature History">
   </div>
   Show an hour glass cursor while the chart is updating?  Sometimes it is not obvious that an update is happening and it can be slow.
-  <br>Missing values are where Windows Task Scheduler is demonstrating itself to be an inferior way of executing a task.
 </div>
 
 <div class="content" id="indoor">
