@@ -28,10 +28,15 @@ $result = mysql_query( $sql );
 $MyData = new pData();
 
 // Set default boundaries for chart
-$chart_temp_min = $normal_low;
-$chart_temp_max = $normal_high;
+$chart_temp_min = $normal_low - 10;
+$chart_temp_max = $normal_high + 10;
 $chart_runtime_min = 0;
-$chart_runtime_max = 360;  // Set six hours as the default runtime scale max
+$chart_runtime_max = 1440;
+/*
+ * Set 24 hours as max run time.
+ * Originally had 3 hours, but regularly saw 15+ hours (900 minutes) of A/C runtime in summer!
+ *
+ */
 
 $days = mysql_num_rows( $result );  // Determine the number of days in the resultset.
 $first = true;
@@ -66,8 +71,8 @@ while( $row = mysql_fetch_array( $result ) )
   { // Assume that if one data point is good, they all are.
     $MyData->addPoints( $row[ "heat_runtime" ], "Heat" );
     $MyData->addPoints( $row[ "cool_runtime" ], "Cool" );
-    if( $row[ "heat_runtime" ] > $chart_runtime_max ) $chart_runtime_max = $row[ "heat_runtime" ];
-    if( $row[ "cool_runtime" ] > $chart_runtime_max ) $chart_runtime_max = $row[ "cool_runtime" ];
+    //if( $row[ "heat_runtime" ] > $chart_runtime_max ) $chart_runtime_max = $row[ "heat_runtime" ];
+    //if( $row[ "cool_runtime" ] > $chart_runtime_max ) $chart_runtime_max = $row[ "cool_runtime" ];
 
     $MyData->addPoints( $row[ "outdoor_min" ], "Low Temperature" );
     $MyData->addPoints( $row[ "outdoor_max" ], "High Temperature" );
@@ -152,7 +157,8 @@ $myPicture->setGraphArea( 60, 60, 850, 390 );
 $AxisBoundaries = array( 0 => array ( "Min" => $chart_runtime_min, "Max" => $chart_runtime_max ), 1 => array ( "Min" => $chart_temp_min, "Max" => $chart_temp_max ) );
 // Draw the scale
 $myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
-$Settings = array("Pos"=>SCALE_POS_LEFTRIGHT, "Mode"=>SCALE_MODE_MANUAL, "ManualScale"=>$AxisBoundaries, "LabelingMethod"=>LABELING_ALL, "GridR"=>255, "GridG"=>255, "GridB"=>255, "GridAlpha"=>50, "TickR"=>0, "TickG"=>0, "TickB"=>0, "TickAlpha"=>50, "LabelRotation"=>0, "CycleBackground"=>1, "DrawXLines"=>1, "DrawSubTicks"=>1, "SubTickR"=>255, "SubTickG"=>0, "SubTickB"=>0, "SubTickAlpha"=>50, "DrawYLines"=>ALL);
+//$Settings = array( "Pos" => SCALE_POS_LEFTRIGHT, "Mode"=>SCALE_MODE_MANUAL, "ManualScale" => $AxisBoundaries, "LabelingMethod" => LABELING_ALL, "GridR" => 255, "GridG" => 255, "GridB" => 255, "GridAlpha" => 50, "TickR" => 0, "TickG" => 0, "TickB" => 0, "TickAlpha" => 50, "LabelRotation" => 0, "CycleBackground" => 1, "DrawXLines" => 1, "DrawSubTicks" => 1, "SubTickR" => 255, "SubTickG" => 0, "SubTickB" => 0, "SubTickAlpha" => 50, "DrawYLines" => ALL );
+$Settings = array( "Pos" => SCALE_POS_LEFTRIGHT, "Mode"=>SCALE_MODE_MANUAL, "ManualScale" => $AxisBoundaries, "LabelingMethod" => LABELING_ALL, "GridR" => 255, "GridG" => 255, "GridB" => 255, "GridAlpha" => 50, "TickR" => 0, "TickG" => 0, "TickB" => 0, "TickAlpha" => 50, "LabelRotation" => 0, "CycleBackground" => 1, "DrawXLines" => 1, "DrawSubTicks" => 1, "SubTickR" => 255, "SubTickG" => 0, "SubTickB" => 0, "SubTickAlpha" => 50, "DrawYLines" => array(0) );
 $myPicture->drawScale( $Settings );
 
 // Define shadows under series lines
@@ -177,6 +183,10 @@ $myPicture->drawBarChart( array( "Gradient" => 1, "AroundZero" => TRUE, "Interle
 // Write the chart legend
 //$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 8 ) );
 //$myPicture->drawLegend( 745, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL ) );
+
+$myPicture->drawThreshold( 300, array( "WriteCaption" => TRUE, "Caption" => " 5 Hours", "BoxAlpha" => 90, "BoxR" => 255, "BoxG" => 40, "BoxB" => 70, "Alpha" => 100, "Ticks" => 1, "R" => 255, "G" => 40, "B" => 70 ) );
+$myPicture->drawThreshold( 600, array( "WriteCaption" => TRUE, "Caption" => "10 Hours", "BoxAlpha" => 90, "BoxR" => 255, "BoxG" => 40, "BoxB" => 70, "Alpha" => 100, "Ticks" => 1, "R" => 255, "G" => 40, "B" => 70 ) );
+$myPicture->drawThreshold( 900, array( "WriteCaption" => TRUE, "Caption" => "15 Hours", "BoxAlpha" => 90, "BoxR" => 255, "BoxG" => 40, "BoxB" => 70, "Alpha" => 100, "Ticks" => 1, "R" => 255, "G" => 40, "B" => 70 ) );
 
 $myPicture->autoOutput();
 ?>

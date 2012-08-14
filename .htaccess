@@ -1,4 +1,8 @@
-# Updated July 27, 2012
+# Updated August 12, 2012
+
+ServerSignature Off
+IndexIgnore *
+Options All -Indexes
 
 DirectoryIndex index.php
 
