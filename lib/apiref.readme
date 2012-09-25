@@ -1,0 +1,170 @@
+Here are the funcitons needed to implement
+
+*    1 /tstat
+*    2 /tstat/datalog
+*    3 /tstat/errstatus
+?    4 /tstat/eventlog
+D    5 /tstat/fmode
+X?   6 /tstat/help
+D    7 /tstat/hold
+D    8 /tstat/humidity
+*    9 /tstat/info
+*    10 /tstat/model
+D    11 /tstat/override
+*    12 /tstat/power
+?    13 /tstat/set-beep
+?    14 /tstat/set-uma
+?    15 /tstat/set-pma
+*    16 /tstat/temp
+D    17 /tstat/time/day
+D    18 /tstat/time/hour
+D    19 /tstat/time/minute
+    20 /tstat/time
+    21 /tstat/tmode
+    22 /tstat/thumidity
+    23 /tstat/ttemp
+    24 /tstat/program
+    25 /tstat/program/heat
+    26 /tstat/program/heat/DDD  (where DD is one of mon, tue, wed, thu, fri, sat, sun)
+    27 /tstat/program/cool
+    28 /tstat/program/cool/DDD  (where DD is one of mon, tue, wed, thu, fri, sat, sun)
+
+*    29 /sys
+*    30 /sys/network
+
+====================================
+
+This is the OLD output of "help"
+/tstat/}atalog      get  x
+/tstat/errstatus    get  x
+/tstat/eventlog     get  x
+/tstat/fmode        get set
+/tstat/help         get  x
+/tstat/hold         get set
+/tstat/humidity     get  x
+/tstat/led          x  set
+/tstat/model        get  x
+/tstat/override     get  x
+/tstat/power        get set
+/tstat/beep         x  set
+/tstat/uma          x  set
+/tstat/pma          x  set
+/tstat/temp         get  x
+/tstat/time/day     get  x
+/tstat/time/hour    get  x
+/tstat/time/minute  get  x
+/tstat/time         get set
+/tstat/tmode        get set
+/tstat/thumidity    get set
+/tstat/ttemp        get  x
+/tstat/program      get set
+/tstat/version      get  x
+/tstat/             get set
+
+====================================
+According to /tstat/help  2012/7/6
+!! = new feature
+CC = changed feature
+several DELETED?
+
+!! /}ir_baffle        get set
+   /datalog get       x
+!! /dehumidifier      get set
+!! /ext_dehumidifier  get set
+   /errstatus         get  x
+   /eventlog          get  x
+   /fmode             get set
+!! /fan_ctime         get set
+   /help              get  x
+   /hold              get set
+   /humidity          get  x
+!! /hvac_recovery     get set
+!! /hvac_settings     get  x
+CC /humidifier        get set
+   /led               x   set
+!! /lock              get set
+   /model             get  x
+!! /night_light       get set
+   /override          get  x
+   /power             get set
+   /beep              x   set
+   /uma               x   set
+   /pma               x   set
+   /temp              get  x
+!! /differential      get set
+   /time/day          get  x
+   /time/hour         get  x
+   /time
+
+
+
+
+/* Sample data (CR added for readability) 2012-07-06 Firmware 1.04.83
+    $outputs = $this->getStatData( "/tstat" );
+    $obj = json_decode( $outputs );
+/* Sample data (CR added for readability) 2012-07-06 Firmware 1.04.83
+ {
+   "temp":78.00,
+   "tmode":2,
+   "fmode":0,
+   "override":1,
+   "hold":0,
+   "t_cool":79.00,
+   "tstate":0,
+   "fstate":0,
+   "time":
+   {
+     "day":4,
+     "hour":16,
+     "minute":25
+   },
+   "t_type_post":0}
+ */
+
+
+/* These are the outputs of eventlog
+
+raw/literal output
+{
+  'eventlog':
+  [
+    ['hour','minute','relay','temp','humidity','ttemp'],
+    [    11,       31,    64, 77.50,         0, 77]
+  ]
+}
+
+php/parsed output
+object(stdClass)#4 (1)
+{
+  ['eventlog']=> array(3)
+  {
+    [0]=> array(6)
+    {
+      [0]=> string(4) 'hour'
+      [1]=> string(6) 'minute'
+      [2]=> string(5) 'relay'
+      [3]=> string(4) 'temp'
+      [4]=> string(8) 'humidity'
+      [5]=> string(5) 'ttemp'
+    }
+    [1]=> array(6)
+    {
+      [0]=> int(11)
+      [1]=> int(16)
+      [2]=> int(64)
+      [3]=> float(77.5)
+      [4]=> int(0)
+      [5]=> int(77)
+    }
+    [2]=> array(6)
+    {
+      [0]=> int(11)
+      [1]=> int(21)
+      [2]=> int(64)
+      [3]=> float(77)
+      [4]=> int(0)
+      [5]=> int(77)
+    }
+  }
+}
+*/

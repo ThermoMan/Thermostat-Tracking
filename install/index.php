@@ -1,22 +1,22 @@
 <?php
 
 
-if (version_compare(PHP_VERSION, '4.3.3') < 0)
+if (version_compare(PHP_VERSION, '5.2.4') < 0)
 { // Check php version.  I'm not sure there is a minimum requirement, but be safe.  (This logic is borrowed from phpBB installer)
-  die('You are running an unsupported PHP version. Please upgrade to PHP 4.3.3 or higher before trying to 3M-50 Thermostat Tracking');
+  die('You are running an unsupported PHP version. Please upgrade to PHP 5.2.4 or higher before trying to 3M-50 Thermostat Tracking');
 }
 
 $software = "3M-50-Thermostat-Tracking";
-// The software is actually version 1.0, but the addition of the installer and some changes to the charts warrant a new number.
-$version = "v1.1";
+// The software is actually version 2.0, but the addition of the installer and some changes to the charts warrant a new number.
+$version = "v2.1";
 echo "This script will install 3M-50 Thermostat Tracking software version $version";
 // The hard coded version number in this file should match the label applied in git.
 
 // This script needs to re-runnable during one session without having to delete the previous work and start from scratch
 // So it needs a state flag to see how far it has progressed
-// Set the flag to a numeric value based on how many steps are to be done and decrement when one is complete.
-$install_present_step = 10;
+// Set the flag to a numeric value based on how many steps are to be done and decrement when one is complete.  When you get to zero, you're done.
 $install_total_steps = 10;
+$install_present_step = 10;
 echo "<br>You are on $install_present_step of $install_total_steps";
 // Perhaps make a sub-routine of each step so that the skeleton of the install process is easily seen.
 
@@ -82,16 +82,18 @@ $default_db_password = "password";
 // Test that ID has permission to create tables
 // Test that ID has permission to insert, update, delete data
 
-// The SQL should test for presence of the tables before simply adding them.
+// The SQL should test for presence AND structure of the tables before simply adding them.
+// (future) The installer should look at version number in teh tables and know how to update them if needed.
 // The SQL should be a in a separate .sql text file and NOT be hard coded into this .php file.
 // Before running the SQL, the name of the database and the prefix (if any) should be determined and applied to a template of the SQL.
 
 
 // The DB to create.
-$default_db_name = "thermo";
+$default_db_name = "thermo2";
 
 // Actually "" would be a better default, only need to add a prefix when name collision will occur or when you want the names to fall together alphabetically
-$default_db_object_prefix = "thermo_";
+$default_db_object_prefix = "thermo__";
+// Using two underscores in the prefix activates some handy magic in phpMyAdmin.
 
 $replace_list = array(
 "**REPLACE_DB_NAME**" => $db_name,
@@ -102,7 +104,7 @@ function replace_names( $filename, $replace_list )
   // Open the file
   // Read in the file (it is expected to be reasonably sized, not some monstrous thing)
   // Find instances of text from column 1 and replace them with text from column 2
-  // Write out the file using the filename minus the ".IN" suffix as the new name
+  // Write out the file using the filename minus the ".IN" suffix as the new name (create_tables.sql.IN becomes create_tables.sql)
   //   Do overwrite without warning any previous file with that name.
 }
 

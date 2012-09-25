@@ -1,6 +1,5 @@
-# Replace this with a shell script that creates unix cron jobs that do the same thing as the Windows Schedule lines below.
+# Replace this with a shell script that creates unix cron jobs shown in the lines below
 
-# schtasks /create /tn ThermoUpdateStatus /tr "\"C:\xampp\htdocs\Thermo\scripts\thermo_update_status.bat\" " /st 00:00 /sc minute /mo 1 /ru WINDOWS_USER /rp PASSWORD
-#
-#schtasks /create /tn ThermoUpdateTemps /tr "\"C:\xampp\htdocs\Thermo\scripts\thermo_update_temps.bat\" " /st 00:00 /sc minute /mo 30 /ru WINDOWS_USER /rp PASSWORD
-#
+* * * * * /usr/bin/php ~/thermo2/scripts/thermo_update_status.php >> ~/thermo2/logs/thermoupdatestatus.log
+
+0,30 * * * * /usr/bin/php ~/thermo2/scripts/thermo_update_temps.php >> ~/thermo2/logs/thermoupdatetemps.log

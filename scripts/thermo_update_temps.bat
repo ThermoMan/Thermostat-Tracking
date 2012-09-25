@@ -1,2 +1,2 @@
-cd C:\xampp\htdocs\Thermo\
-C:\xampp\php\php C:\xampp\htdocs\Thermo\scripts\thermo_update_temps.php
+cd C:\xampp\htdocs\thermo2\
+C:\xampp\php\php C:\xampp\htdocs\thermo2\scripts\thermo_update_temps.php

@@ -1,5 +1,5 @@
 #!/usr/bin/ksh
 
-cd /YOUR WEB SERVER/thermo/scripts
+cd ~/thermo2/scripts
 
-/usr/local/bin/php /YOUR WEB SERVER/thermo/scripts/thermo_update_temps.php
+/usr/local/bin/php ~/thermo2/scripts/thermo_update_temps.php

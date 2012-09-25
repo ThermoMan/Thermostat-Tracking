@@ -1,0 +1,33 @@
+thermo_update_status.php should run once a minute
+this will determine when the cycles turn on and off
+it updates the hvac_status and hvac_cycles tables
+
+example cron for system owners:
+* * * * * /usr/bin/php /var/web/thermo2/scripts/thermo_update_status.php >> /usr/local/logs/thermoupdatestatus.log
+
+example cron if you are on a hosted server:
+* * * * * /usr/bin/php ~/thermo2/scripts/thermo_update_status.php >> ~/thermo2/logs/thermoupdatestatus.log
+
+thermo_update_temps.php should run once every 30 minutes
+it updates temperatures and run times
+this could be run more often for better accuracy but be aware:
+1. Some external weather providers have daily limits (check which one you are using)
+2. The thermostat could time out for 20-30 minutes if it is getting hit too often
+   it needs up to 10 seconds between commands sometimes or the WiFi buffer will fill up
+
+example cron for system owners:
+0,30 * * * * /usr/bin/php /var/web/thermo2/scripts/thermo_update_temps.php >> /usr/local/logs/thermoupdatetemps.log
+
+example cron if you are on a hosted server:
+0,30 * * * * /usr/bin/php ~/thermo2/scripts/thermo_update_temps.php >> ~/thermo2/logs/thermoupdatetemps.log
+
+
+
+If you are on a Windows system and do not have cron available, your best bet is Windows Scheduler.
+Find the create_schedule.bat file you need to edit it and change three things
+
+1. Path to executable in TWO places (presently hard coded as C:\xampp\htdocs\thermo2\scripts\ )
+2. Find the text, in TWO places, WINDOWS_USER and replace that with an actual Windows user ID.  Preferably one that is a non-privileged account
+3. Find the text, in TWO places, PASSWORD and change it to the password for the selected user ID.
+
+You may need to run this batch file as a privileged account, but the tasks should not run in a privileged account.

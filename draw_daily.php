@@ -1,63 +1,57 @@
 <?php
-require "common.php";
+require_once 'common.php';
+require_once 'common_chart.php';
 
-connect_to_db();
-
-$show_date = date( "Y-m-d" );
-if( isset( $_GET["show_date"] ) )
-{ // Use provided date
-  $show_date = $_GET["show_date"];
+$show_date = date( 'Y-m-d' );
+if( isset( $_GET['show_date'] ) )
+{ // Use date if provided otherwise use today
+  $show_date = $_GET['show_date'];
 }
 if( ! validate_date( $show_date ) ) return;
 
 // Set default cycle display to none
-$show_heat_cycles = 0;
-if( isset( $_GET["show_heat_cycles"] ) )
-{
-  if( $_GET["show_heat_cycles"] == "true" )
-  {
-    $show_heat_cycles = 1;
-  }
-}
-$show_cool_cycles = 0;
-if( isset( $_GET["show_cool_cycles"] ) )
-{
-  if( $_GET["show_cool_cycles"] == "true" )
-  {
-    $show_cool_cycles = 1;
-  }
-}
-$show_fan_cycles = 0;
-if( isset( $_GET["show_fan_cycles"] ) )
-{
-  if( $_GET["show_fan_cycles"] == "true" )
-  {
-    $show_fan_cycles = 1;
-  }
-}
+$show_heat_cycles = (isset($_GET['show_heat_cycles']) && ($_GET['show_heat_cycles'] == 'true')) ? true : false;
+$show_cool_cycles = (isset($_GET['show_cool_cycles']) && ($_GET['show_cool_cycles'] == 'true')) ? true : false;
+$show_fan_cycles  = (isset($_GET['show_fan_cycles'])  && ($_GET['show_fan_cycles']  == 'true')) ? true : false;
+
 
 /*
- *   The SQL is still not as pretty as it could be.  The conversion to a 3 section system is starting though.
- *
+ *   The DB design for the project is still not as pretty as it could be.  The conversion to a 3 section system is starting though.
  * Section 1 has to do with the collection of data.  That is _mostly_ what is going on in there now.
+ *           Check in \scripts for the processes that ADD data to the database.
  *
  * Section 2 will have to do with the presentation of the data in charts.  For instance that hvac_cycles table
  *           exists for two reasons.  Firstly it keeps the 'per minute' table lightweight and secondly it makes charting easier.
- *           If the application adds notificaitons (for instance power out or over temperature situations) that is reporting
+ *           If the application adds notifications (for instance power out or over temperature situations) that is reporting
  *           and will go here
  *           The new table time_index has been added to replace a really long nasty SQL section of hard-coded time stamps.  The
  *           table name ought to reflect the function. Perhaps should be renamed to chart_time_index?  And don't forget the
- *           global table name prefix either!
+ *           global table name prefix either! (The name might look like thermo2__chart_time_index)
  *
- * Section 3 will be for the management of the website that presents the data.  If there will be user registration, it will go here
+ * Section 3 will be for the management of the website that presents the data.  If there will be a user registration system, the
+ *           data for that will be stored in this set of tables.
  *
+ *   The goal of this split of design is for two purposes.
+ * Purpose 1 is for good MVC separation.  While ideological adherence to any desig pattern is usually detrimental to real-world
+ *           coding, patterns exist to make things easier to maintain in the long run.  Patterns are tools, use the ones that
+ *           make life easy, discard the ones that are a PITA.
+ *
+ * Purpose 2 is for integration with other projects.  For instance the TED-5000 project also collects data and presents it.  The
+ *           two projects can be used together and as such the data colelction tables are unique to each project, but the website
+ *           management are functionally identical and therefore when used together these tables should NOT be dupicated. In
+ *           addition each project has it's own charting needs, but the combined charts will have constraints because of the shared
+ *           presentation needs.
  */
-$sql = "SELECT CONCAT( '$show_date', ' ', b.time ) AS date, IFNULL(a.indoor_temp, 'VOID') as indoor_temp, IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp "
-. "FROM " . $table_prefix . "time_index b "
-. "LEFT JOIN " . $table_prefix . "temperatures a "
-. "ON a.date = TIMESTAMP( '$show_date', b.time );";
+$sql =
+"SELECT CONCAT( ?, ' ', b.time ) AS date,
+        IFNULL(a.indoor_temp, 'VOID') as indoor_temp,
+        IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp
+FROM {$dbConfig['table_prefix']}time_index b
+LEFT JOIN {$dbConfig['table_prefix']}temperatures a
+ON a.date = TIMESTAMP( ?, b.time ) AND a.tstat_uuid = ?";
 
-$result = mysql_query( $sql );
+$query = $pdo->prepare($sql);
+$query->execute(array($show_date, $show_date, $uuid));
 
 // Create and populate the pData object
 $MyData = new pData();
@@ -66,7 +60,7 @@ $MyData = new pData();
 $chart_y_min = $normal_low;
 $chart_y_max = $normal_high;
 
-while( $row = mysql_fetch_array( $result ) )
+while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
 {
   if( substr( $row["date"], 13, 3 ) == ":00" )
   {
@@ -179,7 +173,6 @@ $myPicture->drawLegend( 710, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => L
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
 { // For a $show_date of "2012-07-10" get the start and end bounding datetimes
   $start_date = strftime( "%Y-%m-%d 00:00:00", strtotime($show_date));  // "2012-07-10 00:00:00";
-  // $end_date = strftime( "%Y-%m-%d 00:00:00", strtotime("+1 day", strtotime($show_date)));   // "2012-07-11 00:00:00";
   $end_date = strftime( "%Y-%m-%d 23:59:59", strtotime($show_date));    // "2012-07-10 23:59:59";
 
   /*
@@ -188,15 +181,18 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
    *
    * Ought to differentiate the open ended cycles somehow?
    */
-  $sql = "SELECT system, "
-  . "DATE_FORMAT( GREATEST( start_time, '$start_date' ), '%k' ) AS start_hour, "
-  . "TRIM(LEADING '0' FROM DATE_FORMAT( GREATEST( start_time, '$start_date' ), '%i' ) ) AS start_minute, "
-  . "DATE_FORMAT( LEAST( end_time, '$end_date' ), '%k' ) AS end_hour, "
-  . "TRIM( LEADING '0' FROM DATE_FORMAT( LEAST( end_time, '$end_date' ), '%i' ) ) AS end_minute "
-  . "FROM " . $table_prefix . "hvac_cycles "
-  . "WHERE end_time > '$start_date' AND start_time < '$end_date' ORDER BY start_time ASC";
+  $sql =
+  "SELECT system,
+          DATE_FORMAT( GREATEST( start_time, ? ), '%k' ) AS start_hour,
+          TRIM(LEADING '0' FROM DATE_FORMAT( GREATEST( start_time, ? ), '%i' ) ) AS start_minute,
+          DATE_FORMAT( LEAST( end_time, ? ), '%k' ) AS end_hour,
+          TRIM( LEADING '0' FROM DATE_FORMAT( LEAST( end_time, ? ), '%i' ) ) AS end_minute
+  FROM {$dbConfig['table_prefix']}hvac_cycles
+  WHERE end_time > ? AND start_time < ? AND tstat_uuid = ?
+  ORDER BY start_time ASC";
 
-  $result = mysql_query( $sql );
+  $query = $pdo->prepare($sql);
+  $result = $query->execute(array($start_date, $start_date, $end_date, $end_date, $start_date, $end_date, $uuid));
 
   // The rounded corners look so much better, but the run times are so short that the rounds seldom appear.
   //$HeatRectSettings = array( "R" => 200, "G" => 100, "B" => 100, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
@@ -228,7 +224,8 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
    */
 
   // Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
-  while( $row = mysql_fetch_array( $result ) )
+  //while( $row = mysql_fetch_array( $result ) )
+  while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
   {
 
     // "YYYY-MM-DD HH:mm:00"  There are NO seconds in these data points.
@@ -262,7 +259,6 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
   // From that date roll forward and see if there is more than once cycle to add
 
 }
-disconnect_from_db();
 
-$myPicture->autoOutput( "images/daily_chart.png" );
+$myPicture->autoOutput( 'images/daily_chart.png' );
 ?>

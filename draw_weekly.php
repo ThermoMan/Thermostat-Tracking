@@ -1,21 +1,29 @@
 <?php
-REQUIRE "common.php";
+require_once 'common.php';
+require_once 'common_chart.php';
 
 // If they don't ask for indoor, they get outdoor.
 $indoor = 0;
-if( isset( $_GET["Indoor"] ) )
+if( isset( $_GET['Indoor'] ) )
 {
-  if( $_GET["Indoor"] == 1 )
-  {
-    $indoor = 1;
+  $indoor = $_GET['Indoor'];
+  if( $indoor < 0 || $indoor > 2)
+  { // If they hose the input, they get outdoor
+    $indoor = 0;
   }
 }
 
-connect_to_db();
-
-// The same SQL works for both
-$sql = "SELECT DATE(date) AS date, MIN(indoor_temp) AS indoor_min, MAX(indoor_temp) AS indoor_max, MIN(outdoor_temp) AS outdoor_min, MAX(outdoor_temp) AS outdoor_max FROM " . $table_prefix . "temperatures GROUP BY DATE(date)";
-$result = mysql_query( $sql );
+// The same SQL works for both indoor and outdoor
+$sql = "SELECT DATE(date) AS date,
+               MIN(indoor_temp) AS indoor_min,
+               MAX(indoor_temp) AS indoor_max,
+               MIN(outdoor_temp) AS outdoor_min,
+               MAX(outdoor_temp) AS outdoor_max
+               FROM {$dbConfig['table_prefix']}temperatures
+               WHERE tstat_uuid = ?
+               GROUP BY DATE(date)";
+$query = $pdo->prepare( $sql );
+$query->execute( array( $uuid ) );
 
 // Create and populate the pData object
 $MyData = new pData();
@@ -24,143 +32,126 @@ $MyData = new pData();
 $chart_y_min = $normal_low;
 $chart_y_max = $normal_high;
 
-// Define series names
-if( $indoor == 1 )
-{
-  $series1 = "Indoor Min";
-  $series2 = "Indoor Max";
-
-  $column1 = "indoor_min";
-  $column2 = "indoor_max";
-}
-else
-{
-  $series1 = "Outdoor Min";
-  $series2 = "Outdoor Max";
-
-  $column1 = "outdoor_min";
-  $column2 = "outdoor_max";
-}
-
 $old_month = -1;
-while( $row = mysql_fetch_array( $result ) )
+while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
 {
   /*
    *   There are too many dates to show them ALL on the x-axis - it turns into one black line.
    *
    *   The original logic was to search for the first of the month like this:
-   *    else if( substr( $row['date'], 8, 2 ) == "01" )
+   *    else if( substr( $row['date'], 8, 2 ) == '01' )
    *
    *   However it turns out that sometimes there is NO data at all for a given date.
    * So the new logic is to look for when the month changes and show that date.
    */
   if( $old_month == -1 )
   { // Do show the WHOLE date for the first item.
-    $MyData->addPoints( $row["date"], "Labels" );
+    $MyData->addPoints( $row['date'], 'Labels' );
   }
-  else if( substr( $row["date"], 5, 2 ) != $old_month )
+  else if( substr( $row['date'], 5, 2 ) != $old_month )
   { // Thereafter show only MM-DD when you show anything at all
-    // Show month name ala "Dec"
-    $MyData->addPoints( date("M", mktime( 0, 0, 0, substr( $row['date'], 5, 2 ), 1) ), "Labels" );
+    // Show month name ala 'Dec'
+    $MyData->addPoints( date('M', mktime( 0, 0, 0, substr( $row['date'], 5, 2 ), 1) ), 'Labels' );
   }
   else
   { // Add a blank instead of text for some x-axis labels.
-    $MyData->addPoints( VOID, "Labels" );
+    $MyData->addPoints( VOID, 'Labels' );
   }
-  $old_month = substr( $row["date"], 5, 2 );
+  $old_month = substr( $row['date'], 5, 2 );
 
-  // The fake 1.5 degree difference forced into teh data here is to prevent a charting bug from inverting the colors in some regions where the low and high are the same (data collection error)
-  $MyData->addPoints( $row[ $column1 ] - 0.75, $series1 );
-  $MyData->addPoints( $row[ $column2 ] + 0.75, $series2 );
-  if( $row[ $column1 ] < $chart_y_min ) $chart_y_min = $row[ $column1 ];
-  if( $row[ $column2 ] > $chart_y_max ) $chart_y_max = $row[ $column2 ];
+  // The fake 1.5 degree difference forced into the data here is to prevent a charting bug from inverting the colors in some regions
+  if( $indoor == 0 || $indoor == 2 )
+  {
+    $MyData->addPoints( $row[ 'outdoor_min' ] - 0.75, 'Outdoor Min' );
+    $MyData->addPoints( $row[ 'outdoor_max' ] + 0.75, 'Outdoor Max' );
+    if( $row[ 'outdoor_min' ] < $chart_y_min ) $chart_y_min = $row[ 'outdoor_min' ];
+    if( $row[ 'outdoor_max' ] > $chart_y_max ) $chart_y_max = $row[ 'outdoor_max' ];
+  }
+  if( $indoor == 1 || $indoor == 2 )
+  {
+    $MyData->addPoints( $row[ 'indoor_min' ] - 0.75, 'Indoor Min' );
+    $MyData->addPoints( $row[ 'indoor_max' ] + 0.75, 'Indoor Max' );
+    if( $row[ 'indoor_min' ] < $chart_y_min ) $chart_y_min = $row[ 'indoor_min' ];
+    if( $row[ 'indoor_max' ] > $chart_y_max ) $chart_y_max = $row[ 'indoor_max' ];
+  }
 }
-disconnect_from_db();
-
-
-// These are not needed in the ZoneChart version of the graph
-// Set line style, color, and alpha blending level  (both charts use the same line styles)
-//$serieSettingsMin = array( "R" => 100, "G" => 100, "B" => 230, "Alpha" => 100 );
-//$serieSettingsMax = array( "R" => 230, "G" => 100, "B" => 100, "Alpha" => 100 );
-//$MyData->setPalette( $series1, $serieSettingsMin );
-//$MyData->setPalette( $series2, $serieSettingsMax );
 
 // Attach the data series to the axis (by ordinal)
-$MyData->setSerieOnAxis( $series1, 0 );
-$MyData->setSerieOnAxis( $series2, 0 );
+if( $indoor == 0 || $indoor == 2 )
+{
+  $MyData->setSerieOnAxis( 'Outdoor Min', 0 );
+  $MyData->setSerieOnAxis( 'Outdoor Max', 0 );
+}
+if( $indoor == 1 || $indoor == 2 )
+{
+  $MyData->setSerieOnAxis( 'Indoor Min', 0 );
+  $MyData->setSerieOnAxis( 'Indoor Max', 0 );
+}
 
 // Set names for Y-axis labels
-$MyData->setAxisName( 0, "Temperatures" );
+$MyData->setAxisName( 0, 'Temperatures' );
 
 // Set names for X-axis labels
-$MyData->setSerieDescription( "Labels", "Days" );
-$MyData->setAbscissa( "Labels" );
+$MyData->setSerieDescription( 'Labels', 'Days' );
+$MyData->setAbscissa( 'Labels' );
 
 $myPicture = new pImage( 900, 430, $MyData ); // Create the pChart object
 $myPicture->Antialias = TRUE;                 // Turn on Antialiasing
 
 // Draw the background
-$Settings = array( "R" => 170, "G" => 183, "B" => 87, "Dash" => 1, "DashR" => 190, "DashG" => 203, "DashB" => 107, "Alpha" => 60 );
+$Settings = array( 'R' => 170, 'G' => 183, 'B' => 87, 'Dash' => 1, 'DashR' => 190, 'DashG' => 203, 'DashB' => 107, 'Alpha' => 60 );
 $myPicture->drawFilledRectangle( 0, 0, 900, 430, $Settings );
 
 // Overlay with a gradient
-$Settings = array( "StartR" => 219, "StartG" => 231, "StartB" => 139, "EndR" => 1, "EndG" => 138, "EndB" => 68, "Alpha" => 50 );
+$Settings = array( 'StartR' => 219, 'StartG' => 231, 'StartB' => 139, 'EndR' => 1, 'EndG' => 138, 'EndB' => 68, 'Alpha' => 50 );
 $myPicture->drawGradientArea( 0, 0, 900, 430, DIRECTION_VERTICAL, $Settings );
-$Settings = array( "StartR" => 0, "StartG" => 0, "StartB" => 0, "EndR" => 50, "EndG" => 50, "EndB" => 50, "Alpha" => 80 );
+$Settings = array( 'StartR' => 0, 'StartG' => 0, 'StartB' => 0, 'EndR' => 50, 'EndG' => 50, 'EndB' => 50, 'Alpha' => 80 );
 $myPicture->drawGradientArea( 0, 0, 900,  20, DIRECTION_VERTICAL, $Settings );
 
 // Add a border to the picture
-$myPicture->drawRectangle( 0, 0, 899, 429, array( "R" => 0, "G" => 0, "B" => 0 ) );
+$myPicture->drawRectangle( 0, 0, 899, 429, array( 'R' => 0, 'G' => 0, 'B' => 0 ) );
 
 // Set font for all descriptive text
-$myPicture->setFontProperties( array( "FontName" => "lib/fonts/Copperplate_Gothic_Light.ttf", "FontSize" => 10 ) );
+$myPicture->setFontProperties( array( 'FontName' => 'lib/fonts/Copperplate_Gothic_Light.ttf', 'FontSize' => 10 ) );
 
 // Write the picture title
-$myPicture->drawText( 10, 14, "Show the historic temperatures", array( "R" => 255, "G" => 255, "B" => 255) );
+$myPicture->drawText( 10, 14, 'Show the historic temperatures', array( 'R' => 255, 'G' => 255, 'B' => 255) );
 
 // Write the chart title
-$myPicture->drawText( 60, 55, "Min/Max for each day in the record", array( "FontSize" => 12, "Align" => TEXT_ALIGN_BOTTOMLEFT ) );
+$myPicture->drawText( 60, 55, 'Min/Max for each day in the record', array( 'FontSize' => 12, 'Align' => TEXT_ALIGN_BOTTOMLEFT ) );
 
 $myPicture->setGraphArea( 60, 60, 850, 390 );   // Define the chart area
 
 // Explicity set a scale for the drawing.
-$AxisBoundaries = array( 0 => array ( "Min" => $chart_y_min, "Max" => $chart_y_max ) );
+$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ) );
 // Draw the scale
-$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
-$scaleSettings = array( "Mode" => SCALE_MODE_MANUAL, "ManualScale" => $AxisBoundaries, "GridR" => 200, "GridG" => 200, "GridB" => 200, "LabelingMethod" => LABELING_DIFFERENT, "DrawSubTicks" => TRUE, "CycleBackground" => TRUE );
+$myPicture->setFontProperties( array( 'FontName' => 'lib/pChart2.1.3/fonts/pf_arma_five.ttf', 'FontSize' => 6 ) );
+$scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE );
 $myPicture->drawScale( $scaleSettings );
 
 // Write the chart legend
-$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 8 ) );
+$myPicture->setFontProperties( array( 'FontName' => 'lib/pChart2.1.3/fonts/pf_arma_five.ttf', 'FontSize' => 8 ) );
 /*
  * Frustrating that there is no actual auto-position function for this legend.
- * Since the "indoor" and "outdoor" texts are different lengths they have to be manually positioned.
+ * Since the 'indoor' and 'outdoor' texts are different lengths they have to be manually positioned.
  * The right hand end of the legend is aligned between these two charts and all the others too.
  */
-if( $indoor == 1 )
-{ // Each letter in the font I've picked is 10 pixels wide.
-// No need to put a hi/low legend on a zone chart
-//  $myPicture->drawLegend( 665, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL, "Align" => TEXT_ALIGN_BOTTOMRIGHT ) );
-  $Settings = array( "AreaR" => 100, "AreaG" => 100, "AreaB" => 200, "AreaAlpha" => 80 );
-}
-else
+$myPicture->setFontProperties( array( 'FontName' => 'lib/pChart2.1.3/fonts/pf_arma_five.ttf', 'FontSize' => 6 ) );
+$myPicture->setShadow( TRUE, array( 'X' => 1, 'Y' => 1, 'R' => 0, 'G' => 0, 'B' => 0, 'Alpha' => 10 ) );
+if( $indoor == 0 || $indoor == 2 )
 {
-//  $myPicture->drawLegend( 645, 412, array( "Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL, "Align" => TEXT_ALIGN_BOTTOMRIGHT ) );
-  $Settings = array( "AreaR" => 200, "AreaG" => 100, "AreaB" => 100, "AreaAlpha" => 80 );
+  $Settings = array( 'AreaR' => 200, 'AreaG' => 100, 'AreaB' => 100, 'AreaAlpha' => 80 );
+  $myPicture->drawZoneChart( 'Outdoor Min', 'Outdoor Max', $Settings );
+}
+if( $indoor == 1 || $indoor == 2 )
+{ // Each letter in the font I've picked is 10 pixels wide.
+  $Settings = array( 'AreaR' => 100, 'AreaG' => 100, 'AreaB' => 200, 'AreaAlpha' => 80 );
+  $myPicture->drawZoneChart( 'Indoor Min', 'Indoor Max', $Settings );
 }
 
-$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/pf_arma_five.ttf", "FontSize" => 6 ) );
-$myPicture->setShadow( TRUE, array( "X" => 1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 10 ) );
-//$myPicture->drawLineChart();  // Used to be a bar chart, but once you get a few months in there it gets far too busy looking.
-$myPicture->drawZoneChart( $series1, $series2, $Settings );
-//$serieSettingsMin = array( "R" => 100, "G" => 100, "B" => 230, "Alpha" => 100 );
-//$serieSettingsMax = array( "R" => 230, "G" => 100, "B" => 100, "Alpha" => 100 );
-
-
-$myPicture->setShadow( TRUE, array( "X" => 1, "Y" => 1, "R" => 0, "G" =>0 , "B" =>0 , "Alpha" => 10 ) );
-$myPicture->setFontProperties( array( "FontName" => "lib/pChart2.1.3/fonts/Forgotte.ttf", "FontSize" => 11 ) );
-
+//$myPicture->setShadow( TRUE, array( 'X' => 1, 'Y' => 1, 'R' => 0, 'G' =>0 , 'B' =>0 , 'Alpha' => 10 ) );
+//$myPicture->setFontProperties( array( 'FontName' => 'lib/pChart2.1.3/fonts/Forgotte.ttf', 'FontSize' => 11 ) );
 
 // Render the picture
-$myPicture->autoOutput();
+$myPicture->autoOutput( 'images/weekly_chart.png' );
 ?>

@@ -1,62 +1,48 @@
 <?php
-require "config.php";
-require "lib/t_lib.php";
+require 'config.php';
+require 'lib/t_lib.php';
+require 'lib/ExternalWeather.php';
 
-// pChart library inclusions
-include( "lib/pChart2.1.3/class/pData.class.php" );
-include( "lib/pChart2.1.3/class/pDraw.class.php" );
-include( "lib/pChart2.1.3/class/pImage.class.php" );
-
-function bobby_tables()
+// Future logging method
+function logIt( $msg )
 {
-  $filename = "./images/exploits_of_a_mom.png";
-  $handle = fopen( $filename, "r" );
-  $contents = fread( $handle, filesize($filename) );
-  fclose( $handle );
-  echo $contents;
+   echo $msg . "\n";
 }
 
-function connect_to_db()
+// Future logging method
+function doError( $msg )
 {
-  // Using the keyword global really points out that this might be a bad idea.  Should these be buried in a class for safety?
-  global $host;
-  global $user;
-  global $pass;
-  global $db;
-  global $link;
-  $link = mysql_connect( $host, $user, $pass );
-  if( !$link )
-  {
-    die( "Could not connect: <no error message provided to hackers>"  );
-  }
-  mysql_select_db( $db, $link ) or die( "cannot select DB" );            // Really should log this?
-
-  global $timezone;
-  mysql_query( "SET time_zone = '$timezone'" );
-}
-
-function disconnect_from_db()
-{
-  global $link;
-  mysql_close( $link );
-}
-
-function validate_date( $some_date )
-{
-  $date_pattern = "/[2]{1}[0]{1}[0-9]{2}-[0-9]{2}-[0-9]{2}/";
-  if( !preg_match( $date_pattern, $some_date ) )
-  {
-    bobby_tables();
-    return false;
-  }
-  return true;
+   echo $msg . "\n";
+   file_put_contents( 'php://stderr', $msg . "\n" );
 }
 
 
 // Common code that should run for EVERY page follows here
 
 global $timezone;
+
+// Set timezone for all PHP functions
 date_default_timezone_set( $timezone );
 
+// Always connect to the database, don't wait for a request to connect
+$pdo = new PDO( $dbConfig['dsn'], $dbConfig['username'], $dbConfig['password'] );
+$pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
+// Set timezone for all MySQL functions
+$pdo->exec( "SET time_zone = '$timezone'" );    // Like old one
+
+// Get list of thermostats
+try
+{
+  $thermostats = array();
+  $sql = "SELECT * FROM {$dbConfig['table_prefix']}thermostats ORDER BY name asc";
+  foreach( $pdo->query($sql) as $row )
+  {
+      $thermostats[] = $row;
+  }
+}
+catch( Exception $e )
+{
+  logIt( "Error getting thermostat list" );
+}
 ?>
