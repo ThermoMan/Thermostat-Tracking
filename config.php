@@ -11,10 +11,10 @@ $lockFile = '/tmp/thermo.lock';
 
 // Really need to have timezone for each location AND timezone for server.
 // At present this is used to force the servers (php procesor, web server, DB server) to think they are in the same timezone as the location of all the thermostats.
-$timezone = "America/Chicago";
+$timezone = 'America/Los_Angeles';
 
 // Your ZIP code  (still assuming that all thermostats are in one location.  Multi-location support comes later.
-$ZIP = "90210";
+$ZIP = '90210';
 
 /** Weather - External Temperature
  * weatherunderground requires an api key - register for a free one
@@ -80,11 +80,11 @@ $displayConfig = array(
  * But before it can be remotely configurable there has to be an ID/PW system for some tabs
  * I guess a tab would have to contain an iframe and the iframe has a page that checks permissions.
  */
-$send_end_of_day_email = "Y";     // "Y" or "N"
-$send_eod_email_time = "0800";    // format is HHMM (24-hour) as text string
-$send_eod_email_address = "your_address@wherever.com";
-$send_eod_email_smtp = "";
-$send_eod_email_pw = "";
+$send_end_of_day_email = 'Y';     // 'Y' or 'N'
+$send_eod_email_time = '0800';    // format is HHMM (24-hour) as text string
+$send_eod_email_address = 'your_address@wherever.com';
+$send_eod_email_smtp = '';
+$send_eod_email_pw = '';
 /*
  * Add a check at the end of the one per minute task to see if time now == $send_eod_email_time
  * The better way would be to use Windows Scheduler to create a task to run at the named time

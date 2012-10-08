@@ -1,173 +1,205 @@
 /**
-  * The inspiration for this CSS came from two projects
-  *
-  * The early days of: https://github.com/ThermoMan/3M-50-Thermostat-Tracking
-  *  and
-  * http://www.w3.org/Style/Examples/007/target
-  *
-  * The latter had the tabs fully implemented using only CSS.
-  */
+	* The inspiration for this CSS came from two projects
+	*
+	* The early days of: https://github.com/ThermoMan/3M-50-Thermostat-Tracking
+	* and
+	* http://www.w3.org/Style/Examples/007/target
+	*
+	*/
 
 
 @font-face
 {
-  font-family: 'theToolbarFonts';
-  /* 'Arial Black', Gadget, sans-serif */
-  src: local( 'Copperplate Gothic Light' ),
-       url( '../fonts/Copperplate_Gothic_Light.ttf' ) format( 'truetype' );
+	font-family: 'theToolbarFonts';
+	/* 'Arial Black', Gadget, sans-serif */
+	src: local( 'Copperplate Gothic Light' ),
+			 url( '../fonts/Copperplate_Gothic_Light.ttf' ) format( 'truetype' );
 }
 
 
 
 /**
-  * Establish a containing block for tabbed area controls 
-  */
+	* Establish a containing block for tabbed area controls 
+	*/
 div.all_tabs
 {
-  position: relative;                   /* Wherever it may fall on the page */
-  line-height: 1em;                     /* Easier to calculate with */
-  z-index: 0;                           /* So that we can put other things behind */
+	position: relative;								 /* Wherever it may fall on the page */
+	line-height: 1em;									 /* Easier to calculate with */
+	z-index: 0;												 /* So that we can put other things behind */
 }
 
 /**
-  * We want all the tab buttons on one line, so first level nesting is the individual
-  *  tab title - which is a container for ALL the content of that tab.
-  */
+	* We want all the tab buttons on one line, so first level nesting is the individual
+	* tab title - which is a container for ALL the content of that tab.
+	*/
 div.all_tabs > div.tab
 {
-  display: inline;
+	display: inline;
 }
 
 /* Apply to the space between the tabs */
 div.all_tabs > div.tab_gap
 {
-  display: inline;
-  padding-left: 5px;
+	display: inline;
+	padding-left: 5px;
 }
 
 
 /* Visually connect tab and tab body (border around tabs and between tabs and body) */
 div.all_tabs > div.tab > a
 {
-  color: black;                       /* Make it look more like a button than a link */
+	color: black;										 /* Make it look more like a button than a link */
 
-         /* top  right bottom left*/
-/*padding: 0.4em 0.4em 0.3em 0.4em;*/   /* Some breathing space - space around tab title text - leave gap between button and content (see below) */
-  padding: 7px 9px 3px 9px;
+				 /* top right bottom left*/
+/*padding: 0.4em 0.4em 0.3em 0.4em;*/ /* Some breathing space - space around tab title text - leave gap between button and content (see below) */
+	padding: 7px 9px 3px 9px;
 
-  border: 0.15em outset #B0D86D;      /* Give the tab a 3Dish effect to make it look more like a button */
-  font-family: 'theToolbarFonts';     /* This font choice impacts the padding-bottom choice above! */
-  font-size: 0.8em;                   /* This size choice impacts the padding-bottom choice above! */
-  /* border-bottom does not matter because it is superceded later to show which tab is selected */
-  /* border-bottom: 0.1em solid #CCCCCC; */
-  /* background color does not matter because it is superceded later */
-  /* background: #CCCCCC; */
+	border: 0.15em outset #B0D86D;		/* Give the tab a 3Dish effect to make it look more like a button */
+	font-family: 'theToolbarFonts';		/* This font choice impacts the padding-bottom choice above! */
+	font-size: 0.8em;									/* This size choice impacts the padding-bottom choice above! */
+	/* border-bottom does not matter because it is superceded later to show which tab is selected */
+	/* border-bottom: 0.1em solid #CCCCCC; */
+	/* background color does not matter because it is superceded later */
+	/* background: #CCCCCC; */
 }
 
  /** 
-  *  Will need to make all icons consistent with each other -OR-
-  * individually adjust vertical and horizontal spacing a few pixels.
-  *
-  */
+	 * Will need to make all icons consistent with each other -OR-
+	 * individually adjust vertical and horizontal spacing a few pixels.
+	 *
+	 */
 div.all_tabs > div.tab > a > img.tab-icon
 {
-  position: relative; 
-  top: -3px;              /* The top and height relate to the padding-top of the "div.all_tabs > div.tab > a" element. */
-  height: 22px;           /* Make the icon fit regardless of source image size */
-  width: 22px;            /* Make the icon fit regardless of source image size */
-  vertical-align: top;
+	position: relative; 
+	top: -3px;							/* The top and height relate to the padding-top of the "div.all_tabs > div.tab > a" element. */
+	height: 22px;						/* Make the icon fit regardless of source image size */
+	width: 22px;						/* Make the icon fit regardless of source image size */
+	vertical-align: top;
 }
 
 /**
-  *  These next three classes distinguish between the 3 states a tab can be in.
-  *
-  * Selected      - this one tab is dark green.
-  * Not selected  - all of thee tabs are light green.
-  * Mouse over    - this one tab is hilighted in another green.
-  *
-  * The CSS does not change position or anything else, just the appearance of the tab.
-  */
+	* These next three classes distinguish between the 3 states a tab can be in.
+	*
+	* Selected			- this one tab is dark green.
+	* Not selected	- all of thee tabs are light green.
+	* Mouse over		- this one tab is hilighted in another green.
+	*
+	* The CSS does not change position or anything else, just the appearance of the tab.
+	*/
 
 /* Inactive tabs are light green */
 div.all_tabs > div.tab:not(:target) > a
 {
-  border-bottom: none;                  /* Make the bottom border disappear - retain separation from content body (see above) */
-  background: #B0D86D;
-  border-radius: 9px 9px 0px 0px;       /* Tab border is rounded */
-  text-decoration:  none;               /* Remove underline from href */
+	border-bottom: none;									/* Make the bottom border disappear - retain separation from content body (see above) */
+	background: #B0D86D;
+	border-radius: 9px 9px 0px 0px;		 /* Tab border is rounded */
+	text-decoration:	none;						 /* Remove underline from href */
 }
 
 /* Mouse over tab is hilighted */
 div.all_tabs > div.tab:not(:target) > a:hover
 {
-  border-bottom: none;                  /* Make the bottom border disappear - retain separation from content body (see above) */
-  background: #5DC670;                  /* Set mouse-over color to be a brighter green */
-  border-radius: 9px 9px 0px 0px;       /* Tab border is rounded */
+	border-bottom: none;									/* Make the bottom border disappear - retain separation from content body (see above) */
+	background: #5DC670;									/* Set mouse-over color to be a brighter green */
+	border-radius: 9px 9px 0px 0px;		 /* Tab border is rounded */
 }
 
 /* Active tab is dark green */
-div.all_tabs > div.tab:target > a,            /* Apply to the targeted item or... */
+div.all_tabs > div.tab:target > a,						/* Apply to the targeted item or... */
 :target #default2 > a
-{                                             /* ... to the default item */
-  border-bottom: 0.1em solid #448873;   /* Visually connect tab and tab body - remove gap between button and content (see above) */
-  color: #FFFFFF;                       /* Set active tab title font color to white for emphasis, but not bold as it moves the tabs */
-  background: #448873;                  /* Set color of selected tab title. */
-  border-radius: 9px 9px 0px 0px;       /* Tab border is rounded */
-  text-decoration:  none;               /* Remove underline from href */
+{																					 /* ... to the default item */
+	border-bottom: 0.1em solid #448873; /* Visually connect tab and tab body - remove gap between button and content (see above) */
+	color: #FFFFFF;										 /* Set active tab title font color to white for emphasis, but not bold as it moves the tabs */
+	background: #448873;									/* Set color of selected tab title. */
+	border-radius: 9px 9px 0px 0px;		 /* Tab border is rounded */
+	text-decoration:	none;						 /* Remove underline from href */
 }
 
 /**
-  * Container for toolbar and contents - nothing else should be in here - this is the thing who's z-order should shift
-  */
+	* Container for toolbar and contents - nothing else should be in here - this is the thing who's z-order should shift
+	*/
 div.all_tabs > div.tab > div.container
 {
-  top: 1.3em;                         /* The top needs some calculation... */
-  background-color: #CCCCCC;          /* #CCCCCC is light gray.  This is global for all tabs and toolbars unless overridden */
-  border: #448873 solid 3px;            /* This is the color of the main border around the tab content */
-  width: 950px;                         /* Set the horizontal width of the tab content area */
-  height: 600px;                        /* This sets the vertical height of the tab content area - regardless of the content vertical height */
-  z-index: -2;                        /* Behind, because the borders overlap */
-  overflow: hidden;
+	top: 1.3em;											 /* The top needs some calculation... */
+	background-color: #CCCCCC;					/* #CCCCCC is light gray. This is global for all tabs and toolbars unless overridden */
+	border: #448873 solid 3px;						/* This is the color of the main border around the tab content */
+	width: 950px;											 /* Set the horizontal width of the tab content area */
+	height: 600px;												/* This sets the vertical height of the tab content area - regardless of the content vertical height */
+	z-index: -2;												/* Behind, because the borders overlap */
+	overflow: hidden;
 }
 
 /** 
-  * Set up a toolbar for contents of the tab - this is technically inside the section described immediately above 
-  */
+	* Set up a toolbar for contents of the tab - this is technically inside the section described immediately above 
+	*/
 div.all_tabs > div.tab > div.container > div.tab-toolbar
 {
-  position: relative;
-  width: inherit;  
-  height: 30px !important;            /* Tall enough that wierd elements don't make it grow */
-  background-color: #448873;                  /* Use 'selected tab' color. */
-  display: table-cell;
-  vertical-align: middle;
-  font-family: 'theToolbarFonts';
-  font-size: 0.6em;
-  overflow: hidden;
+	position: relative;
+	width: inherit; 
+	height: 30px !important;						/* Tall enough that wierd elements don't make it grow */
+	background-color: #448873;									/* Use 'selected tab' color. */
+	display: table-cell;
+	vertical-align: middle;
+	font-family: 'theToolbarFonts';
+	font-size: 0.6em;
+	overflow: hidden;
 }
+
+/* work in progress */
+div.all_tabs > div.tab > div.container > div.tab-toolbar > select,
+div.all_tabs > div.tab > div.container > div.tab-toolbar > input
+{
+	vertical-align: middle;
+	font-family: 'theToolbarFonts';
+	font-size: 1em;
+}
+
+/* work in progress */
+div.all_tabs > div.tab > div.container > div.tab-toolbar > input[type='checkbox']
+{
+	/* width: 21px; */
+	/* height: 21px; */
+	/* background: url( '../images/CheckBox.png' ) 21px 0px; */
+	/* The image came form this site... */
+	/* http://www.dailycoding.com/Posts/customized_html_controls_creating_custom_checkbox.aspx */
+	/* cursor: crosshair; */
+	padding: 0px;
+  margin: 0px;
+	background-repeat: no-repeat;
+	display: inline-block;
+}
+
+/* work in progress */
+div.all_tabs > div.tab > div.container > div.tab-toolbar > input[type='checkbox']:checked
+{
+	/* background: url( 'images/CheckBox.png' ) 0px 0px; */
+	/* cursor: crosshair;  */
+	/* crosshair, progress, wait */
+}
+
 
 /* This CSS styles the CONTENTS of the ACTIVE tab */
 div.all_tabs > div.tab > div.container > div.content
 {
-  width: inherit;
-  height: 564px;                      /* This requires computation content = container - toolbar - border */
-  overflow: auto;                     /* Scroll bar if needed */
+	width: inherit;
+	height: 564px;											/* This requires computation content = container - toolbar - border */
+	overflow: auto;									 /* Scroll bar if needed */
 }
 
 /* All these DIVs overlap */
 div.all_tabs > div.tab:not(:target) > div.container
 { /* Protect CSS1 & CSS2 browsers */
-  position: absolute;
+	position: absolute;
 }
 
 /* Raise select tab content above the content of the other tabs */
 div.all_tabs > div.tab:target > div.container, :target #dashboard > div.container
 {
-  position: absolute;                  /* All these DIVs should overlap completely with each other */
-  z-index: -1;
+	position: absolute;								/* All these DIVs should overlap completely with each other */
+	z-index: -1;
 }
 
 div.all_tabs > div.tab :target
 {
-  outline: none;
+	outline: none;
 }

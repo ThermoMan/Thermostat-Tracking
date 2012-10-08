@@ -1,10 +1,11 @@
 <?php
 require(dirname(__FILE__).'/../common.php');
 
-touch( '/tmp/thermo_update_status.start' );
+//touch( '/home/fratell1/freitag.theinscrutable.us/thermo2/scripts/thermo_update_status.start' );
 
 /**
- * Because of different structre and use of hvac_status table, migration from old version to new version is non-trivial.
+ *
+ * Because of different structure and use of hvac_status table, migration from old version to new version is non-trivial.
  * The best bet is to set up the new code running in parallel and then once it's verified working in your environment
  *  shut down the old data collectors, export your old historic temperature data and then import into the new structure.
  *  Then drop your old tables and delete your old install
@@ -181,5 +182,5 @@ foreach( $thermostats as $thermostatRec )
   }
   fclose( $lock );
 }
-touch( '/tmp/thermo_update_status.end' );
+//touch( '/home/fratell1/freitag.theinscrutable.us/thermo2/scripts/thermo_update_status.end' );
 ?>

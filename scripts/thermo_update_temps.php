@@ -1,7 +1,7 @@
 <?php
 require(dirname(__FILE__).'/../common.php');
 
-touch( '/tmp/thermo_update_temps.start' );
+//touch( '/home/fratell1/freitag.theinscrutable.us/thermo2/scripts/thermo_update_temps.start' );
 
 /**
  * This script updates the indoor and outdoor temperatures and today's and yesterday total run time for each thermostat
@@ -117,5 +117,5 @@ foreach( $thermostats as $thermostatRec )
   fclose($lock);
 }
 
-touch( '/tmp/thermo_update_temps.end' );
+//touch( '/home/fratell1/freitag.theinscrutable.us/thermo2/scripts/thermo_update_temps.end' );
 ?>
