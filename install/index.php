@@ -6,9 +6,9 @@ if (version_compare(PHP_VERSION, '5.2.4') < 0)
   die('You are running an unsupported PHP version. Please upgrade to PHP 5.2.4 or higher before trying to 3M-50 Thermostat Tracking');
 }
 
-$software = "3M-50-Thermostat-Tracking";
+$software = '3M-50-Thermostat-Tracking';
 // The software is actually version 2.0, but the addition of the installer and some changes to the charts warrant a new number.
-$version = "v2.1";
+$version = 'v2.1.1';
 echo "This script will install 3M-50 Thermostat Tracking software version $version";
 // The hard coded version number in this file should match the label applied in git.
 
@@ -36,36 +36,38 @@ function check_file( $filename )
 {
   if( !is_file( $filename ) )
   {
-    echo "<br>The file $filename is missing, please check your download for completeness.";
+    echo '<br>The file $filename is missing, please check your download for completeness.';
     $fatal_error = $fatal_error + 1;
   }
 }
 // Check for presence of expected directories (pChart directory must be preset, but do not check for every file in there)
 $fatal_error = 0;
-check_dir( "../images" ); // This is separate from the resources directory to make moving to other static object easier later on.
-check_dir( "../install" );
-check_dir( "../scripts" );
-check_dir( "../lib" );
-check_dir( "../resources" );  // Place keeper for CSS and JavaScript files
+check_dir( '../images' ); // This is separate from the resources directory to make moving to other static object easier later on.
+check_dir( '../install' );
+check_dir( '../backup' );
+check_dir( '../scripts' );
+check_dir( '../lib' );
+check_dir( '../logs' );
+check_dir( '../resources' );  // Place keeper for CSS and JavaScript files
 
 // Check for presence of expected files (check for every file that is unique to this program)
-check_file( "../install/index.php" ); // This file (you’re making sure it's in the right place, because duh, it exists)
-check_file( "../draw_daily.php" );
-check_file( "../draw_range.php" );
-check_file( "../draw_runtimes.php" );
-check_file( "../draw_weekly.php" );
-check_file( "../index.php" );
-check_file( "../favicon.ico" );
-check_file( "../README" );
-check_file( "../scripts/thermo_update_status.bat" );
-check_file( "../scripts/thermo_update_status.php" );
-check_file( "../scripts/thermo_update_temps.bat" );
-check_file( "../scripts/thermo_update_temps.php" );
-check_file( "../images/exploits_of_a_mom.png" );
-check_file( "../lib/t_lib.php" );
+check_file( '../install/index.php' ); // This file (you’re making sure it's in the right place, because duh, it exists)
+check_file( '../draw_daily.php' );
+check_file( '../draw_weekly.php' );
+check_file( '../index.php' );
+check_file( '../favicon.ico' );
+check_file( '../README' );
+check_file( '../scripts/thermo_update_status.bat' );
+check_file( '../scripts/thermo_update_status.ksh' );
+check_file( '../scripts/thermo_update_status.php' );
+check_file( '../scripts/thermo_update_temps.bat' );
+check_file( '../scripts/thermo_update_temps.ksh' );
+check_file( '../scripts/thermo_update_temps.php' );
+check_file( '../images/exploits_of_a_mom.png' );
+check_file( '../lib/t_lib.php' );
 if( $fatal_error > 0 )
 {
-  echo "Some of the errors that were detected will prevent this software from working.  Please correct them and try again.";
+  echo '<br>Some of the errors that were detected will prevent this software from working.  Please correct them and try again.';
   exit();
 }
 
@@ -73,10 +75,10 @@ if( $fatal_error > 0 )
 // Reset fatal_error flag and check for errors in SQL stuff
 
 // Ask for database connection info (server name, port, user ID, password)
-$default_db_server_name = "localhost";
-$default_db_port = "3306";
-$default_db_user = "user";
-$default_db_password = "password";
+$default_db_server_name = 'localhost';
+$default_db_port = '3306';
+$default_db_user = 'user';
+$default_db_password = 'password';
 
 // Test that connection works
 // Test that ID has permission to create tables
@@ -89,15 +91,16 @@ $default_db_password = "password";
 
 
 // The DB to create.
-$default_db_name = "thermo2";
+$default_db_name = 'thermo2';
 
-// Actually "" would be a better default, only need to add a prefix when name collision will occur or when you want the names to fall together alphabetically
-$default_db_object_prefix = "thermo__";
-// Using two underscores in the prefix activates some handy magic in phpMyAdmin.
+// Actually '' might be a better default, only need to add a prefix when name collision will occur or when you want the names to fall together alphabetically
+$default_db_object_prefix = 'thermo__';
+// But, using two underscores in the prefix activates some handy magic in phpMyAdmin.
 
 $replace_list = array(
-"**REPLACE_DB_NAME**" => $db_name,
-"**REPLACE_OBJECT_PREFIX**" => $db_object_prefix);
+'**REPLACE_DB_NAME**' => $db_name,
+'**REPLACE_OBJECT_PREFIX**' => $db_object_prefix
+);
 
 function replace_names( $filename, $replace_list )
 {
@@ -108,17 +111,17 @@ function replace_names( $filename, $replace_list )
   //   Do overwrite without warning any previous file with that name.
 }
 
-// Create the file "create_tables.sql" from the file "create_tables.sql.IN"
-replace_names( "create_tables.sql.IN", $replace_list );
+// Create the file 'create_tables.sql' from the file 'create_tables.sql.IN'
+replace_names( 'create_tables.sql.IN', $replace_list );
 
-check_file( "../install/create_tables.sql" );
-run_sql( "create_tables.sql" );
+check_file( '../install/create_tables.sql' );
+run_sql( 'create_tables.sql' );
 // On successful run, copy the generated SQL to the log file so that even after the install directory is deleted it's there for reference.
 
 
 // Need a meta data table that contains the version number in case future installs need to alter the table to update.
 $sql = "insert into " . $db_object_prefix . "meta ( key, value ) values ( \"version\", $version )";
-// Run that SQL
+// Run that SQL (The meta table does not yet exist!)
 // This is the INSTALL script so we can assume there is no pre-existing value to deal with.  In the future an update.php type script will have to care.
 
 // Reset fatal_error flag and test thermostat config
@@ -143,7 +146,7 @@ $sql = "insert into " . $db_object_prefix . "meta ( key, value ) values ( \"vers
 // Wait one minute to see if the status update has created a record "select count(*) from ..." should come back with a number > 0
 
 echo "<br>You have successfully installed the $software software.  It is collecting data and will have useful charts available in a a few hours.";
-echo "<br>Please delete the /install directory before continuing";
+echo '<br>Please delete the /install directory before continuing';
 // Add routines to the other .php files that block execution if the /install directory is still present.
 
 ?>

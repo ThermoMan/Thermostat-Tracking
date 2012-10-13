@@ -89,8 +89,7 @@ INSERT INTO `thermo2__time_index` (`time`) VALUES
 ('22:00:00'),
 ('22:30:00'),
 ('23:00:00'),
-('23:30:00'),
-('24:00:00');
+('23:30:00');
 
 CREATE TABLE IF NOT EXISTS `thermo2__thermostats` (
   `id` int(2) NOT NULL AUTO_INCREMENT,
@@ -105,6 +104,5 @@ CREATE TABLE IF NOT EXISTS `thermo2__thermostats` (
   INDEX `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `thermo2__thermostats` (`ip`,`name`,`model`) VALUES ('192.168.1.171','Downstairs','CT30');
 INSERT INTO `thermo2__thermostats` (`ip`,`name`,`model`) VALUES ('192.168.1.170','Upstairs','CT30');
 
