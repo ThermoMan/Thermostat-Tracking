@@ -8,27 +8,29 @@ if( isset( $_GET['table_flag'] ) && $_GET['table_flag'] == 'true' )
   $table_flag = true;
 }
 
-$to_date = date( 'Y-m-d' );
-if( isset( $_GET['daily_to_date'] ) )
+$from_date = date( 'Y-m-d' );
+if( isset( $_GET['chart_daily_fromDate'] ) )
 { // Use provided date
-  $to_date = $_GET['daily_to_date'];
+  $from_date = $_GET['chart_daily_fromDate'];
+}
+if( ! validate_date( $from_date ) ) return;
+
+$to_date = date( 'Y-m-d' );
+if( isset( $_GET['chart_daily_toDate'] ) )
+{ // Use provided date
+  $to_date = $_GET['chart_daily_toDate'];
 }
 if( ! validate_date( $to_date ) ) return;
 // Verify that date is not future?
 
-$from_date = date( 'Y-m-d' );
-if( isset( $_GET['daily_from_date'] ) )
-{ // Use provided date
-  $from_date = $_GET['from_date'];
-}
-if( ! validate_date( $daily_from_date ) ) return;
 // Verify that date is at least three days BEFORE the to_date?
 
-// Set default cycle display to none
-$show_heat_cycles = (isset($_GET['show_heat_cycles']) && ($_GET['show_heat_cycles'] == 'true')) ? true : false;
-$show_cool_cycles = (isset($_GET['show_cool_cycles']) && ($_GET['show_cool_cycles'] == 'true')) ? true : false;
-$show_fan_cycles  = (isset($_GET['show_fan_cycles'])  && ($_GET['show_fan_cycles']  == 'true')) ? true : false;
 
+// Set default cycle display to none
+// Somehow the "." is converted to an "_" which I guess I have to accept, but I don't like.
+$show_heat_cycles = (isset($_GET['chart_daily_showHeat']) && ($_GET['chart_daily_showHeat'] == 'false')) ? true : false;
+$show_cool_cycles = (isset($_GET['chart_daily_showCool']) && ($_GET['chart_daily_showCool'] == 'false')) ? false : true;
+$show_fan_cycles  = (isset($_GET['chart_daily_showFan'])  && ($_GET['chart_daily_showFan']  == 'true')) ? true : false;
 
 // OK, now that we have a bounding range of dates, build an array of all the dates in the range
 $check_date = $from_date;

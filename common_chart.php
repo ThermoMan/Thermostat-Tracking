@@ -17,8 +17,8 @@ function bobby_tables()
 function validate_date( $some_date )
 {
   $date_pattern = "/[2]{1}[0]{1}[0-9]{2}-[0-9]{2}-[0-9]{2}/";
-  if( !preg_match( $date_pattern, $some_date ) )
-  {
+  if( !preg_match( $date_pattern, $some_date ) || strlen($some_date) != 10)
+  {	// I want it to be EXACTLY YYYY-MM-DD
     bobby_tables();
     return false;
   }

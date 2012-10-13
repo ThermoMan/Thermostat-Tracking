@@ -12,8 +12,8 @@ if( strftime( '%H%M' ) <= '0059' )
 $id = (isset($_REQUEST['id'])) ? $_REQUEST['id'] : '';  // Set default thermostat selection
 
 // Login status
-$password = 'admin';  // This password should be in the config file!
-$isLoggedIn = false;  // By default set logged in status to false.
+//global $password;
+$isLoggedIn = false;	// Default to logged out.
 if( isset($_POST['password']) && ($_POST['password'] == $password ) )
 { // Update logged in status to true only when the correct password has been entered.
   $isLoggedIn = true;
@@ -47,8 +47,8 @@ if( $isLoggedIn )
 				// Perhaps replace this with an animated GIF?
 
         var show_thermostat_id = 'id=' + document.getElementById( 'thermostat_id' ).value;
-        var daily_from_date_string = 'daily_from_date=' + document.getElementById( 'daily_from_date' ).value;
-        var daily_to_date_string = 'daily_to_date=' + document.getElementById( 'daily_to_date' ).value;
+        var daily_from_date_string = 'chart.daily.fromDate=' + document.getElementById( 'chart.daily.fromDate' ).value;
+        var daily_to_date_string = 'chart.daily.toDate=' + document.getElementById( 'chart.daily.toDate' ).value;
 
 				/**
 				  * If the user requests more than about 90 days it will take more than 30 seconds to render
@@ -57,9 +57,9 @@ if( $isLoggedIn )
 					*
 					*/
 
-        var show_heat_cycle_string = 'show_heat_cycles=' + document.getElementById( 'show_heat_cycles' ).checked;
-        var show_cool_cycle_string = 'show_cool_cycles=' + document.getElementById( 'show_cool_cycles' ).checked;
-        var show_fan_cycle_string  = 'show_fan_cycles='  + document.getElementById( 'show_fan_cycles' ).checked;
+        var show_heat_cycle_string = 'chart.daily.showHeat=' + document.getElementById( 'chart.daily.showHeat' ).checked;
+        var show_cool_cycle_string = 'chart.daily.showCool=' + document.getElementById( 'chart.daily.showCool' ).checked;
+        var show_fan_cycle_string  = 'chart.daily.showFan='  + document.getElementById( 'chart.daily.showFan' ).checked;
         var no_cache_string = 'nocache=' + Math.random(); // Browsers are very clever with image caching.  In this case it breaks the web page function.
         var url_string = 'draw_daily.php?' + show_thermostat_id + '&' + daily_from_date_string + '&' + daily_to_date_string + '&' + show_heat_cycle_string  + '&' + show_cool_cycle_string  + '&' + show_fan_cycle_string + '&' + no_cache_string;
         document.getElementById( 'daily_temperature_chart' ).src = url_string;
@@ -69,14 +69,32 @@ if( $isLoggedIn )
 			{
         var show_thermostat_id = 'id=' + document.getElementById( 'thermostat_id' ).value;
 				var table_flag = 'table_flag=true';
-        var daily_from_date_string = 'daily_from_date=' + document.getElementById( 'daily_from_date' ).value;
-        var daily_to_date_string = 'daily_to_date=' + document.getElementById( 'daily_to_date' ).value;
-        var show_heat_cycle_string = 'show_heat_cycles=false';
-        var show_cool_cycle_string = 'show_cool_cycles=false';
-        var show_fan_cycle_string  = 'show_fan_cycles=false';
+        var daily_from_date_string = 'chart.daily.fromDate=' + document.getElementById( 'chart.daily.fromDate' ).value;
+        var daily_to_date_string = 'chart.daily.toDate=' + document.getElementById( 'chart.daily.toDate' ).value;
+        var show_heat_cycle_string = 'chart.daily.showHeat=false';
+        var show_cool_cycle_string = 'chart.daily.showCool=false';
+        var show_fan_cycle_string  = 'chart.daily.showFan=false';
         var url_string = 'draw_daily.php?' + show_thermostat_id + '&' + table_flag + '&' + daily_from_date_string + '&' + daily_to_date_string + '&' + show_heat_cycle_string  + '&' + show_cool_cycle_string  + '&' + show_fan_cycle_string;
 				<!-- document.getElementById( 'foo' ).value = url_string; -->
         document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'" height="430px" width="900px"></iframe>';
+			}
+
+			/**
+			  *	Save the value of the checkbox for later - and update the chart with the new value
+				*/
+			function toggle_daily_flag( flag )
+			{
+				setCookie( flag, document.getElementById(flag).checked );
+				display_daily_temperature();
+			}
+
+			/**
+			  *	Save the value of the field for later - and update the chart with the new value
+				*/
+			function update_daily_value( field )
+			{
+				setCookie( field, document.getElementById(field).value );
+				display_daily_temperature();
 			}
 
 
@@ -115,7 +133,11 @@ if( $isLoggedIn )
         }
       }
 
-      function setCookie( c_name, value, exdays )
+			/**
+			  * Default cookies last for ten years.
+				*
+				*/
+      function setCookie( c_name, value, exdays = 3650 )
       {
         var exdate = new Date();
         exdate.setDate( exdate.getDate() + exdays );
@@ -138,10 +160,23 @@ if( $isLoggedIn )
         }
       }
 
-      /*
-       * Either set up a countdown timer that both updates this clock AND triggers the chart update when hitting 0
-       * or set up a second timer that is a countdown clock and hope it stays in sync with the update routine.
-       */
+			/**
+			  * To erase a cookie, set it with an expiration date prior to now.
+			  */
+			function deleteCookies()
+			{
+				setCookie( 'auto_refresh', '', -1 );
+				setCookie( 'chart.daily.showHeat', '', -1 );
+				setCookie( 'chart.daily.showCool', '', -1 );
+				setCookie( 'chart.daily.showFan', '', -1 );
+				setCookie( 'chart.daily.fromDate', '', -1 );
+				setCookie( 'chart.daily.toDate', '', -1 );
+			}
+
+      /**
+        * Either set up a countdown timer that both updates this clock AND triggers the chart update when hitting 0
+        * or set up a second timer that is a countdown clock and hope it stays in sync with the update routine.
+        */
       function showRefreshTime()
       {
         var today = new Date();
@@ -154,7 +189,40 @@ if( $isLoggedIn )
         document.getElementById( 'daily_update' ).innerHTML = 'Countdown to refresh: ' + h + ':' + m;
       }
 
+			function doLogout()
+			{
+				alert( 'Not implemented' );
+			}
     </script>
+
+		<style>
+			a > div.caveat
+			{
+				display: none;
+				text-align: left;
+			}
+			a:hover > div.caveat
+			{
+				display: block;
+				position: absolute;
+				top: 60px;
+				left: 100px;
+				right: 100px;
+				border: 3px double;
+				padding: 0px 50px 0px 10px;
+				z-index: 100;
+				color: #000000;
+				background-color: #DCDCDC;
+				border-radius: 25px;
+			}
+			img.caveat
+			{
+				position: relative;
+				width: 19px;
+				height: 19px;
+				top: 3px;
+			}
+		</style>
   </head>
 
   <body>
@@ -225,16 +293,17 @@ if( $isLoggedIn )
 <!-- <button type='button' onClick='javascript: show_date.stepDown(); display_daily_temperature();'>&lt;&#8212;</button> -->
             <!-- Need to change the max value to a date computed by Javascript so it stays current -->
 <!-- &nbsp;Choose Date<input type='date' id='show_date' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' onInput='javascript: display_daily_temperature();' step='1'/> -->
-            &nbsp;From Date<input type='date' id='daily_from_date' size='10' value='<?php echo date( 'Y-m-d', time() - 259000 ); ?>' max='<?php echo $show_date; ?>' onInput='javascript: display_daily_temperature();' step='1'/>
-            &nbsp;To Date<input type='date' id='daily_to_date' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' onInput='javascript: display_daily_temperature();' step='1'/>
+            &nbsp;From Date<input type='date' id='chart.daily.fromDate' size='10' value='<?php echo date( 'Y-m-d', time() - 259000 ); ?>' max='<?php echo $show_date; ?>' onInput='javascript: update_daily_value( "chart.daily.fromDate" );' step='1'/>
+            &nbsp;To Date<input type='date' id='chart.daily.toDate' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' onInput='javascript: update_daily_value( "chart.daily.toDate" );' step='1'/>
 <!-- <button type='button' name='show_date' onClick='javascript: document.getElementById("show_date").stepUp(); display_daily_temperature();'>&#8212;&gt;</button> -->
-            &nbsp;Heat Cycles<input type='checkbox' id='show_heat_cycles' name='show_heat_cycles' onChange='javascript: display_daily_temperature();'/>
-            &nbsp;Cool Cycles<input type='checkbox' id='show_cool_cycles' name='show_cool_cycles' onChange='javascript: display_daily_temperature();'/>
-            &nbsp;Fan Cycles<input type='checkbox' id='show_fan_cycles'  name='show_fan_cycles'  onChange='javascript: display_daily_temperature();'/>
+            &nbsp;Heat Cycles<input type='checkbox' id='chart.daily.showHeat' name='chart.daily.showHeat' onChange='javascript: toggle_daily_flag( "chart.daily.showHeat" );'/>
+            &nbsp;Cool Cycles<input type='checkbox' id='chart.daily.showCool' name='chart.daily.showCool' onChange='javascript: toggle_daily_flag( "chart.daily.showCool" );'/>
+            &nbsp;Fan Cycles<input type='checkbox' id='chart.daily.showFan'  name='chart.daily.showFan'  onChange='javascript: toggle_daily_flag( "chart.daily.showFan" );'/>
 <!-- Not yet working so hide it from user until it does...
             <input type='checkbox' id='auto_refresh'     name='auto_refresh'     onChange='javascript: timedRefresh();'/>Auto refresh
             <span id='daily_update' style='float: right; vertical-align: middle; visibility: hidden;'>Countdown to refresh: 00:00</span>
 -->
+						<span style='float: right;'>UN-save settings<input type='button' onClick='javascript: deleteCookies();' value='Clear'></span>
           </div>
           <div class='content'>
             <br>
@@ -242,22 +311,19 @@ if( $isLoggedIn )
               <img id='daily_temperature_chart' src='images/daily_temperature_placeholder.png' alt='The temperatures'>
             </div>
 
-            <!-- This initialization script must fall AFTER declaration of date input box -->
+            <!-- This initialization script must fall AFTER declaration of various inputs -->
             <script type='text/javascript'>
-/* Use cookies to track all check boxes on this screen.
-"chart.daily.showHeat" = true/false or 1/0 whatever is direct transfer of the .value setting
-"chart.daily.showCool"
-"chart.daily.showFan"
-"chart.daily.autoRefresh"
-Perhaps in the header transfer the cookie alies to internal variables and then here move into checkboxes ... no, too complicated.
-Just read the cookie here and load the default value and refresh the chart accordingly
-And on checkbox change, save the new cookie value (so a missing cookie is same as false)
-    // Set initial values for chart
-    document.getElementById('show_date').value = '<?php echo $show_date; ?>';
-    document.getElementById('show_heat_cycles').checked = false;
-    document.getElementById('show_cool_cycles').checked = false;
-    document.getElementById('show_fan_cycles').checked = false;
+							document.getElementById('chart.daily.showCool').checked = getCookie('chart.daily.showCool');
+							document.getElementById('chart.daily.showHeat').checked = getCookie('chart.daily.showHeat');
+							document.getElementById('chart.daily.showFan').checked = getCookie('chart.daily.showFan');
 
+							// Test values before use, don't let null (not set) chnage the defaults
+							if( getCookie('chart.daily.fromDate') )
+								document.getElementById('chart.daily.fromDate').value = getCookie('chart.daily.fromDate');
+							if( getCookie('chart.daily.toDate') )
+								document.getElementById('chart.daily.toDate').value = getCookie('chart.daily.toDate');
+/* Set a timer to implement the auto refresh
+"chart.daily.autoRefresh"
 
     if( getCookie( 'auto_refresh' ) == 'true' )
     {
@@ -265,7 +331,7 @@ And on checkbox change, save the new cookie value (so a missing cookie is same a
       timedRefresh();                                             // So start the timer too
     }
 */
-              display_daily_temperature(); // Draw the chart
+              display_daily_temperature(); // Draw the chart using the applied settings
             </script>
           </div>
         </div>
@@ -278,6 +344,7 @@ And on checkbox change, save the new cookie value (so a missing cookie is same a
         <div class='container'>
           <div class='tab-toolbar'>
             Table uses same date range as the 'Daily Detail' <input type='button' onClick='javascript: display_daily_temperature_table();' value='Chart'>
+						<span style='display: inline-block; float: right;'>&nbsp;UN-save settings<input type='button' onClick='javascript: deleteCookies();' value='Clear'></span>
 					</div>
           <div class='content'>
 						<!-- keep this around, it might be useful -->
@@ -327,15 +394,13 @@ And on checkbox change, save the new cookie value (so a missing cookie is same a
     // Prompt for pwd to login -or- present logout button
     if( ! $isLoggedIn )
     {
-?>
-						<form method='post'>
-							<input name='password' type='password' size='25' maxlength='25'><input value='Login' type='submit'>Please enter your password for access.
-						</form>
-<?php
+			echo '<form method="post">';
+			echo '<input name="password" type="password" size="25" maxlength="25"><input value="Login" type="submit">Please enter your password for access.';
 			if( isset($_POST['password']) && ($_POST['password'] != $password ) )
 			{
 				echo "<font color='red'> Incorrect Username or Password - I think you typed &quot; {$_POST['password']} ?>&quot; </font>";
 			}
+			echo '</form>';
     }
     if( $isLoggedIn )
     {
@@ -370,7 +435,7 @@ And on checkbox change, save the new cookie value (so a missing cookie is same a
                 <td align='center'><?php echo $thermostatRec['model'] ?></td>
                 <td align='left'><?php echo $thermostatRec['fw_version'] ?></td>
                 <td align='left'><?php echo $thermostatRec['wlan_fw_version'] ?></td>
-                <td align='center'><input type='button' value='Edit'></td>
+                <td align='center'><input type='button' value='Edit' onClick='javascript: alert("Not implemented");'></td>
              </tr>
 <?php
       endforeach;
@@ -413,31 +478,33 @@ And on checkbox change, save the new cookie value (so a missing cookie is same a
             </ul>
 						<p>This project is based on the <a target='_blank' href='http://www.radiothermostat.com/filtrete/products/3M-50/'>Filtrete 3M Radio Thermostat</a>.
 						<br><br>
-						<div style='text-align: center; border: 1px solid; margin: 0px 100px 0px 60px; padding: 10px'>
-							<a target='_blank' href='http://validator.w3.org/check?uri=referer'><img style='border:0;width:88px;height:31px;' src='images/valid-html5.png' alt='Valid HTML 5'/></a>
+						<div style='text-align: center;'>
+							<a target='_blank' href='http://validator.w3.org/check?uri=referer'><img style='border:0;width:88px;height:31px;' src='images/valid-html5.png' alt='Valid HTML 5'/><div class='caveat'><!-- ANY whitespace between the start of the anchor and the start of the div adds an underscore to the page -->
+								<ul>
+									<li>The first warning '<b><img class='caveat' src='images/w3c_info.png' alt='Info'>Using experimental feature: HTML5 Conformance Checker.</b>' is provisional until the HTML5 specification is complete.</li>
+									<li>The 4 reported errors '<b><img class='caveat' src='images/w3c_error.png' alt='Error'>Attribute size not allowed on element input at this point.</b>' reported on use of the attribute "size" where input type="date" are incorrect because the HTML 5 validator is provisional until the specification is complete.</li>
+									<li>The 4 reported warnings '<b><img class='caveat' src='images/w3c_warning.png' alt='Warning'>The date input type is so far supported properly only by Opera. Please be sure to test your page in Opera.</b>' may also be read to include Chrome.</li>
+<!--									<li>The final warning '<b><img class='caveat' src='images/w3c_warning.png' alt='Warning'>The scoped attribute on the style element is not supported by browsers yet. It would probably be better to wait for implementations.'</b> complains if the style is not scoped and differently when it is.  The style that it is complaining about is local only to this very message and therefore should <i>not</i> be global.</li> -->
+								</ul>
+							</div></a> <!-- ANY whitespace between the end of the div and the end of the anchor adds an underscore to the page -->
 							<a target='_blank' href='http://jigsaw.w3.org/css-validator/check/referer'><img style='border:0;width:88px;height:31px;' src='http://jigsaw.w3.org/css-validator/images/vcss' alt='Valid CSS!'/></a>
-							<ul>
-							<li style='text-align: left;'>The first warning '<b>Using experimental feature: HTML5 Conformance Checker.</b>' is provisional until the HTML5 specification is complete.</li>
-							<li style='text-align: left;'>The 4 reported errors '<b>Attribute size not allowed on element input at this point.</b>' reported on use of the attribute "size" where input type="date" are incorrect because the HTML 5 validator is provisional until the specification is complete.</li>
-							<li style='text-align: left;'>The 4 reported warnings '<b>The date input type is so far supported properly only by Opera. Please be sure to test your page in Opera.</b>' may also be read to include Chrome.</li>
-							</ul>
-						</div>
+ 						</div>
 
 						<div style='text-align: center;'>
 <?php
-  $uptime = @exec('uptime');
-  if ( strstr($uptime, 'days') )
+  $uptime = @exec( 'uptime' );
+  if( strstr( $uptime, 'days' ) )
   {
-    if ( strstr($uptime, 'min') )
+    if( strstr( $uptime, 'min' ) )
     {
-      preg_match("/up\s+(\d+)\s+days,\s+(\d+)\s+min/", $uptime, $times);
+      preg_match( "/up\s+(\d+)\s+days,\s+(\d+)\s+min/", $uptime, $times );
       $days = $times[1];
       $hours = 0;
       $mins = $times[2];
     }
     else
     {
-      preg_match("/up\s+(\d+)\s+days,\s+(\d+):(\d+),/", $uptime, $times);
+      preg_match( "/up\s+(\d+)\s+days,\s+(\d+):(\d+),/", $uptime, $times );
       $days = $times[1];
       $hours = $times[2];
       $mins = $times[3];
@@ -445,12 +512,12 @@ And on checkbox change, save the new cookie value (so a missing cookie is same a
   }
   else
   {
-    preg_match("/up\s+(\d+):(\d+),/", $uptime, $times);
+    preg_match( "/up\s+(\d+):(\d+),/", $uptime, $times );
     $days = 0;
     $hours = $times[1];
     $mins = $times[2];
   }
-  preg_match("/averages?: ([0-9\.]+),[\s]+([0-9\.]+),[\s]+([0-9\.]+)/", $uptime, $avgs);
+  preg_match( "/averages?: ([0-9\.]+),[\s]+([0-9\.]+),[\s]+([0-9\.]+)/", $uptime, $avgs );
   $load = $avgs[1].", ".$avgs[2].", ".$avgs[3]."";
 
   echo "<br>Server Uptime: $days days $hours hours $mins minutes";

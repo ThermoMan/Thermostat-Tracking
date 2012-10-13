@@ -24,4 +24,11 @@ Deny from All
 deny from all
 </Files>
 
+
+# The goal is to take an URL ending in "index.php" or \ and rewrite it to index.php#daily to make that the default landing page.
+##### Options +FollowSymlinks   ## Might not need this after all
+# RewriteEngine on
+# RewriteRule ^(.*).php$ %{REQUEST_URI}#daily [NE,R,L]
+# The problem is that it tries to rewrite EVERY hit and so you get a redirect loop and the page will not load.
+
 # End of file
