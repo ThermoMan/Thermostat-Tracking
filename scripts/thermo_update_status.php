@@ -149,13 +149,13 @@ foreach( $thermostats as $thermostatRec )
         // if status has changed from on to off, update hvac_cycles
         if( $priorHeatStatus && !$heatStatus )
         {
-          logIt( "$stat->uuid Finished Heat Cycle - Adding Hvac Cycle Record for $uuid 1 $priorStartDateHeat $now" );
+          logIt( "$stat->uuid Finished Heat Cycle - Adding Hvac Cycle Record for $stat->uuid 1 $priorStartDateHeat $now" );
           $cycleInsert->execute( array( $stat->uuid, 1, $priorStartDateHeat, $now ) );
           $newStartDateHeat = null;
         }
         if( $priorCoolStatus && !$coolStatus )
         {
-          logIt( "$stat->uuid Finished Cool Cycle - Adding Hvac Cycle Record for $uuid 2 $priorStartDateCool $now" );
+          logIt( "$stat->uuid Finished Cool Cycle - Adding Hvac Cycle Record for $stat->uuid 2 $priorStartDateCool $now" );
           $cycleInsert->execute( array( $stat->uuid, 2, $priorStartDateCool, $now ) );
           $newStartDateCool = null;
         }
