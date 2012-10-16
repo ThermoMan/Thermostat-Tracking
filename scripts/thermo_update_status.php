@@ -161,7 +161,7 @@ foreach( $thermostats as $thermostatRec )
         }
         if( $priorFanStatus && !$fanStatus )
         {
-          logIt( "$stat->uuid Finished Fan Cycle - Adding Hvac Cycle Record for $uuid 3 $priorStartDateFan $now" );
+          logIt( "$stat->uuid Finished Fan Cycle - Adding Hvac Cycle Record for $stat->uuid 3 $priorStartDateFan $now" );
           $cycleInsert->execute( array( $stat->uuid, 3, $priorStartDateFan, $now ) );
           $newStartDateFan = null;
         }
