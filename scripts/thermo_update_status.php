@@ -96,9 +96,9 @@ foreach( $thermostats as $thermostatRec )
       $sysName = $stat->getSysName();
       sleep(1); // allow thermostat to catch  up
 
-      logIt( "Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->name MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
+      logIt( "Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->sysName MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
       //Update thermostat info in DB
-      $queryThermInfo->execute(array( $stat->uuid , $stat->name, $stat->model, $stat->fw_version, $stat->wlan_fw_version, $thermostatRec['id']));
+      $queryThermInfo->execute(array( $stat->uuid , $stat->sysName, $stat->model, $stat->fw_version, $stat->wlan_fw_version, $thermostatRec['id']));
 
       // Get thermostat state
       $statData = $stat->getStat();
