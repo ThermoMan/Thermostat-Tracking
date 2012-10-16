@@ -23,6 +23,9 @@ catch( Exception $e )
   doError( 'DB Exception: ' . $e->getMessage() );
 }
 
+$today = date( 'Y-m-d' );
+$yesterday = date( 'Y-m-d', strtotime( 'yesterday' ));
+
 $outdoorTemp = -999;            // Default outside temp  (would using null be better for the charting package?)
 $outdoorHumidity = null;        // Default outside humidity (in case not working with CT80 or similar unit)
 try
@@ -38,8 +41,6 @@ catch( Exception $e )
   doError( 'External weather failed: ' . $e->getMessage() );
 }
 
-$today = date( 'Y-m-d' );
-$yesterday = date( 'Y-m-d', strtotime( 'yesterday' ));
 foreach( $thermostats as $thermostatRec )
 {
   $lockFileName = $lockFile . $thermostatRec['id'];
