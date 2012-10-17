@@ -1,7 +1,11 @@
-# Updated August 12, 2012
+# Updated 17 Oct 2012
 
 ServerSignature Off
+
+<IfModule mod_autoindex.c>
 IndexIgnore *
+</IfModule>
+
 Options All -Indexes
 
 DirectoryIndex index.php

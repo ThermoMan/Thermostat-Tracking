@@ -96,9 +96,9 @@ foreach( $thermostats as $thermostatRec )
       $sysName = $stat->getSysName();
       sleep(1); // allow thermostat to catch  up
 
-      logIt( "Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->name MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
+      logIt( "Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->sysName MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
       //Update thermostat info in DB
-      $queryThermInfo->execute(array( $stat->uuid , $stat->name, $stat->model, $stat->fw_version, $stat->wlan_fw_version, $thermostatRec['id']));
+      $queryThermInfo->execute(array( $stat->uuid , $stat->sysName, $stat->model, $stat->fw_version, $stat->wlan_fw_version, $thermostatRec['id']));
 
       // Get thermostat state
       $statData = $stat->getStat();
@@ -149,19 +149,19 @@ foreach( $thermostats as $thermostatRec )
         // if status has changed from on to off, update hvac_cycles
         if( $priorHeatStatus && !$heatStatus )
         {
-          logIt( "$stat->uuid Finished Heat Cycle - Adding Hvac Cycle Record for $uuid 1 $priorStartDateHeat $now" );
+          logIt( "$stat->uuid Finished Heat Cycle - Adding Hvac Cycle Record for $stat->uuid 1 $priorStartDateHeat $now" );
           $cycleInsert->execute( array( $stat->uuid, 1, $priorStartDateHeat, $now ) );
           $newStartDateHeat = null;
         }
         if( $priorCoolStatus && !$coolStatus )
         {
-          logIt( "$stat->uuid Finished Cool Cycle - Adding Hvac Cycle Record for $uuid 2 $priorStartDateCool $now" );
+          logIt( "$stat->uuid Finished Cool Cycle - Adding Hvac Cycle Record for $stat->uuid 2 $priorStartDateCool $now" );
           $cycleInsert->execute( array( $stat->uuid, 2, $priorStartDateCool, $now ) );
           $newStartDateCool = null;
         }
         if( $priorFanStatus && !$fanStatus )
         {
-          logIt( "$stat->uuid Finished Fan Cycle - Adding Hvac Cycle Record for $uuid 3 $priorStartDateFan $now" );
+          logIt( "$stat->uuid Finished Fan Cycle - Adding Hvac Cycle Record for $stat->uuid 3 $priorStartDateFan $now" );
           $cycleInsert->execute( array( $stat->uuid, 3, $priorStartDateFan, $now ) );
           $newStartDateFan = null;
         }

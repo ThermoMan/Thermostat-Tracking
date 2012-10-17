@@ -2,6 +2,8 @@
 require(dirname(__FILE__).'/../common.php');
 
 //touch( '/home/fratell1/freitag.theinscrutable.us/thermo2/scripts/thermo_update_temps.start' );
+$today = date( 'Y-m-d' );
+$yesterday = date( 'Y-m-d', strtotime( 'yesterday' ));
 
 /**
  * This script updates the indoor and outdoor temperatures and today's and yesterday total run time for each thermostat
@@ -38,8 +40,6 @@ catch( Exception $e )
   doError( 'External weather failed: ' . $e->getMessage() );
 }
 
-$today = date( 'Y-m-d' );
-$yesterday = date( 'Y-m-d', strtotime( 'yesterday' ));
 foreach( $thermostats as $thermostatRec )
 {
   $lockFileName = $lockFile . $thermostatRec['id'];

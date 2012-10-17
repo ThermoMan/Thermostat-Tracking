@@ -36,7 +36,7 @@ function check_file( $filename )
 {
   if( !is_file( $filename ) )
   {
-    echo '<br>The file $filename is missing, please check your download for completeness.';
+    echo "<br>The file $filename is missing, please check your download for completeness.";
     $fatal_error = $fatal_error + 1;
   }
 }

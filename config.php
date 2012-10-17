@@ -9,8 +9,15 @@
   */
 $lockFile = '/tmp/thermo.lock';
 
-// Really need to have timezone for each location AND timezone for server.
-// At present this is used to force the servers (php procesor, web server, DB server) to think they are in the same timezone as the location of all the thermostats.
+/**
+  * Really need to have timezone for each location so that all data is stored in the 'local' zone.
+  * At present this is used to force the servers (php procesor, web server, DB server) to think they
+  *  are in the same timezone as the location of all the thermostats.
+	*
+  * If you are using a system that does not understand timezones (for example Synology NAS) or you are
+  *  using it in a 100% local environment
+  * $timezone = 'SYSTEM';
+	*/
 $timezone = 'America/Los_Angeles';
 
 // Your ZIP code  (still assuming that all thermostats are in one location.  Multi-location support comes later.

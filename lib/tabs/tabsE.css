@@ -154,6 +154,14 @@ div.all_tabs > div.tab > div.container > div.tab-toolbar > input
 	font-size: 1em;
 }
 
+/* This is for the stuff that is in a span so it can float: right - work in progress */
+div.all_tabs > div.tab > div.container > div.tab-toolbar > span > input
+{
+	vertical-align: middle;
+	font-family: 'theToolbarFonts';
+	font-size: 1em;
+}
+
 /* work in progress */
 div.all_tabs > div.tab > div.container > div.tab-toolbar > input[type='checkbox']
 {
