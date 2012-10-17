@@ -31,7 +31,7 @@ $weatherConfig = array(
 
 // Database connection parameters
 $dbConfig = array(
- 'dsn'          => 'mysql:host=localhost:3306;dbname=thermo',
+ 'dsn'          => 'mysql:host=localhost:port=3306;dbname=thermo',
  'username'     => 'user',
  'password'     => 'password',
  'table_prefix' => 'thermo2__'             // Prefix to attach to all table/procedure names to make unique in unknown environment.
