@@ -267,12 +267,22 @@ $MyData->setAxisName( 0, 'Temperatures' );
 $MyData->setSerieDescription( 'Labels', 'The march of the hours' );
 $MyData->setAbscissa( 'Labels' );
 
-// Create the pChart object
-$myPicture = new pImage( 900, 430, $MyData );
 
-// Turn off Antialiasing
-$myPicture->Antialias = TRUE;
+/**
+	* Set variables for going into common block
+	*/
+if( $dayCount == 1 ) $picTitle = "Show temperatures for $from_date";
+else $picTitle = "Show temperatures for $from_date - $to_date ($dayCount days)";
+$chartTitle = "Temperature every $minutes minutes across the span of dates";
+// Explicity set a scale for the drawing.
+$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ) );
 
+
+/**
+	* START of common block - this code should be identical for all charts so that they have a common look and feel
+	*/
+$myPicture = new pImage( 900, 430, $MyData );	// Create the pChart object
+$myPicture->Antialias = TRUE;									// Turn on Antialiasing
 
 // Draw the background
 $Settings = array( 'R' => 170, 'G' => 183, 'B' => 87, 'Dash' => 1, 'DashR' => 190, 'DashG' => 203, 'DashB' => 107, 'Alpha' => 60 );
@@ -282,7 +292,7 @@ $myPicture->drawFilledRectangle( 0, 0, 900, 430, $Settings );
 $Settings = array( 'StartR' => 219, 'StartG' => 231, 'StartB' => 139, 'EndR' => 1, 'EndG' => 138, 'EndB' => 68, 'Alpha' => 50 );
 $myPicture->drawGradientArea( 0, 0, 900, 430, DIRECTION_VERTICAL, $Settings );
 $Settings = array( 'StartR' => 0, 'StartG' => 0, 'StartB' => 0, 'EndR' => 50, 'EndG' => 50, 'EndB' => 50, 'Alpha' => 80 );
-$myPicture->drawGradientArea( 0, 0, 900,  20, DIRECTION_VERTICAL, $Settings );
+$myPicture->drawGradientArea( 0, 0, 900,	20, DIRECTION_VERTICAL, $Settings );
 
 // Add a border to the picture
 $myPicture->drawRectangle( 0, 0, 899, 429, array( 'R' => 0, 'G' => 0, 'B' => 0 ) );
@@ -290,60 +300,60 @@ $myPicture->drawRectangle( 0, 0, 899, 429, array( 'R' => 0, 'G' => 0, 'B' => 0 )
 // Set font for all descriptive text
 $myPicture->setFontProperties( array( 'FontName' => 'lib/fonts/Copperplate_Gothic_Light.ttf', 'FontSize' => 10 ) );
 
-// Write the picture title
-if( $dayCount == 1 )
-{
-	$myPicture->drawText( 10, 14, 'Show temperatures for ' . $from_date, array( 'R' => 255, 'G' => 255, 'B' => 255) );
-}
-else
-{
-	$myPicture->drawText( 10, 14, 'Show temperatures for ' . $from_date . ' - ' . $to_date . " ($dayCount days)", array( 'R' => 255, 'G' => 255, 'B' => 255) );
-}
-
-// Write the chart title
-$myPicture->drawText( 60, 55, "Temperature every $minutes minutes across the span of dates", array( 'FontSize' => 12, 'Align' => TEXT_ALIGN_BOTTOMLEFT ) );
+// Write picture and chart titles
+$myPicture->drawText( 10, 14, $picTitle, array( 'R' => 255, 'G' => 255, 'B' => 255) );
+$myPicture->drawText( 60, 55, $chartTitle, array( 'FontSize' => 12, 'Align' => TEXT_ALIGN_BOTTOMLEFT ) );
 
 // Write the picture timestamp
 $myPicture->drawText( 680, 14, 'Last update ' . date( 'Y-m-d H:i' ), array( 'R' => 255, 'G' => 255, 'B' => 255) );
 
-// Define the chart area
-$myPicture->setGraphArea( 60, 60, 850, 390 );
+$myPicture->setGraphArea( 60, 60, 850, 390 );	 // Define the chart area
 
-// Explicity set a scale for the drawing.
-$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ) );
 // Draw the scale
 $myPicture->setFontProperties( array( 'FontName' => 'lib/pChart2.1.3/fonts/pf_arma_five.ttf', 'FontSize' => 6 ) );
-$scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'XMargin' => 10, 'YMargin' => 10, 'Floating' => FALSE, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE );
+$scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE );
 $myPicture->drawScale( $scaleSettings );
 
-// Define shadows under series lines
-$myPicture->setShadow( TRUE, array( 'X' => 1, 'Y' => 1, 'R' => 0, 'G' => 0, 'B' => 0, 'Alpha' => 40 ) );
-// Draw the lines
-$myPicture->drawLineChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DISPLAY_AUTO ) );
-// No more shadows (so they only apply to the lines)
-$myPicture->setShadow( FALSE );
-
 // Write the chart legend
-$myPicture->setFontProperties( array( 'FontName' => 'lib/pChart2.1.3/fonts/pf_arma_five.ttf', 'FontSize' => 8 ) );
-$myPicture->drawLegend( 710, 412, array( 'Style' => LEGEND_NOBORDER, 'Mode' => LEGEND_HORIZONTAL ) );
+$myPicture->setFontProperties( array( 'FontName' => 'lib/pChart2.1.3/fonts/pf_arma_five.ttf', 'FontSize' => 6 ) );
+$myPicture->setShadow( TRUE, array( 'X' => 1, 'Y' => 1, 'R' => 0, 'G' => 0, 'B' => 0, 'Alpha' => 10 ) );
+$myPicture->drawLegend( 60, 412, array( 'Style' => LEGEND_NOBORDER, 'Mode' => LEGEND_HORIZONTAL ) );
+// END of common block
 
-/*
- * This representation of cycle runtimes has one serious omission.
- *
- * Omission 1 is that presently running cycles are not shown since the data is soruced from the completed cycle table.
- *            to fix that a small query on the per minute table with a start time of the last stop from the first SQL
- *            should be added.  The display should indicate this is open ended (lighter color perhaps or use static images?)
- */
+
+// Draw the chart(s)
+//$myPicture->setShadow( TRUE, array( 'X' => 1, 'Y' => 1, 'R' => 0, 'G' => 0, 'B' => 0, 'Alpha' => 40 ) );	// Define shadows under series lines
+$myPicture->drawLineChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DISPLAY_AUTO ) );
+//$myPicture->setShadow( FALSE );		// No more shadows (so they only apply to the lines)
+
+
+/**
+	* After the chart is created, overlay the HVAC cycles.  I draw these manually because I can't
+	*  find a horizontal 'stacked' bar chart that allows missing pieces in it in pChart.
+	*
+	* To make the rendering portion faster it would be better to do the SQL operations before the initiation
+	*  of the charting and copy the data into an array to pass in to the drawing code.
+	*
+	* This representation of cycle runtimes has some serious omissions.
+	*
+	* Omission 1:
+	*  is that presently running cycles are not shown since the data is soruced from the completed cycle table.
+	*  to fix that a small query on the per minute table with a start time of the last stop from the first SQL
+	*  should be added.  The display should indicate this is open ended (lighter color perhaps or use static images?)
+	*
+	* Others were fixed....
+	*/
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
 { // For a $show_date of '2012-07-10' get the start and end bounding datetimes
-  $start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));  // "2012-07-10 00:00:00";
-  $end_date = strftime( '%Y-%m-%d 23:59:59', strtotime($to_date));    // "2012-07-10 23:59:59";
+  $start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));	// "2012-07-10 00:00:00";
+  $end_date = strftime( '%Y-%m-%d 23:59:59', strtotime($to_date));			// "2012-07-10 23:59:59";
 
-  /*
-   * This SQL should include cycles that started on the previous night or ended on the following morning for any given date
-   *
-   * Ought to graphically differentiate those open ended cycles somehow?
-   */
+  /**
+		* This SQL should include cycles that started on the previous night or ended on the
+		*  following morning for any given date.
+		*
+		* Ought to graphically differentiate those open ended cycles somehow?
+		*/
   $sql =
   "SELECT system,
 					DATEDIFF( start_time, ? ) AS start_day,
@@ -366,36 +376,32 @@ echo "<br>uuid is $uuid";
   $result = $query->execute(array( $start_date, $start_date, $start_date, $start_date, $end_date, $end_date, $start_date, $end_date, $uuid ) );
 
   // The rounded corners look so much better, but the run times are so short that the rounds seldom appear.
-  //$HeatRectSettings = array( "R" => 200, "G" => 100, "B" => 100, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
-  //$CoolRectSettings = array( "R" =>  50, "G" =>  50, "B" => 200, "BorderR" =>  0, "BorderG" =>  0, "BorderB" => 0, "Alpha" => 75 );
-  //$FanRectSettings  = array( "R" => 255, "G" => 255, "B" =>   0, "BorderR" =>  1, "BorderG" =>  1, "BorderB" => 1, "Alpha" => 75 );
   $HeatGradientSettings = array( 'StartR' => 200, 'StartG' => 100, 'StartB' => 100, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
   $CoolGradientSettings = array( 'StartR' =>  50, 'StartG' =>  50, 'StartB' => 200, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
   $FanGradientSettings  = array( 'StartR' => 255, 'StartG' => 255, 'StartB' =>   0, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
   $RectHeight = 20;
-  //$RectCornerRadius = 3;
   $HeatRectRow = 150;
   $CoolRectRow = 175;
   $FanRectRow = 200;
   $LeftMargin = 69;
   $PixelsPerMinute = 0.5354 / $dayCount;
-  /*
-   * Assumptions:
-   *  1. The chart X-axis represents 24 hours
-   *  2. The chart horizontal area is 782 pixels wide (so each pixel represents 1.84 minutes)
-   *
-   * Why 0.5354?
-   *
-   * The chart area boundary is defined as 900px wide.
-   * There are 70 pixels left of the 00:00.  There are 59 pixels to the right of 24:00
-   * There are 1440 minutes in a day
-   * (900 - (70 + 59)) / 1440 = .5354
-   *
-   * The $dayCount factor was added to account for the number of days in the display.  Too many days and the dispaly will be really ugly
-   */
+  /**
+		* Assumptions:
+		*  1. The chart X-axis represents 24 hours
+		*  2. The chart horizontal area is 782 pixels wide (so each pixel represents 1.84 minutes)
+		*
+		* Why 0.5354?
+		*
+		* The chart area boundary is defined as 900px wide.
+		* There are 70 pixels left of the 00:00.  There are 59 pixels to the right of 24:00
+		* There are 1440 minutes in a day
+		* (900 - (70 + 59)) / 1440 = .5354
+		*
+		* The $dayCount factor was added to account for the number of days in the display.  Too many days and the dispaly will be really ugly
+		*
+		* Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
+		*/
 
-  // Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
-  //while( $row = mysql_fetch_array( $result ) )
 //echo "<table border='1'>";
   while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
   {
@@ -405,24 +411,19 @@ foreach($row as $cell)echo "<td>$cell</td>";
 echo '</tr>';
 */
     // 'YYYY-MM-DD HH:mm:00'  There are NO seconds in these data points.
-
     $cycle_start = $LeftMargin + (($row['start_day'] * 1440) + ($row['start_hour'] * 60) + $row['start_minute'] ) * $PixelsPerMinute;
     $cycle_end   = $LeftMargin + (($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute;
 
-    //$myPicture->setShadow( TRUE, array( "X" => -1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 75 ) );
     if( $row['system'] == 1 && $show_heat_cycles == 1 )
     { // Heat
-      //$myPicture->drawRoundedFilledRectangle( $cycle_start, $HeatRectRow, $cycle_end, $HeatRectRow + $RectHeight, $RectCornerRadius, $HeatRectSettings );
       $myPicture->drawGradientArea( $cycle_start, $HeatRectRow, $cycle_end, $HeatRectRow + $RectHeight, DIRECTION_HORIZONTAL, $HeatGradientSettings );
     }
     else if( $row['system'] == 2 && $show_cool_cycles == 1 )
     { // A/C
-      //$myPicture->drawRoundedFilledRectangle( $cycle_start, $CoolRectRow, $cycle_end, $CoolRectRow + $RectHeight, $RectCornerRadius, $CoolRectSettings );
       $myPicture->drawGradientArea( $cycle_start, $CoolRectRow, $cycle_end, $CoolRectRow + $RectHeight, DIRECTION_HORIZONTAL, $CoolGradientSettings );
     }
     else if( $row['system']== 3 && $show_fan_cycles == 1 )
     { // Fan
-      //$myPicture->drawRoundedFilledRectangle( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, $RectCornerRadius, $FanRectSettings );
       $myPicture->drawGradientArea( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, DIRECTION_HORIZONTAL, $FanGradientSettings );
     }
   }
@@ -435,7 +436,6 @@ echo '</tr>';
   */
   // From that date roll forward and see if there is more than once cycle to add
 }
-
 
 $myPicture->autoOutput( 'images/daily_chart.png' );
 ?>

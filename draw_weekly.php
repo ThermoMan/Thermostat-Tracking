@@ -211,8 +211,35 @@ $MyData->setAxisName( 0, 'Temperatures' );
 $MyData->setSerieDescription( 'Labels', 'Days' );
 $MyData->setAbscissa( 'Labels' );
 
-$myPicture = new pImage( 900, 430, $MyData ); // Create the pChart object
-$myPicture->Antialias = TRUE;								 // Turn on Antialiasing
+/**
+	* Set variables for going into common block
+	*/
+$picTitle = 'Show the historic temperatures';
+$chartTitle = 'Min/Max for each day in the record';
+// Explicity set scales for the drawing.
+if( $show_hvac_runtime )
+{	// Include temperature and runtime in this scale
+	$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ), 1 => array ( 'Min' => $chart_runtime_min, 'Max' => $chart_runtime_max ) );
+}
+else
+{	// Only include temeprature in this scale
+	$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ) );
+}
+/**
+  * This block of code turns off the legend display for the outdoor and indoor bands.  The
+	*  reason I turn it off is that the legend shows that as FOUR series in different colors and
+	*  not as the TWO "zone" charts with their banded colors.
+	*/
+$MyData->setSerieDrawable( 'Outdoor Min', FALSE );
+$MyData->setSerieDrawable( 'Outdoor Max', FALSE );
+$MyData->setSerieDrawable( 'Indoor Min', FALSE );
+$MyData->setSerieDrawable( 'Indoor Max', FALSE );
+
+/**
+	* START of common block - this code should be identical for all charts so that they have a common look and feel
+	*/
+$myPicture = new pImage( 900, 430, $MyData );	// Create the pChart object
+$myPicture->Antialias = TRUE;									// Turn on Antialiasing
 
 // Draw the background
 $Settings = array( 'R' => 170, 'G' => 183, 'B' => 87, 'Dash' => 1, 'DashR' => 190, 'DashG' => 203, 'DashB' => 107, 'Alpha' => 60 );
@@ -230,46 +257,27 @@ $myPicture->drawRectangle( 0, 0, 899, 429, array( 'R' => 0, 'G' => 0, 'B' => 0 )
 // Set font for all descriptive text
 $myPicture->setFontProperties( array( 'FontName' => 'lib/fonts/Copperplate_Gothic_Light.ttf', 'FontSize' => 10 ) );
 
-// Write the picture title
-$myPicture->drawText( 10, 14, 'Show the historic temperatures', array( 'R' => 255, 'G' => 255, 'B' => 255) );
+// Write picture and chart titles
+$myPicture->drawText( 10, 14, $picTitle, array( 'R' => 255, 'G' => 255, 'B' => 255) );
+$myPicture->drawText( 60, 55, $chartTitle, array( 'FontSize' => 12, 'Align' => TEXT_ALIGN_BOTTOMLEFT ) );
 
-// Write the chart title
-$myPicture->drawText( 60, 55, 'Min/Max for each day in the record', array( 'FontSize' => 12, 'Align' => TEXT_ALIGN_BOTTOMLEFT ) );
+// Write the picture timestamp
+$myPicture->drawText( 680, 14, 'Last update ' . date( 'Y-m-d H:i' ), array( 'R' => 255, 'G' => 255, 'B' => 255) );
 
 $myPicture->setGraphArea( 60, 60, 850, 390 );	 // Define the chart area
 
-// Explicity set a scale for the drawing.
-if( $show_hvac_runtime )
-{	// Include temperature and runtime in this scale
-	$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ), 1 => array ( 'Min' => $chart_runtime_min, 'Max' => $chart_runtime_max ) );
-}
-else
-{	// Only include temeprature in this scale
-	$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ) );
-}
-
 // Draw the scale
 $myPicture->setFontProperties( array( 'FontName' => 'lib/pChart2.1.3/fonts/pf_arma_five.ttf', 'FontSize' => 6 ) );
-$Settings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE );
-//$Settings = array( 'Pos' => SCALE_POS_LEFTRIGHT, 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'LabelingMethod' => LABELING_ALL, 'GridR' => 255, 'GridG' => 255, 'GridB' => 255, 'GridAlpha' => 50, 'TickR' => 0, 'TickG' => 0, 'TickB' => 0, 'TickAlpha' => 50, 'LabelRotation' => 0, 'CycleBackground' => 1, 'DrawXLines' => 1, 'DrawSubTicks' => 1, 'SubTickR' => 255, 'SubTickG' => 0, 'SubTickB' => 0, 'SubTickAlpha' => 50, 'DrawYLines' => array(0) );
-$myPicture->drawScale( $Settings );
+$scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE );
+$myPicture->drawScale( $scaleSettings );
 
-/**
-	* Write the chart legend
-	*
-	* Frustrating that there is no actual auto-position function for this legend.
-	* Since the 'indoor' and 'outdoor' texts are different lengths they have to be manually positioned.
-	* The right hand end of the legend is aligned between these two charts and all the others too.
-	*/
+// Write the chart legend - convert all legends to left aligned because there is no auto right alignment
 $myPicture->setFontProperties( array( 'FontName' => 'lib/pChart2.1.3/fonts/pf_arma_five.ttf', 'FontSize' => 6 ) );
 $myPicture->setShadow( TRUE, array( 'X' => 1, 'Y' => 1, 'R' => 0, 'G' => 0, 'B' => 0, 'Alpha' => 10 ) );
-/*
-if( $show_hvac_runtime )
-{	// Conceal the runtime data that will be displayed as bar chart from the temperature graph code
-	$MyData->setSerieDrawable( 'Heat', FALSE );
-	$MyData->setSerieDrawable( 'Cool', FALSE );
-}
-*/
+$myPicture->drawLegend( 60, 412, array( 'Style' => LEGEND_NOBORDER, 'Mode' => LEGEND_HORIZONTAL ) );
+// END of common block
+
+// Draw the chart(s)
 if( $indoor == 0 || $indoor == 2 )
 {
 	$Settings = array( 'AreaR' => 200, 'AreaG' => 100, 'AreaB' => 100, 'AreaAlpha' => 80 );
