@@ -71,8 +71,9 @@ $query->execute( array( $uuid ) );
 $MyData = new pData();
 
 // Set default boundaries for chart
-$chart_y_min = $normal_low;
-$chart_y_max = $normal_high;
+$chart_y_min = $normalLows[ date( 'n', strtotime($from_date) )-1 ];
+$chart_y_max = $normalHighs[ date( 'n', strtotime($from_date) )-1 ];
+
 $chart_runtime_min = 0;
 $chart_runtime_max = 1440;
 /**
@@ -86,6 +87,10 @@ $chart_runtime_max = 1440;
 $old_month = -1;
 $days = $query->rowCount();	// Determine the number of days in the resultset.
 $first = true;
+
+// This is an offset to stop the colors from inverting when some values get too close to each other
+$delta = 0.1;	// Value used to be 0.75 which worked for some specific data glitches but not all.  Trying lower number because the glitches would go away when another day was added anyway.
+
 while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
 {
 	/**
@@ -133,20 +138,25 @@ while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
 	}
 	$old_month = substr( $row['date'], 5, 2 );
 
-	// The fake 1.5 degree difference forced into the data here is to prevent a charting bug from inverting the colors in some regions
+	// The fake $delta difference forced into the data here is to prevent a charting bug from inverting the colors in some regions
 	if( $indoor == 0 || $indoor == 2 )
 	{
-		$MyData->addPoints( $row[ 'outdoor_min' ] - 0.75, 'Outdoor Min' );
-		$MyData->addPoints( $row[ 'outdoor_max' ] + 0.75, 'Outdoor Max' );
-		if( $row[ 'outdoor_min' ] < $chart_y_min ) $chart_y_min = $row[ 'outdoor_min' ];
-		if( $row[ 'outdoor_max' ] > $chart_y_max ) $chart_y_max = $row[ 'outdoor_max' ];
+		$MyData->addPoints( $row[ 'outdoor_min' ] - $delta, 'Outdoor Min' );
+		$MyData->addPoints( $row[ 'outdoor_max' ] + $delta, 'Outdoor Max' );
+		/**
+		  * Compare this to the similar bounding logic in draw_daily.php
+		  * The odds of a 'VOID' as a result of this SQL is very very low.
+		  * So there is nothing fancy here.
+			*/
+		while( $row[ 'outdoor_min' ] - $delta - $chart_y_min < 0 ) $chart_y_min -= 10;
+		while( $row[ 'outdoor_max' ] + $delta - $chart_y_max > 0 ) $chart_y_max += 10;
 	}
 	if( $indoor == 1 || $indoor == 2 )
 	{
-		$MyData->addPoints( $row[ 'indoor_min' ] - 0.75, 'Indoor Min' );
-		$MyData->addPoints( $row[ 'indoor_max' ] + 0.75, 'Indoor Max' );
-		if( $row[ 'indoor_min' ] < $chart_y_min ) $chart_y_min = $row[ 'indoor_min' ];
-		if( $row[ 'indoor_max' ] > $chart_y_max ) $chart_y_max = $row[ 'indoor_max' ];
+		$MyData->addPoints( $row[ 'indoor_min' ] - $delta, 'Indoor Min' );
+		$MyData->addPoints( $row[ 'indoor_max' ] + $delta, 'Indoor Max' );
+		while( $row[ 'indoor_min' ] - $delta - $chart_y_min < 0 ) $chart_y_min -= 10;
+		while( $row[ 'indoor_max' ] + $delta - $chart_y_max > 0 ) $chart_y_max += 10;
 	}
 
 	if( $show_hvac_runtime )
@@ -160,8 +170,9 @@ while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
 }
 
 // Add a little padding so the chart doesn't butt into the edges
-$chart_y_min -= 5;
-$chart_y_max += 5;
+//$chart_y_min -= 5;
+//$chart_y_max += 5;
+// Removed when I converted from simple min/max to monthly min/man and added 10 degree bounding logic
 
 // Attach the data series to the axis (by ordinal)
 if( $indoor == 0 || $indoor == 2 )

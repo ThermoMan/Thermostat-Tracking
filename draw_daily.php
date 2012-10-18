@@ -117,17 +117,19 @@ if( $dayCount >= 70 )
 $query = $pdo->prepare( $sql );
 
 
+// Set default boundaries for chart
+$chart_y_min = $normalLows[ date( 'n', strtotime($from_date) )-1 ];
+$chart_y_max = $normalHighs[ date( 'n', strtotime($from_date) )-1 ];
+
 if( ! $table_flag )
 { // Create, then populate the pData object (it expects to be presented as an img src=)
 	$MyData = new pData();
-
-	// Set default boundaries for chart
-	$chart_y_min = $normal_low;
-	$chart_y_max = $normal_high;
 }
 else
 {	// Start the tabular display
 	echo '<link href="resources/thermo.css" rel="stylesheet" type="text/css" />';	// It expects to be presented in an iframe which does NOT inherit the parent css
+	echo "<br>Normal low for this month is $chart_y_min.";
+	echo "<br>Normal high for this month is $chart_y_max.";
 	echo "<br>Showing data every $minutes minutes for $dayCount days from $from_date to $to_date.";
 	//echo "<br>The SQL<br>$sql";
 	echo '<table class="thermo_chart"><th class="thermo_chart">Date</th><th class="thermo_chart">Indoor Temp</th><th class="thermo_chart">Outdoor Temp</th>';
@@ -218,24 +220,30 @@ This is dependant upon server load...
 			}
 			$MyData->addPoints( ($row['indoor_temp'] == 'VOID' ? VOID : $row['indoor_temp']), 'Indoor' );
 			$MyData->addPoints( ($row['outdoor_temp'] == 'VOID' ? VOID : $row['outdoor_temp']), 'Outdoor' );
-
-			// Expand chart boundaries to contain data that exceeds the default boundaries
-			if( $row['indoor_temp'] < $chart_y_min ) $chart_y_min = $row['indoor_temp'];
-			if( $row['indoor_temp'] > $chart_y_max ) $chart_y_max = $row['indoor_temp'];
-			if( $row['outdoor_temp'] < $chart_y_min ) $chart_y_min = $row['outdoor_temp'];
-			if( $row['outdoor_temp'] > $chart_y_max ) $chart_y_max = $row['outdoor_temp'];
 		}
 		else
 		{
 			echo '<tr><td class="thermo_chart">'.$row['date'].'</td><td class="thermo_chart">'.($row['indoor_temp'] == 'VOID' ? '&nbsp;' : $row['indoor_temp']).'</td><td class="thermo_chart">'.($row['outdoor_temp'] == 'VOID' ? '&nbsp;' : $row['outdoor_temp']).'</td></tr>';
 		}
 		$very_first = false;
+
+		/**
+		  * Expand chart boundaries to contain data that exceeds the default boundaries
+		  * 'VOID' values test poorly in inequality against numeric values so us 50 when the data is bad.
+		  * Increement or decrement by ten to keep the chart boundaries pretty
+			*/
+		while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) < $chart_y_min ) $chart_y_min -= 10;
+		while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) > $chart_y_max ) $chart_y_max += 10;
+		while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) < $chart_y_min ) $chart_y_min -= 10;
+		while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) > $chart_y_max ) $chart_y_max += 10;
   }
 }
 
 if( $table_flag )
 {	// If we're showing the data in a chart, we're done now.  Wrap up the table tag and press the eject button.
 	echo '</table>';
+	echo "<br>Adjusted low for this month is $chart_y_min.";
+	echo "<br>Adjusted high for this month is $chart_y_max.";
 	return;
 }
 
@@ -327,9 +335,9 @@ $myPicture->drawLegend( 710, 412, array( 'Style' => LEGEND_NOBORDER, 'Mode' => L
  *            should be added.  The display should indicate this is open ended (lighter color perhaps or use static images?)
  */
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
-{ // For a $show_date of "2012-07-10" get the start and end bounding datetimes
-  $start_date = strftime( "%Y-%m-%d 00:00:00", strtotime($from_date));  // "2012-07-10 00:00:00";
-  $end_date = strftime( "%Y-%m-%d 23:59:59", strtotime($to_date));    // "2012-07-10 23:59:59";
+{ // For a $show_date of '2012-07-10' get the start and end bounding datetimes
+  $start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));  // "2012-07-10 00:00:00";
+  $end_date = strftime( '%Y-%m-%d 23:59:59', strtotime($to_date));    // "2012-07-10 23:59:59";
 
   /*
    * This SQL should include cycles that started on the previous night or ended on the following morning for any given date
@@ -392,11 +400,11 @@ echo "<br>uuid is $uuid";
   while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
   {
 /*
-echo "<tr>";
+echo '<tr>';
 foreach($row as $cell)echo "<td>$cell</td>";
-echo "</tr>";
+echo '</tr>';
 */
-    // "YYYY-MM-DD HH:mm:00"  There are NO seconds in these data points.
+    // 'YYYY-MM-DD HH:mm:00'  There are NO seconds in these data points.
 
     $cycle_start = $LeftMargin + (($row['start_day'] * 1440) + ($row['start_hour'] * 60) + $row['start_minute'] ) * $PixelsPerMinute;
     $cycle_end   = $LeftMargin + (($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute;

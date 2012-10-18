@@ -51,12 +51,23 @@ $password = 'admin';
 
 
 // Display variables
+/**
+  * Set normal temperature range so the charts always scale the same way
+	*
+  * Hi/Low temps for each month (January to December).  Based on normal hi/low temps.  These temps are in
+  * degrees F and are  manually updated for now.
+	* Add +/- 10 when displaying to try to keep the lines in the chart from banging into the edges of the area.
+	*
+	* Ideas for future:
+	*  + Connect normal high/low to location.
+	*  + Store in the DB along with the locations.
+	*  + Keep track of F/C in the database and convert to preference when displaying
+	*  + Always store in degrees F and convert to degrees C for display since each degree F is a smaller
+	*     increment than each degree C
+	*/
+$normalHighs = array( 60, 70, 70, 80, 90, 100, 100, 100, 90, 80, 70, 60 );
+$normalLows  = array( 30, 40, 40, 50, 60,  70,  70,  70, 60, 50, 40, 30 );
 
-// Set normal temperature range so the charts always scale the same way
-$normal_low = 70;
-$normal_high = 110;   // Oh heck it's hot here.
-// Idea for future, have separate summer/winter values
-// Idea for future, connect normal high/low to location?
 
 // advent_light Bedizen calibri Forgotte MankSans GeosansLight
 // pf_arma_five verdana Silkscreen Copperplate_Gothic_Light
