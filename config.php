@@ -29,16 +29,25 @@ $ZIP = '90210';
   * noaa requires an api_loc - see http://w1.weather.gov/xml/current_obs/ for the correct xml url for your location
   */
 $weatherConfig = array(
-    'type'    => 'weatherunderground',     // weatherunderground, noaa, weatherbug
-    'units'   => 'F',                      // F, C
+    'type'    => 'weatherunderground',     
+    // weatherunderground, noaa, weatherbug
+    'units'   => 'F',                      
+    // F, C
     'api_key' => '0000000000000000',
-    'api_loc' => ''                        // blank, http://w1.weather.gov/xml/current_obs/KUZA.xml
+    // Registered API key
+    'api_loc' => '' 
+    // blank (uses ZIP)
+    // URL - User Specific
+    //   See  http://www.wunderground.com/weather/api/d/docs
+    //        http://weather.weatherbug.com/desktop-weather/api-documents.html
+    //        http://w1.weather.gov/xml/current_obs/
+
 );
 
 
 // Database connection parameters
 $dbConfig = array(
- 'dsn'          => 'mysql:host=localhost:port=3306;dbname=thermo',
+ 'dsn'          => 'mysql:host=localhost;port=3306;dbname=thermo',
  'username'     => 'user',
  'password'     => 'password',
  'table_prefix' => 'thermo2__'             // Prefix to attach to all table/procedure names to make unique in unknown environment.
