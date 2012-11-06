@@ -83,7 +83,6 @@ foreach( $thermostats as $thermostatRec )
   */
 
       $model = $stat->getModel();
-      sleep(1); // allow thermostat to catch up
 
       /**
         * This catches the uuid which is required for data insert.
@@ -94,7 +93,6 @@ foreach( $thermostats as $thermostatRec )
         * Need a system generated surrogate key instead of uuid to join from thermostat table to data table.
         */
       $sysName = $stat->getSysName();
-      sleep(1); // allow thermostat to catch  up
 
       logIt( "Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->sysName MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
       //Update thermostat info in DB
