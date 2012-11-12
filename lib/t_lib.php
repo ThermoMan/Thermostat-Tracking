@@ -167,29 +167,27 @@ class Stat
 	
 	protected function containsTransient( $obj )
 	{
-$this->debug = true;
 		$retval = false;
 		foreach ( $obj as $key => &$value ) {
 			if (is_object($value))
 				foreach ( $value as $key2 => &$value2 ) {
 				if ($value2 == -1) {
-					if( $this->debug )
+					//if( $this->debug )
 						echo "WARNING (" . date(DATE_RFC822) . "): " . $key2 . " contained a transient\n";
 					// NULL the -1 transient
-					$value2 = NULL;
+					//$value2 = NULL;
 					$retval = true;
 				}
 				}
 			if ($value == -1) {
-				if( $this->debug )
+				//:if( $this->debug )
 					echo "WARNING (" . date(DATE_RFC822) . "): " . $key . " contained a transient\n";
 				// NULL the -1 transient
-				$value = NULL;
+				//$value = NULL;
 				$retval = true;
 			}
 		}
 		return $retval;
-$this->debug = false;		
 	}
 
 	public function showMe()
@@ -311,26 +309,38 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
 	
 	public function getStat()
 	{
-		$outputs = $this->getStatData( '/tstat' );
-		// {"temp":80.50,"tmode":2,"fmode":0,"override":0,"hold":0,"t_cool":80.00,"tstate":2,"fstate":1,"time":{"day":2,"hour":18,"minute":36},"t_type_post":0}
-		$obj = json_decode( $outputs );
-		
-		// Check for transients
-		$trans = $this->containsTransient( $obj );
-		
-		if ($trans) {
-			$outputs = $this->getStatData( '/tstat' );
-			$obj = json_decode( $outputs );
-			if ($this->debug)
-				print_r($obj);
-		}
-
-		if( empty( $obj ) )
+		/* Query thermostat for data and check the query for transients.
+		   If there are transients repeat query up to 5 times for collecting good data
+		   Continue when successful
+		*/
+		for ($i=1; $i<=5; $i++)
 		{
-			throw new Thermostat_Exception( 'No output from thermostat' );
+			$outputs = $this->getStatData( '/tstat' );
+			// {"temp":80.50,"tmode":2,"fmode":0,"override":0,"hold":0,"t_cool":80.00,"tstate":2,"fstate":1,"time":{"day":2,"hour":18,"minute":36},"t_type_post":0}
+			$obj = json_decode( $outputs );
+			
+			if (!$this->containsTransient( $obj ))
+			{
+				break;
+			}
+			else
+			{
+				if ($i == 5)
+				{
+					throw new Thermostat_Exception( 'Too many thermostat transient failures' );
+				}
+				else
+				{
+					echo "Transient failure " . $i . " retrying...\n";
+				}
+			}
+			
+			if( empty( $obj ) )
+			{
+				throw new Thermostat_Exception( 'No output from thermostat' );
+			}
 		}
-
-
+		
 		// Move fetched data to internal data structure
 		$this->temp = $obj->{'temp'};             // Present temp in deg F (or C depending on thermostat setting)
 		$this->tmode = $obj->{'tmode'};           // Present t-stat mode
