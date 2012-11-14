@@ -331,7 +331,7 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
 				}
 				else
 				{
-					echo "Transient failure " . $i . " retrying...\n";
+					echo "Transient (" . date(DATE_RFC822) . ") failure " . $i . " retrying...\n";
 				}
 			}
 			
