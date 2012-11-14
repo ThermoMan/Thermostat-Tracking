@@ -64,8 +64,18 @@ class ExternalWeather
         {
           throw new ExternalWeather_Exception('Weatherbug API key not set');
         }
-
-        $url = 'http://api.wxbug.net/getLiveWeatherRss.aspx?ACode=' . $this->config['api_key'] . '&zipcode=' . $zip . '&unittype=0';
+        // Check if user configured URL for Weather API
+        if ( isset($this->config['api_loc']) )
+        {
+          // Use the user specified URL (e.g. personal weather station)
+          $url = $this->config['api_loc'];
+        }
+        else
+        {
+          // Create URL based on zip code and current conditions
+          $url = 'http://api.wxbug.net/getLiveWeatherRss.aspx?ACode=' . $this->config['api_key'] . '&zipcode=' . $zip . '&unittype=0';
+        }
+      
         if( !$doc = file_get_contents($url) )
         {
           throw new ExternalWeather_Exception('Could not contact weatherbug api');
@@ -95,8 +105,17 @@ class ExternalWeather
           throw new ExternalWeather_Exception('Weatherunderground API key not set');
         }
 
-        // New API that requires registration
-        $url = 'http://api.wunderground.com/api/' . $this->config['api_key'] . '/conditions/q/' . $zip . '.xml';
+        // Check if user configured URL for Weather API
+        if ( isset($this->config['api_loc']) )
+        {
+          // Use the user specified URL (e.g. personal weather station)
+          $url = $this->config['api_loc'];
+        }
+        else
+        {
+          // Create URL based on zip code and current conditions
+          $url = 'http://api.wunderground.com/api/' . $this->config['api_key'] . '/conditions/q/' . $zip . '.xml';
+        }
         if( !$doc = file_get_contents($url) )
         {
           throw new ExternalWeather_Exception('Could not contact weatherunderground weather api');

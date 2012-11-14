@@ -11,7 +11,7 @@ $yesterday = date( 'Y-m-d', strtotime( 'yesterday' ));
 
 try
 {
-  $sql = "INSERT INTO {$dbConfig['table_prefix']}temperatures( tstat_uuid, date, indoor_temp, outdoor_temp, indoor_humidity, outdoor_humidity, set_point ) VALUES ( ?, CONCAT( SUBSTR( NOW() , 1, 17 ) , \"00\" ), ?, ?, ?, ?, ? )";
+  $sql = "INSERT INTO {$dbConfig['table_prefix']}temperatures( tstat_uuid, date, indoor_temp, outdoor_temp, indoor_humidity, outdoor_humidity, set_point ) VALUES ( ?, CONCAT( SUBSTR( NOW() , 1, 15 ) , \"0:00\" ), ?, ?, ?, ?, ? )";
   $queryTemp = $pdo->prepare($sql);
 
   $sql = "DELETE FROM {$dbConfig['table_prefix']}run_times WHERE date = ? AND tstat_uuid = ?";
@@ -25,7 +25,7 @@ catch( Exception $e )
   doError( 'DB Exception: ' . $e->getMessage() );
 }
 
-$outdoorTemp = -999;            // Default outside temp  (would using null be better for the charting package?)
+$outdoorTemp = null;            // Default outside temp  (would using null be better for the charting package?)
 $outdoorHumidity = null;        // Default outside humidity (in case not working with CT80 or similar unit)
 try
 {
