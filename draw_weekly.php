@@ -28,6 +28,8 @@ if( isset( $_GET['history_from_date'] ) )
 }
 if( ! validate_date( $from_date ) ) return;
 // Verify that date is at least three DAYS before the to_date?
+// It crashes if there is only one day.
+// It works, but looks pretty stupid when there are two days
 
 
 // If they don't ask for runtime, they don't get it.
@@ -215,14 +217,20 @@ $MyData->setAbscissa( 'Labels' );
 	* Set variables for going into common block
 	*/
 $picTitle = 'Show the historic temperatures';
-$chartTitle = 'Min/Max for each day in the record';
-// Explicity set scales for the drawing.
 if( $show_hvac_runtime )
-{	// Include temperature and runtime in this scale
+{
+	$chartTitle = 'Min/Max and HVAC run times for each day in the record';
+
+	// Explicity set scale(s) for the drawing.
+	// Include temperature AND runtime in this scale
 	$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ), 1 => array ( 'Min' => $chart_runtime_min, 'Max' => $chart_runtime_max ) );
 }
 else
-{	// Only include temeprature in this scale
+{
+	$chartTitle = 'Min/Max for each day in the record';
+
+	// Explicity set scale(s) for the drawing.
+	// Include ONLY temperature in this scale
 	$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ) );
 }
 /**
@@ -269,6 +277,7 @@ $myPicture->setGraphArea( 60, 60, 850, 390 );	 // Define the chart area
 // Draw the scale
 $myPicture->setFontProperties( array( 'FontName' => 'lib/pChart2.1.3/fonts/pf_arma_five.ttf', 'FontSize' => 6 ) );
 $scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE );
+// Sadly 'CycleBackground' is applied to all scales equally so when you turn on the run times you get an ugly background change.
 $myPicture->drawScale( $scaleSettings );
 
 // Write the chart legend - convert all legends to left aligned because there is no auto right alignment
@@ -284,17 +293,15 @@ if( $indoor == 0 || $indoor == 2 )
 	$myPicture->drawZoneChart( 'Outdoor Min', 'Outdoor Max', $Settings );
 }
 if( $indoor == 1 || $indoor == 2 )
-{ // Each letter in the font I've picked is 10 pixels wide.
+{
 	$Settings = array( 'AreaR' => 100, 'AreaG' => 100, 'AreaB' => 200, 'AreaAlpha' => 80 );
 	$myPicture->drawZoneChart( 'Indoor Min', 'Indoor Max', $Settings );
 }
 
 if( $show_hvac_runtime )
-{	// If the runtimes were requested and data loaded then
-	// draw the run times as bar charts
-	$MyData->setSerieDrawable( 'Heat', TRUE );
-	$MyData->setSerieDrawable( 'Cool', TRUE );
+{	// If the runtimes were requested and data loaded then draw the run times as bar charts
 
+	// Setting a non-existent series drawability to FALSE creates an error - hence the logic for what NOT to draw.
 	if( $indoor == 0 || $indoor == 2 )
 	{
 		$MyData->setSerieDrawable( 'Outdoor Min', FALSE );
@@ -306,16 +313,16 @@ if( $show_hvac_runtime )
 		$MyData->setSerieDrawable( 'Indoor Max', FALSE );
 	}
 
+	$MyData->setSerieDrawable( 'Heat', TRUE );
+	$MyData->setSerieDrawable( 'Cool', TRUE );
+
 	$myPicture->drawBarChart( array( 'Gradient' => 1, 'AroundZero' => TRUE, 'Interleave' => 2 ) );
 
+	// Add horizontal markers at 5, 10, and 15 hours of runtime.
 	$myPicture->drawThreshold( 300, array( 'AxisID' => 1, 'WriteCaption' => TRUE, 'Caption' => ' 5 Hours', 'BoxAlpha' => 90, 'BoxR' => 255, 'BoxG' => 40, 'BoxB' => 70, 'Alpha' => 100, 'Ticks' => 1, 'R' => 255, 'G' => 40, 'B' => 70 ) );
 	$myPicture->drawThreshold( 600, array( 'AxisID' => 1, 'WriteCaption' => TRUE, 'Caption' => '10 Hours', 'BoxAlpha' => 90, 'BoxR' => 255, 'BoxG' => 40, 'BoxB' => 70, 'Alpha' => 100, 'Ticks' => 1, 'R' => 255, 'G' => 40, 'B' => 70 ) );
 	$myPicture->drawThreshold( 900, array( 'AxisID' => 1, 'WriteCaption' => TRUE, 'Caption' => '15 Hours', 'BoxAlpha' => 90, 'BoxR' => 255, 'BoxG' => 40, 'BoxB' => 70, 'Alpha' => 100, 'Ticks' => 1, 'R' => 255, 'G' => 40, 'B' => 70 ) );
 }
-
-
-//$myPicture->setShadow( TRUE, array( 'X' => 1, 'Y' => 1, 'R' => 0, 'G' =>0 , 'B' =>0 , 'Alpha' => 10 ) );
-//$myPicture->setFontProperties( array( 'FontName' => 'lib/pChart2.1.3/fonts/Forgotte.ttf', 'FontSize' => 11 ) );
 
 // Render the picture
 $myPicture->autoOutput( 'images/weekly_chart.png' );

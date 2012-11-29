@@ -6,6 +6,7 @@ ServerSignature Off
 IndexIgnore *
 </IfModule>
 
+# Disable Directory Listings in this Directory and Subdirectories
 Options All -Indexes
 
 DirectoryIndex index.php
@@ -28,11 +29,18 @@ Deny from All
 deny from all
 </Files>
 
-
 # The goal is to take an URL ending in "index.php" or \ and rewrite it to index.php#daily to make that the default landing page.
-##### Options +FollowSymlinks   ## Might not need this after all
-# RewriteEngine on
-# RewriteRule ^(.*).php$ %{REQUEST_URI}#daily [NE,R,L]
+<IfModule mod_rewrite.c> 
+###Options +FollowSymLinks  # No matter what you may read ANYWHERE, this is NOT needed.
+RewriteEngine On
+#RewriteBase /thermo2/
+#RewriteCond %{REQUEST_URI} ^(.*)\#(.*)$
+#RewriteRule ^(.*)\#(.*)$ %{REQUEST_URI}[L]
+#RewriteRule ^$ index.php#daily [NE,R,L]
+#RewriteRule ^index\.php$ index.php#daily [NE,R,L]
+
+#RewriteRule ^(.*).php$ %{REQUEST_URI}#daily [NE,R,L]
 # The problem is that it tries to rewrite EVERY hit and so you get a redirect loop and the page will not load.
+</IfModule>
 
 # End of file

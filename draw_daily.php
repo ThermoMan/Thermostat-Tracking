@@ -5,20 +5,20 @@ require_once 'common_chart.php';
 $table_flag = false;
 if( isset( $_GET['table_flag'] ) && $_GET['table_flag'] == 'true' )
 {
-  $table_flag = true;
+	$table_flag = true;
 }
 
 $from_date = date( 'Y-m-d' );
 if( isset( $_GET['chart_daily_fromDate'] ) )
 { // Use provided date
-  $from_date = $_GET['chart_daily_fromDate'];
+	$from_date = $_GET['chart_daily_fromDate'];
 }
 if( ! validate_date( $from_date ) ) return;
 
 $to_date = date( 'Y-m-d' );
 if( isset( $_GET['chart_daily_toDate'] ) )
 { // Use provided date
-  $to_date = $_GET['chart_daily_toDate'];
+	$to_date = $_GET['chart_daily_toDate'];
 }
 if( ! validate_date( $to_date ) ) return;
 // Verify that date is not future?
@@ -38,13 +38,13 @@ $days = array( $check_date );
 $dayCount = 1;
 while( $check_date != $to_date )
 {
-  $check_date = date( 'Y-m-d', strtotime( '+1 day', strtotime( $check_date ) ) );
-  array_push( $days, $check_date );
+	$check_date = date( 'Y-m-d', strtotime( '+1 day', strtotime( $check_date ) ) );
+	array_push( $days, $check_date );
 	$dayCount++;
-  if( $dayCount > 31 )
-  { // Special logic for large data sets
+	if( $dayCount > 31 )
+	{ // Special logic for large data sets
 		/**
-		  * A large data set takes a long time to graph.  90 days at one temp per half-hour takes more than
+			* A large data set takes a long time to graph.  90 days at one temp per half-hour takes more than
 			* 30 seconds and that is osme kind of hard-limit coded into the chart package.  And the chart
 			* package just aborts...
 			*
@@ -58,47 +58,47 @@ while( $check_date != $to_date )
 			* Version one should just put up the 'on the hour' data.  Version 2 should use an averge of on hour
 			* and on half-hour.  Version 3 should examine the trend and use the max when trend is up and the min
 			* when the trend is down.
-		  */
+			*/
 
 		/**
-		  * But for now, stop at 31 days.
+			* But for now, stop at 31 days.
 			*
 			* Alter the $to_date variable so that it all just works AND the user sees the change in the chart text
 			*/
 /*
 		$to_date = $check_date;
-    break;
+		break;
 */
   }
 }
 
-/*
- *   The DB design for the project is still not as pretty as it could be.  The conversion to a 3 section system is starting though.
- * Section 1 has to do with the collection of data.  That is _mostly_ what is going on in there now.
- *           Check in \scripts for the processes that ADD data to the database.
- *
- * Section 2 will have to do with the presentation of the data in charts.  For instance that hvac_cycles table
- *           exists for two reasons.  Firstly it keeps the 'per minute' table lightweight and secondly it makes charting easier.
- *           If the application adds notifications (for instance power out or over temperature situations) that is reporting
- *           and will go here
- *           The new table time_index has been added to replace a really long nasty SQL section of hard-coded time stamps.  The
- *           table name ought to reflect the function. Perhaps should be renamed to chart_time_index?  And don't forget the
- *           global table name prefix either! (The name might look like thermo2__chart_time_index)
- *
- * Section 3 will be for the management of the website that presents the data.  If there will be a user registration system, the
- *           data for that will be stored in this set of tables.
- *
- *   The goal of this split of design is for two purposes.
- * Purpose 1 is for good MVC separation.  While ideological adherence to any design pattern is usually detrimental to real-world
- *           coding, patterns exist to make things easier to maintain in the long run.  Patterns are tools, use the ones that
- *           make life easy, discard the ones that are a PITA.
- *
- * Purpose 2 is for integration with other projects.  For instance the TED-5000 project also collects data and presents it.  The
- *           two projects can be used together and as such the data collection tables are unique to each project, but the website
- *           management are functionally identical and therefore when used together these tables should NOT be dupicated. In
- *           addition each project has it's own charting needs, but the combined charts will have constraints because of the shared
- *           presentation needs.
- */
+/**
+	*   The DB design for the project is still not as pretty as it could be.  The conversion to a 3 section system is starting though.
+	* Section 1 has to do with the collection of data.  That is _mostly_ what is going on in there now.
+	*           Check in \scripts for the processes that ADD data to the database.
+	*
+	* Section 2 will have to do with the presentation of the data in charts.  For instance that hvac_cycles table
+	*           exists for two reasons.  Firstly it keeps the 'per minute' table lightweight and secondly it makes charting easier.
+	*           If the application adds notifications (for instance power out or over temperature situations) that is reporting
+	*           and will go here
+	*           The new table time_index has been added to replace a really long nasty SQL section of hard-coded time stamps.  The
+	*           table name ought to reflect the function. Perhaps should be renamed to chart_time_index?  And don't forget the
+	*           global table name prefix either! (The name might look like thermo2__chart_time_index)
+	*
+	* Section 3 will be for the management of the website that presents the data.  If there will be a user registration system, the
+	*           data for that will be stored in this set of tables.
+	*
+	*   The goal of this split of design is for two purposes.
+	* Purpose 1 is for good MVC separation.  While ideological adherence to any design pattern is usually detrimental to real-world
+	*           coding, patterns exist to make things easier to maintain in the long run.  Patterns are tools, use the ones that
+	*           make life easy, discard the ones that are a PITA.
+	*
+	* Purpose 2 is for integration with other projects.  For instance the TED-5000 project also collects data and presents it.  The
+	*           two projects can be used together and as such the data collection tables are unique to each project, but the website
+	*           management are functionally identical and therefore when used together these tables should NOT be dupicated. In
+	*           addition each project has it's own charting needs, but the combined charts will have constraints because of the shared
+	*           presentation needs.
+	*/
 
 $sql =
 "SELECT CONCAT( ?, ' ', b.time ) AS date,
@@ -140,33 +140,34 @@ $very_first = true;
 
 foreach( $days as $show_date )
 {
-  $dates .= $show_date . '   ';
+	$dates .= $show_date . '   ';
 
-  $query->execute( array( $show_date, $show_date, $uuid ) );
+	$query->execute( array( $show_date, $show_date, $uuid ) );
 
-  $counter = 0;
+	$counter = 0;
 	$first_row = true;
-  while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
-  {
-/* Chart of things that work for X-axis labels
-days  divisor
- 1		 $dayCount
- 6		 $dayCount
- 7		 6
- 8		 6
- 9		 8
-10		 8
-11		12 (date and noon)
-16		12
-17		24 (date only)
-31		24
-32		each week start date
-70 Change to every hour SELECT instead of every half hour SELECT
-The charting softwre borks if the internal rendering time limit of 30 seconds is hit.  Happens around
-~75 days of every half-hour
-~80 days of hours
-This is dependant upon server load...
-*/
+	while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
+	{
+/**
+	* Chart of things that work for X-axis labels (work in progress to have optimal spacing)
+	* days  divisor
+	*  1		 $dayCount
+	*  6		 $dayCount
+	*  7		 6
+	*  8		 6
+	*  9		 8
+	* 10		 8
+	* 11		12 (date and noon)
+	* 16		12
+	* 17		24 (date only)
+	* 31		24
+	* 32		each week start date
+	* 70 Change to every hour SELECT instead of every half hour SELECT
+	* The charting software borks if the internal rendering time limit of 30 seconds is hit.  Happens around
+	* ~75 days of every half-hour
+	* ~80 days of hours
+	* This crash is VERY is dependant upon server load...
+	*/
 		if( $dayCount > 13 ) $labelDivisor = 24;
 		else if( $dayCount > 10 ) $labelDivisor = 12;
 		else if( $dayCount >  8 ) $labelDivisor =  8;
