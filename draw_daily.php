@@ -345,9 +345,6 @@ $myPicture->drawLineChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DI
 	* Others were fixed....
 	*/
 
-$myPicture->drawText( 680, 24, 'show_heat_cycles ' . $show_heat_cycles, array( 'R' => 255, 'G' => 255, 'B' => 255) );
-$myPicture->drawText( 680, 34, 'show_cool_cycles ' . $show_cool_cycles, array( 'R' => 255, 'G' => 255, 'B' => 255) );
-$myPicture->drawText( 680, 44, 'show_fan_cycles ' . $show_fan_cycles, array( 'R' => 255, 'G' => 255, 'B' => 255) );
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
 { // For a $show_date of '2012-07-10' get the start and end bounding datetimes
   $start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));	// "2012-07-10 00:00:00";
