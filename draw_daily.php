@@ -28,9 +28,9 @@ if( ! validate_date( $to_date ) ) return;
 
 // Set default cycle display to none
 // Somehow the "." is converted to an "_" which I guess I have to accept, but I don't like.
-$show_heat_cycles = (isset($_GET['chart_daily_showHeat']) && ($_GET['chart_daily_showHeat'] == 'false')) ? true : false;
-$show_cool_cycles = (isset($_GET['chart_daily_showCool']) && ($_GET['chart_daily_showCool'] == 'false')) ? false : true;
-$show_fan_cycles  = (isset($_GET['chart_daily_showFan'])  && ($_GET['chart_daily_showFan']  == 'true')) ? true : false;
+$show_heat_cycles = (isset($_GET['chart_daily_showHeat']) && ($_GET['chart_daily_showHeat'] == 'false')) ? 0 : 1;
+$show_cool_cycles = (isset($_GET['chart_daily_showCool']) && ($_GET['chart_daily_showCool'] == 'false')) ? 0 : 1;
+$show_fan_cycles  = (isset($_GET['chart_daily_showFan'])  && ($_GET['chart_daily_showFan']  == 'false')) ? 0 : 1;
 
 // OK, now that we have a bounding range of dates, build an array of all the dates in the range
 $check_date = $from_date;
@@ -344,7 +344,11 @@ $myPicture->drawLineChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DI
 	*
 	* Others were fixed....
 	*/
-if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) >0 )
+
+$myPicture->drawText( 680, 24, 'show_heat_cycles ' . $show_heat_cycles, array( 'R' => 255, 'G' => 255, 'B' => 255) );
+$myPicture->drawText( 680, 34, 'show_cool_cycles ' . $show_cool_cycles, array( 'R' => 255, 'G' => 255, 'B' => 255) );
+$myPicture->drawText( 680, 44, 'show_fan_cycles ' . $show_fan_cycles, array( 'R' => 255, 'G' => 255, 'B' => 255) );
+if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
 { // For a $show_date of '2012-07-10' get the start and end bounding datetimes
   $start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));	// "2012-07-10 00:00:00";
   $end_date = strftime( '%Y-%m-%d 23:59:59', strtotime($to_date));			// "2012-07-10 23:59:59";
