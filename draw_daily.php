@@ -111,7 +111,7 @@ $minutes = '30';
 
 if( $dayCount >= 70 )
 {	// Reduce data set if there are more than 70 days.
-	$sql .= "WHERE SUBSTR( b.time, 2, 3 ) != ':30' ";
+	$sql .= "WHERE SUBSTR( b.time, 3, 3 ) != ':30' ";
 	$minutes = '60';	// Repeated setting is redundant, but it's better to keep this text change with the SQL change.
 }
 $query = $pdo->prepare( $sql );
