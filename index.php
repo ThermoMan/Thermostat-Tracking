@@ -12,10 +12,11 @@ if( strftime( '%H%M' ) <= '0059' )
 $id = (isset($_REQUEST['id'])) ? $_REQUEST['id'] : '';	// Set default thermostat selection
 
 // Login status
-//global $password;
 $isLoggedIn = false;	// Default to logged out.
 if( isset($_POST['password']) && ($_POST['password'] == $password ) )
 { // Update logged in status to true only when the correct password has been entered.
+	//session_register( 'user_name' );
+	$_SESSION[ 'login_user' ] = 'user_name';
 	$isLoggedIn = true;
 }
 
@@ -23,11 +24,18 @@ if( isset($_POST['password']) && ($_POST['password'] == $password ) )
 // Set Config tab icon default value
 $lockIcon = 'images/Lock.png';			// Default to locked
 $lockAlt = 'icon: lock';
+$verifyText = 'No';
 if( $isLoggedIn )
 {
 	// Set Config tab icon logged-in value
 	$lockIcon = 'images/Unlock.png';	// Change to UNlocked icon only when user is logged in
 	$lockAlt = 'icon: unlock';
+
+	if( isset($_POST['save_settings'] ) )
+	{
+		$verifyText = 'Yes';
+		//save_settings();
+	}
 }
 ?>
 
@@ -138,7 +146,6 @@ if( $isLoggedIn )
 			  *
 			  * exdays is an optional parameter that defaults to ten years when missing.
 			  */
-			// function setCookie( c_name, value, exdays = 3650 )
 			function setCookie( c_name, value, exdays )
 			{
 				// Chrome does not like to see '=' in the argument list of a function declaration.  Here is plan B.
@@ -176,6 +183,12 @@ if( $isLoggedIn )
 				setCookie( 'chart.daily.showFan', '', -1 );
 				setCookie( 'chart.daily.fromDate', '', -1 );
 				setCookie( 'chart.daily.toDate', '', -1 );
+
+				document.getElementById('chart.daily.showHeat').className = '';
+				document.getElementById('chart.daily.showCool').className = '';
+				document.getElementById('chart.daily.showFan').className = '';
+				document.getElementById('chart.daily.fromDate').className = '';
+				document.getElementById('chart.daily.toDate').className = '';
 			}
 
 			/**
@@ -200,6 +213,7 @@ if( $isLoggedIn )
 			}
 		</script>
 
+		<!-- These styles are applied to the W3C HTML button on the About tab only and do not need to be part of the .css file -->
 		<style>
 			a > div.caveat
 			{
@@ -318,15 +332,35 @@ if( $isLoggedIn )
 
 						<!-- This initialization script must fall AFTER declaration of various inputs -->
 						<script type='text/javascript'>
-							document.getElementById('chart.daily.showCool').checked = getCookie('chart.daily.showCool');
-							document.getElementById('chart.daily.showHeat').checked = getCookie('chart.daily.showHeat');
-							document.getElementById('chart.daily.showFan').checked = getCookie('chart.daily.showFan');
+							if( getCookie('chart.daily.showCool') )
+							{
+								document.getElementById('chart.daily.showCool').checked = true;									// Set flag
+								// Checkbox styles are not obeyed by browsers, they are styled by the OS.
+								document.getElementById('chart.daily.showCool').className = 'remembered_input';	// Set visual cue that cookie retains this value
+							}
+							if( getCookie('chart.daily.showHeat') )
+							{
+								document.getElementById('chart.daily.showHeat').checked = true;
+								document.getElementById('chart.daily.showHeat').className = 'remembered_input';
+							}
+							if( getCookie('chart.daily.showFan') )
+							{
+								document.getElementById('chart.daily.showFan').checked = true;
+								document.getElementById('chart.daily.showFan').className = 'remembered_input';
+							}
 
-							// Test values before use, don't let null (not set) chnage the defaults
+
+							// Test values before use, don't let null (not set) change the defaults
 							if( getCookie('chart.daily.fromDate') )
+							{
 								document.getElementById('chart.daily.fromDate').value = getCookie('chart.daily.fromDate');
+								document.getElementById('chart.daily.fromDate').className = 'remembered_input';
+							}
 							if( getCookie('chart.daily.toDate') )
+							{
 								document.getElementById('chart.daily.toDate').value = getCookie('chart.daily.toDate');
+								document.getElementById('chart.daily.toDate').className = 'remembered_input';
+							}
 /* Set a timer to implement the auto refresh
 "chart.daily.autoRefresh"
 
@@ -446,6 +480,7 @@ if( $isLoggedIn )
 			endforeach;
 ?>
 						</table>
+						<!-- Put save settings button here later -->
 <?php
 		}
 		else
@@ -453,6 +488,13 @@ if( $isLoggedIn )
 			echo 'You must enter password to access config information.';
 		}
 ?>
+<form method='post'>
+<input name='save_settings' type='hidden' value=''>
+<!-- Would be better to handle this as an ajax call, but for now this is it -->
+<input value='Save Changes' type='submit' onClick='javascript: save_settings.value="Save"; return( true );'>
+<br>HERE[<?php echo $verifyText ?>]
+</form>
+
 					</div>
 				</div>
 			</div>

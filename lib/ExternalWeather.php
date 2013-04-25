@@ -105,22 +105,20 @@ class ExternalWeather
 
 				// Check if user configured URL for Weather API
 				if ( isset($this->config['api_loc']) )
-				{
-					// Use the user specified URL (e.g. personal weather station)
+				{	// Use the user specified URL (e.g. personal weather station)
 					$url = $this->config['api_loc'];
 				}
 				else
-				{
-					// Create URL based on zip code and current conditions
+				{	// Create URL based on zip code and current conditions
 					$url = 'http://api.wunderground.com/api/' . $this->config['api_key'] . '/conditions/q/' . $zip . '.xml';
 				}
-				if( !$doc = file_get_contents($url) )
+				if( !$doc = file_get_contents( $url ) )
 				{
-					throw new ExternalWeather_Exception('Could not contact weatherunderground weather api');
+					throw new ExternalWeather_Exception( 'Could not contact weatherunderground weather api' );
 				}
-				if( !$xml = simplexml_load_string($doc) )
+				if( !$xml = simplexml_load_string( $doc ) )
 				{
-					throw new ExternalWeather_Exception('Could not parse XML: ' . $doc);
+					throw new ExternalWeather_Exception( 'Could not parse XML: ' . $doc );
 				}
 				if( $this->config['units'] == 'C' )
 				{

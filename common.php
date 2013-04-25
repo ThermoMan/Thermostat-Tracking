@@ -87,7 +87,6 @@ function write_ini_file( $assoc_arr, $path, $has_sections = FALSE )
 
 function save_settings()
 {
-	$rootDir = '/home/fratell1/freitag.theinscrutable.us/thermo2/';
 	$settingsFile = $rootDir . 'config.ini';
 	write_ini_file( $assoc_arr, $settingsFile, TRUE );
 }

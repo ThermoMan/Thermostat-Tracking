@@ -13,3 +13,8 @@ table.thermo_chart, th.thermo_chart, td.thermo_chart
 {
 	border: 1px solid black;
 }
+
+.remembered_input
+{
+	background: #BBFFBB;
+}
