@@ -1,5 +1,8 @@
 <?php
 
+$rootDir = '~/thermo2/';
+$logDir =  $rootDir + 'logs/';
+
 /**
 	* Lockfile - set to a path that exists on your system
 	*  the thermostat id from the database will be appended to this filename
