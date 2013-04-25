@@ -1,8 +1,17 @@
 <?php
 require_once 'common.php';
-include( 'lib/pChart2.1.3/class/pData.class.php' );
-include( 'lib/pChart2.1.3/class/pDraw.class.php' );
-include( 'lib/pChart2.1.3/class/pImage.class.php' );
+
+// Modify includepath so that the new pChart library location works
+add_include_path( '../common/php/' );
+
+// Modify the font path for the GD library - because graphic renders are lame?
+$pChart_fontpath = realpath( '../common/php/pChart2.1.3/fonts' );	// pCharts default font library
+$my_fontpath = realpath( 'lib/fonts' );														// font path for this application
+putenv( 'GDFONTPATH='.$pChart_fontpath.PATH_SEPARATOR.$my_fontpath );
+
+include( 'pChart2.1.3/class/pData.class.php' );
+include( 'pChart2.1.3/class/pDraw.class.php' );
+include( 'pChart2.1.3/class/pImage.class.php' );
 
 // Replaces chart with anti-hacking graphic (usually when web user has used a mal-formed date string)
 function bobby_tables()
@@ -24,7 +33,6 @@ function validate_date( $some_date )
   }
   return true;
 }
-
 
 // Common code that should run for EVERY CHART page follows here
 $id = (isset($_REQUEST['id'])) ? $_REQUEST['id'] : null;    // Set id to chosen thermost (or null if not chosen)
