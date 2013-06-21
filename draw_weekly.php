@@ -21,11 +21,30 @@ if( isset( $_GET['history_to_date'] ) )
 if( ! validate_date( $to_date ) ) return;
 // Verify that date is not future?
 
-$from_date = date( 'Y-m-d' );
-if( isset( $_GET['history_from_date'] ) )
-{ // Use provided date
-  $from_date = $_GET['history_from_date'];
+
+$interval_measure = 0;	// Default to days
+if( isset( $_GET['interval_measure'] ) )
+{
+  $interval_measure = $_GET['interval_measure'];
 }
+if( $interval_measure < 0 || $interval_measure > 2 )
+{
+	$interval_measure = 0;
+}
+
+if( isset( $_GET['interval_length'] ) )
+{
+  $interval_length = $_GET['interval_length'];
+	if( $interval_length < 0 ) $interval_length = 1;
+	if( $interval_length > 50 ) $interval_length = 21;
+}
+
+$date_text = array( 0 => 'days', 1 => 'weeks', 2 => 'months' );
+$interval_string = $to_date . ' -' . $interval_length . ' ' . $date_text[$interval_measure];
+
+// Compute the from date
+$from_date = date( 'Y-m-d', strtotime( $interval_string ) );
+
 if( ! validate_date( $from_date ) ) return;
 // Verify that date is at least three DAYS before the to_date?
 // It crashes if there is only one day.
@@ -38,6 +57,25 @@ if( isset( $_GET['show_hvac_runtime'] ) && ( $_GET['show_hvac_runtime'] == 1 || 
 {
 	$show_hvac_runtime = true;
 }
+
+
+switch( $interval_measure )
+{
+	case 2:
+// Do weekly formatting here (for now it all defaults to daily)
+		$group_by_text = "date_format( date, '%Y/%m/%d' )";
+	break;
+	case 1:
+// Do weekly formatting here (for now it all defaults to daily)
+		$group_by_text = "date_format( date, '%Y/%m/%d' )";
+	break;
+	default:
+		$group_by_text = "date_format( date, '%Y/%m/%d' )";
+	break;
+}
+// This is the old group by (daily) hard coded method
+//	 GROUP BY DATE(date) ) a
+
 
 $sql = "SELECT
 					a.date,
@@ -57,7 +95,7 @@ $sql = "SELECT
 							 FROM {$dbConfig['table_prefix']}temperatures
 							 WHERE tstat_uuid = ?
 							 AND DATE(date) BETWEEN '$from_date' AND '$to_date'
-							 GROUP BY DATE(date) ) a
+							 GROUP BY {$group_by_text} ) a
 				LEFT JOIN {$dbConfig['table_prefix']}run_times b
 				ON a.date = DATE( b.date ) AND a.tstat_uuid = b.tstat_uuid";
 $query = $pdo->prepare( $sql );
@@ -66,6 +104,7 @@ $query->execute( array( $uuid ) );
 	* This is a holdover concern from the HVAC Runtime chart code...
 	*	It turns out that this charting code performs poorly when there is no data in the table. (it doesn't work!)
 	*	Bug?	When it is between 00:00 and 00:30 the bars seem to be offset one position to the right?
+This comment may no longer be true??? - need to test!!!
 	*/
 
 
@@ -76,15 +115,27 @@ $MyData = new pData();
 $chart_y_min = $normalLows[ date( 'n', strtotime($from_date) )-1 ];
 $chart_y_max = $normalHighs[ date( 'n', strtotime($from_date) )-1 ];
 
-$chart_runtime_min = 0;
-$chart_runtime_max = 1440;
 /**
+	* Set min and max scale for HVAC runtime.  Min is always 0.  Max depends on wihch interval was selected.
+	*
 	* Set 24 hours (1440 miunutes in the day) as max run time.
 	* Originally had 3 hours, but regularly saw 15+ hours (900 minutes) of A/C runtime in summer!
 	*
 	* The chart software rounds up to 1500.
 	*/
-
+$chart_runtime_min = 0;
+switch( $interval_measure )
+{
+	case 2:
+		$chart_runtime_max = 1440;	// Monthly ought to be 44,640 (number of minutes in a 31 day month)
+	break;
+	case 1:
+		$chart_runtime_max = 1440;	// Weekly ought to be 10,800 (number of minutes in a week)
+	break;
+	default:
+		$chart_runtime_max = 1440;	// Default to daily in case of wierdness
+}
+// Change these max values at the same time that the group_by is changed in the upper code.
 
 $old_month = -1;
 $days = $query->rowCount();	// Determine the number of days in the resultset.
@@ -110,6 +161,8 @@ while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
   }
 	else
 	{
+// This whole block of code is about formatting the x-axis labels so they are easy to read.
+// It needs to be updated to be aware of the interval setting.
     if( $days > 120 )
 		{	// For ultra-long date ranges, only show month changes in the X-Axis.  "Ultra long" is anything over 4 months.
 			if( substr( $row['date'], 5, 2 ) != $old_month )

@@ -33,7 +33,7 @@ try
 	$outsideData = $externalWeatherAPI->getOutdoorWeather( $ZIP );
 	$outdoorTemp = $outsideData['temp'];
 	$outdoorHumidity = $outsideData['humidity'];
-	logIt( "Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
+	logIt( "temps: Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
 }
 catch( Exception $e )
 {
@@ -56,7 +56,7 @@ foreach( $thermostats as $thermostatRec )
 		{
 			// Query thermostat info
 			$indoorHumidity = null;
-			logIt( "Connecting to {$thermostatRec['id']} {$thermostatRec['tstat_uuid']} {$thermostatRec['ip']} {$thermostatRec['name']}" );
+			logIt( "temps: Connecting to {$thermostatRec['id']} {$thermostatRec['tstat_uuid']} {$thermostatRec['ip']} {$thermostatRec['name']}" );
 			$stat = new Stat( $thermostatRec['ip'] );
 
 			//$sysInfo = $stat->getSysInfo();
@@ -84,8 +84,10 @@ foreach( $thermostats as $thermostatRec )
 // t_heat or t_cool may not exist if thermostat is running in battery mode
 			$target = ($stat->tmode == 1) ? $stat->t_heat : $stat->t_cool;
 
-			logIt( "Target $target" );
-			logit( "UUID $stat->uuid IT " . $stat->temp . " OT $outdoorTemp IH $stat->humidity OH $outdoorHumidity TARGT $target" );
+			logIt( "temps: Target $target" );
+			logit( "temps: UUID $stat->uuid IT " . $stat->temp . " OT $outdoorTemp IH $stat->humidity OH $outdoorHumidity TARGT $target" );
+$stat->uuid = '5cdad4276ec5';
+logIt( 'temps: Manually forced uuid to 5cdad4276ec5' );
 			$queryTemp->execute(array( $stat->uuid, $stat->temp, $outdoorTemp, $stat->humidity, $outdoorHumidity, $target ) );
 
 			//$runTimeData = $stat->getDataLog();
@@ -96,12 +98,12 @@ foreach( $thermostats as $thermostatRec )
 
 			// Remove zero or one rows for today and then insert one row for today.
 			$queryRunDelete->execute( array($today, $stat->uuid) );
-			logIt( "Run Time Today - Inserting RTH {$stat->runTimeHeat} RTC {$stat->runTimeCool} U $stat->uuid T $today" );
+			logIt( "temps: Run Time Today - Inserting RTH {$stat->runTimeHeat} RTC {$stat->runTimeCool} U $stat->uuid T $today" );
 			$queryRunInsert->execute( array($stat->uuid, $today, $stat->runTimeHeat, $stat->runTimeCool) );
 
 			// Remove zero or one rows for yesterday and then insert one row for yesterday.
 			$queryRunDelete->execute( array($yesterday, $stat->uuid) );
-			logIt( "Run Time Yesterday - Inserting RTH {$stat->runTimeHeatYesterday} RTC {$stat->runTimeCoolYesterday} U $stat->uuid T $yesterday" );
+			logIt( "temps: Run Time Yesterday - Inserting RTH {$stat->runTimeHeatYesterday} RTC {$stat->runTimeCoolYesterday} U $stat->uuid T $yesterday" );
 			$queryRunInsert->execute( array($stat->uuid, $yesterday, $stat->runTimeHeatYesterday, $stat->runTimeCoolYesterday) );
 		}
 		catch( Exception $e )
@@ -112,7 +114,7 @@ foreach( $thermostats as $thermostatRec )
 	}
 	else
 	{
-		die( "Couldn't get file lock for thermostat {$thermostatRec['id']}" );
+		die( "temps: Couldn't get file lock for thermostat {$thermostatRec['id']}" );
 	}
 	fclose($lock);
 }

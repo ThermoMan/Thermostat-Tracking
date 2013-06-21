@@ -55,7 +55,7 @@ foreach( $thermostats as $thermostatRec )
 	$lock = @fopen( $lockFileName, 'w' );
 	if( !$lock )
 	{
-		error( "Could not write to lock file $lockFileName" );
+		error( "status: Could not write to lock file $lockFileName" );
 		continue;
 	}
 
@@ -64,7 +64,7 @@ foreach( $thermostats as $thermostatRec )
 		try
 		{
 			// Query thermostat info
-			logIt( "Connecting to {$thermostatRec['id']} {$thermostatRec['tstat_uuid']} {$thermostatRec['ip']} {$thermostatRec['name']}" );
+			logIt( "status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
 			$stat = new Stat( $thermostatRec['ip'] );
 
 			//$uuid = $stat->getUUid(); // This data is gathered by the getSysInfo() function
@@ -72,7 +72,8 @@ foreach( $thermostats as $thermostatRec )
 			//$wlanFwVersion = $stat->getWlanFwVersion(); // This data is gathered by the getSysInfo() function
 			$stat->getSysInfo();
 // Hey, guess what, need to add a timeout to the library and throw an error if no connection!
-			//sleep(1); // allow thermostat to catch up
+sleep(1); // allow thermostat to catch up
+// I put the sleep back in because something fishy is going on and this might be it?
 
 			/**
 				* On "new" contact the stat and get the "big download" that sets the most variables - instead of using multiple hits.
@@ -91,8 +92,10 @@ foreach( $thermostats as $thermostatRec )
 				*/
 			$stat->getSysName();
 
-			logIt( "Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->sysName MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
+			logIt( "status: Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->sysName MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
 			//Update thermostat info in DB
+$stat->uuid = '5cdad4276ec5';
+logIt( 'status: Manually forced uuid to 5cdad4276ec5' );
 			$queryThermInfo->execute(array( $stat->uuid , $stat->sysName, $stat->model, $stat->fw_version, $stat->wlan_fw_version, $thermostatRec['id']));
 
 			// Get thermostat state
@@ -100,9 +103,9 @@ foreach( $thermostats as $thermostatRec )
 			$heatStatus = ($stat->tstate == 1) ? true : false;
 			$coolStatus = ($stat->tstate == 2) ? true : false;
 			$fanStatus  = ($stat->fstate == 1) ? true : false;
-			logIt( 'Heat: ' . ($heatStatus ? 'ON' : 'OFF') );
-			logIt( 'Cool: ' . ($coolStatus ? 'ON' : 'OFF') );
-			logIt( 'Fan: ' . ($fanStatus ? 'ON' : 'OFF') );
+			logIt( 'status: Heat: ' . ($heatStatus ? 'ON' : 'OFF') );
+			logIt( 'status: Cool: ' . ($coolStatus ? 'ON' : 'OFF') );
+			logIt( 'status: Fan: ' . ($fanStatus ? 'ON' : 'OFF') );
 
 			// Get prior state info from DB
 			$priorStartDateHeat = null;
@@ -115,11 +118,12 @@ foreach( $thermostats as $thermostatRec )
 			$queryStatus->execute(array($stat->uuid));
 			if( $queryStatus->rowCount() < 1 )
 			{ // not found - this is the first time for this thermostat
+logIt( 'status: Something broke and I think I have never seen this stat before.' );
 // Perhaps key in on this logic to drive the deep query for the stat??
 				$startDateHeat = ($heatStatus) ? $now : null;
 				$startDateCool = ($coolStatus) ? $now : null;
 				$startDateFan = ($fanStatus) ? $now : null;
-				logIt( "Inserting record with $now H $heatStatus C $coolStatus F $fanStatus SDH $startDateHeat SDC $startDateCool SDF $startDateFan for UUID $stat->uuid" );
+				logIt( "status: Inserting record for a brand new never before seen thermostat with time = ($now) H $heatStatus C $coolStatus F $fanStatus SDH $startDateHeat SDC $startDateCool SDF $startDateFan for UUID $stat->uuid" );
 				$queryInsert->execute( array( $stat->uuid, $now, $startDateHeat, $startDateCool, $startDateFan, $heatStatus, $coolStatus, $fanStatus ) );
 			}
 			else
@@ -134,7 +138,7 @@ foreach( $thermostats as $thermostatRec )
 					$priorCoolStatus = (bool)$row['cool_status'];
 					$priorFanStatus = (bool)$row['fan_status'];
 				}
-				logIt( "$stat->uuid GOT PRIOR STATE H $priorHeatStatus C $priorCoolStatus F $priorFanStatus SDH $priorStartDateHeat SDC $priorStartDateCool SDC $priorStartDateFan" );
+				logIt( "status:  uuid = ($stat->uuid) GOT PRIOR STATE H $priorHeatStatus C $priorCoolStatus F $priorFanStatus SDH $priorStartDateHeat SDC $priorStartDateCool SDC $priorStartDateFan" );
 
 				// update start dates if the cycle just started
 				$newStartDateHeat = (!$priorHeatStatus && $heatStatus) ? $now : $priorStartDateHeat;
@@ -144,24 +148,24 @@ foreach( $thermostats as $thermostatRec )
 				// if status has changed from on to off, update hvac_cycles
 				if( $priorHeatStatus && !$heatStatus )
 				{
-					logIt( "$stat->uuid Finished Heat Cycle - Adding Hvac Cycle Record for $stat->uuid 1 $priorStartDateHeat $now" );
+					logIt( "status: uuid = ($stat->uuid) Finished Heat Cycle - Adding Hvac Cycle Record for $stat->uuid 1 $priorStartDateHeat $now" );
 					$cycleInsert->execute( array( $stat->uuid, 1, $priorStartDateHeat, $now ) );
 					$newStartDateHeat = null;
 				}
 				if( $priorCoolStatus && !$coolStatus )
 				{
-					logIt( "$stat->uuid Finished Cool Cycle - Adding Hvac Cycle Record for $stat->uuid 2 $priorStartDateCool $now" );
+					logIt( "status: $stat->uuid Finished Cool Cycle - Adding Hvac Cycle Record for $stat->uuid 2 $priorStartDateCool $now" );
 					$cycleInsert->execute( array( $stat->uuid, 2, $priorStartDateCool, $now ) );
 					$newStartDateCool = null;
 				}
 				if( $priorFanStatus && !$fanStatus )
 				{
-					logIt( "$stat->uuid Finished Fan Cycle - Adding Hvac Cycle Record for $stat->uuid 3 $priorStartDateFan $now" );
+					logIt( "status: $stat->uuid Finished Fan Cycle - Adding Hvac Cycle Record for $stat->uuid 3 $priorStartDateFan $now" );
 					$cycleInsert->execute( array( $stat->uuid, 3, $priorStartDateFan, $now ) );
 					$newStartDateFan = null;
 				}
 				// update the status table
-				logIt( "Updating record with $now SDH $newStartDateHeat SDC $newStartDateCool SDF $newStartDateFan H $heatStatus C $coolStatus F $fanStatus for UUID $stat->uuid" );
+				logIt( "status: Updating record with $now SDH $newStartDateHeat SDC $newStartDateCool SDF $newStartDateFan H $heatStatus C $coolStatus F $fanStatus for UUID $stat->uuid" );
 				$queryUpdate->execute( array( $now, $newStartDateHeat, $newStartDateCool, $newStartDateFan, $heatStatus, $coolStatus, $fanStatus, $stat->uuid ) );
 			}
 		}
@@ -173,7 +177,7 @@ foreach( $thermostats as $thermostatRec )
 	}
 	else
 	{
-		die( "Couldn't get file lock for thermostat {$thermostatRec['id']}" );
+		die( "status: Couldn't get file lock for thermostat {$thermostatRec['id']}" );
 	}
 	fclose( $lock );
 }

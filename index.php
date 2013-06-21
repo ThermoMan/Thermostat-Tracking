@@ -43,9 +43,15 @@ if( $isLoggedIn )
 	<head>
 		<meta http-equiv=Content-Type content='text/html; charset=utf-8'>
 		<title>3M-50 Thermostat Tracking</title>
-		<link href='favicon.ico' rel='shortcut icon' type='image/x-icon' />
-		<link href='resources/thermo.css' rel='stylesheet' type='text/css' />
-		<link href='lib/tabs/tabsE.css' rel='stylesheet' type='text/css' />		 <!-- Add tab library -->
+		<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+
+		<link rel='stylesheet' type='text/css' href='/common/css/reset.css' >
+		<link rel='stylesheet' type='text/css' href='resources/thermo.css' />
+
+		<link rel='stylesheet' type='text/css' href='lib/tabs/tabsE.css' />		 <!-- Add tab library and set default appearance -->
+		<link rel='stylesheet' type='text/css' title='green' href='lib/tabs/tabs-green.css'>
+		<meta http-equiv='Default-Style' content='green'>
+		<link rel='stylesheet' type='text/css' title='white' href='lib/tabs/tabs-white.css'>
 
 		<script type='text/javascript'>
 			function display_daily_temperature()
@@ -105,16 +111,22 @@ if( $isLoggedIn )
 				display_daily_temperature();
 			}
 
-
+//Change names of the IDs to match this naming convention 'chart.history.toDate' instead of this convention 'history_to_date'
 			function display_historic_chart()
 			{
 				var show_thermostat_id = 'id=' + document.getElementById( 'thermostat_id' ).value;
 				var show_indoor = 'Indoor=' + document.getElementById( 'history_selection' ).value;
 				var show_hvac_runtime = 'show_hvac_runtime=' + document.getElementById( 'show_hvac_runtime' ).checked;
-				var history_from_date_string = 'history_from_date=' + document.getElementById( 'history_from_date' ).value;
-				var history_to_date_string = 'history_to_date=' + document.getElementById( 'history_to_date' ).value;
+
+				var interval_measure_string = 'interval_measure=' + document.getElementById( 'interval_measure' ).value;
+				var interval_length_string = 'interval_length=' + document.getElementById( 'interval_length' ).value;
+
+				var history_to_date_string = 'history_to_date=' + document.getElementById( 'chart.history.toDate' ).value;
+
 				var no_cache_string = 'nocache=' + Math.random(); // Browsers are very clever with image caching.	That cleverness breaks this web page's function.
-				var url_string = 'draw_weekly.php?' + show_thermostat_id + '&' + show_indoor + '&' + show_hvac_runtime + '&' + history_from_date_string + '&' + history_to_date_string	+ '&' + no_cache_string;
+
+				var url_string = 'draw_weekly.php?' + show_thermostat_id + '&' + show_indoor + '&' + show_hvac_runtime + '&' + interval_measure_string + '&' + interval_length_string + '&' + history_to_date_string	+ '&' + no_cache_string;
+				console.log( url_string );
 				document.getElementById( 'history_chart' ).src = url_string;
 			}
 
@@ -175,8 +187,10 @@ if( $isLoggedIn )
 			/**
 			  * To erase a cookie, set it with an expiration date prior to now.
 			  */
-			function deleteCookies()
+			function deleteCookies( chart )
 			{
+				if( chart == 0 )
+				{	// Clear cookies that remember daily settings
 				setCookie( 'auto_refresh', '', -1 );
 				setCookie( 'chart.daily.showHeat', '', -1 );
 				setCookie( 'chart.daily.showCool', '', -1 );
@@ -189,6 +203,14 @@ if( $isLoggedIn )
 				document.getElementById('chart.daily.showFan').className = '';
 				document.getElementById('chart.daily.fromDate').className = '';
 				document.getElementById('chart.daily.toDate').className = '';
+			}
+
+				if( chart == 1 )
+				{	// Clear cookies that remember history settings
+					setCookie( 'chart.history.toDate', '', -1 );
+
+					document.getElementById('chart.history.toDate').className = '';
+				}
 			}
 
 			/**
@@ -210,6 +232,25 @@ if( $isLoggedIn )
 			function doLogout()
 			{
 				alert( 'Not implemented' );
+			}
+
+			function switch_style( css_title )
+			{
+				// You may use this script on your site free of charge provided
+				// you do not remove this notice or the URL below. Script from
+				// http://www.thesitewizard.com/javascripts/change-style-sheets.shtml
+				var i, link_tag;
+				for( i = 0, link_tag = document.getElementsByTagName('link'); i < link_tag.length ; i++ )
+				{
+					if( (link_tag[i].rel.indexOf( 'stylesheet' ) != -1 ) && link_tag[i].title )
+					{
+						link_tag[i].disabled = true ;
+						if( link_tag[i].title == css_title )
+						{
+							link_tag[i].disabled = false;
+						}
+					}
+				}
 			}
 		</script>
 
@@ -322,7 +363,7 @@ if( $isLoggedIn )
 						<input type='checkbox' id='auto_refresh'		 name='auto_refresh'		 onChange='javascript: timedRefresh();'/>Auto refresh
 						<span id='daily_update' style='float: right; vertical-align: middle; visibility: hidden;'>Countdown to refresh: 00:00</span>
 -->
-						<span style='float: right;'>UN-save settings<input type='button' onClick='javascript: deleteCookies();' value='Clear'></span>
+						<span style='float: right;'>UN-save settings<input type='button' onClick='javascript: deleteCookies(0);' value='Clear'></span>
 					</div>
 					<div class='content'>
 						<br>
@@ -383,7 +424,7 @@ if( $isLoggedIn )
 				<div class='container'>
 					<div class='tab-toolbar'>
 						Table uses same date range as the 'Daily Detail' <input type='button' onClick='javascript: display_daily_temperature_table();' value='Chart'>
-						<span style='display: inline-block; float: right;'>&nbsp;UN-save settings<input type='button' onClick='javascript: deleteCookies();' value='Clear'></span>
+						<span style='display: inline-block; float: right;'>&nbsp;UN-save settings<input type='button' onClick='javascript: deleteCookies(0);' value='Clear'></span>
 					</div>
 					<div class='content'>
 						<!-- keep this around, it might be useful -->
@@ -401,15 +442,23 @@ if( $isLoggedIn )
 			<div class='tab' id='history'> <a href='#history'> History </a>
 				<div class='container'>
 					<div class='tab-toolbar'>
-						<select id='history_selection' onClick='javascript: display_historic_chart();'>
+						<input type='button' onClick='javascript: display_historic_chart();' value='Show'>
+						<select id='history_selection'>
 							<option selected='selected' value='0'>Outoor</option>
 							<option value='1'>Indoor</option>
 							<option value='2'>Both</option>
 						</select>
-						Show HVAC Runtimes<input type='checkbox' id='show_hvac_runtime' name='show_hvac_runtime' onChange='javascript: display_historic_chart();'/>
 						<!-- Show initial range as from 3 weeks ago through today -->
-						From date <input type='date' id='history_from_date' size='10' value='<?php echo date( 'Y-m-d', strtotime( '3 weeks ago' ) ); ?>' max='<?php echo $show_date; ?>' onInput='javascript: display_historic_chart();' step='1'/>
-						to date <input type='date' id='history_to_date' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' onInput='javascript: display_historic_chart();' step='1'/>
+<!--						From date <input type='date' id='history_from_date' size='10' value='<?php echo date( 'Y-m-d', strtotime( '3 weeks ago' ) ); ?>' max='<?php echo $show_date; ?>' onInput='javascript: display_historic_chart();' step='1'/> -->
+						temperatures for <input type='text' id='interval_length' value='21' size='3'>
+						<select id='interval_measure' style="width: 65px">
+							<option value='0' selected>days</option>
+							<option value='1'>weeks</option>
+							<option value='2'>months</option>
+						<select>
+						ending on <input type='date' id='chart.history.toDate' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' step='1'/>
+						&nbsp;&nbsp;Optionally show HVAC runtimes<input type='checkbox' id='show_hvac_runtime' name='show_hvac_runtime'/>
+						<span style='float: right;'>UN-save settings<input type='button' onClick='javascript: deleteCookies(1);' value='Clear'></span>
 					</div>
 					<div class='content'>
 						<br>
@@ -480,6 +529,10 @@ if( $isLoggedIn )
 			endforeach;
 ?>
 						</table>
+						<p>Choose appearance: <select id='colorPicker' onChange='javascript: switch_style( document.getElementById( "colorPicker" ).value )'>
+							<option value='white'>Ice</option>
+							<option value='green' selected>Leafy</option>
+						</select></p>
 						<!-- Put save settings button here later -->
 <?php
 		}
