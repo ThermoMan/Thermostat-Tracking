@@ -310,7 +310,7 @@ if( $isLoggedIn )
 		</style>
 	</head>
 
-	<body>
+	<body onLoad='javascript: location.href="#daily"'>
 		<!-- Internal variable declarations START -->
 		<input type='hidden' name='id' value='<?php echo urlencode($id) ?>'>
 		<!-- Internal variable declarations END -->
