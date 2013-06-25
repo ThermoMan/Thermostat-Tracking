@@ -1,7 +1,7 @@
 <?php
 
 $rootDir = '~/thermo2/';
-$logDir =  $rootDir + 'logs/';
+$logDir =  $rootDir . 'logs/';
 
 /**
 	* Lockfile - set to a path that exists on your system
