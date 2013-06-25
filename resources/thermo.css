@@ -9,12 +9,40 @@ div.thermo_chart
 	margin-right: auto;
 }
 
-table.thermo_chart, th.thermo_chart, td.thermo_chart
+div.daily_temperature_table
 {
-	border: 1px solid black;
+	position: relative;
+	height: 113px;
+	width: 400px;
+	float: right;
+	/*overflow: hidden;*/
+	/*overflow: auto;*/
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
+table.thermo_table
+{
+	border-collapse: collapse;	/* Show a single line aroudn each cell instead of a double line */
+	white-space: nowrap;				/* Do not allow any text (I'm look at you date string) to wrap */
+}
+
+table.thermo_table th
+{
+	border: 1px solid black;
+	color: yellow;
+}
+
+table.thermo_table td
+{
+	border: 1px solid black;
+	color: blue;
+}
+
+
+/*
 .remembered_input
 {
 	background: #BBFFBB;
 }
+*/

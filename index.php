@@ -54,44 +54,69 @@ if( $isLoggedIn )
 		<link rel='stylesheet' type='text/css' title='white' href='lib/tabs/tabs-white.css'>
 
 		<script type='text/javascript'>
-			function display_daily_temperature()
-			{
-				// Redraw the placekeeper while the chart is rendering
-				document.getElementById( 'daily_temperature_chart' ).src = 'images/daily_temperature_placeholder.png';
-				// Perhaps replace this with an animated GIF?
-
-				var show_thermostat_id = 'id=' + document.getElementById( 'thermostat_id' ).value;
-				var daily_from_date_string = 'chart.daily.fromDate=' + document.getElementById( 'chart.daily.fromDate' ).value;
-				var daily_to_date_string = 'chart.daily.toDate=' + document.getElementById( 'chart.daily.toDate' ).value;
-
 				/**
-				  * If the user requests more than about 90 days it will take more than 30 seconds to render
-				  *	If it takes more than 30 seconds to render the chart package pukes.
-				  * Solve this perhaps by only getting one temperature per hour when span is 90+ days?
+				* chart is one of 'daily' or 'history'
+				* sytle is one of 'chart' or 'table'
 				  *
 				  */
+			function display_chart( chart, style )
+			{
+				var chart_target;
+				var table_flag = '';
+				if( chart == 'daily' && style == 'chart' )
+				{
+					table_flag = 'table_flag=false';
+					chart_target = document.getElementById( 'daily_temperature_chart' );
+					chart_target.src = 'images/daily_temperature_placeholder.png';	// Redraw the placekeeper while the chart is rendering
+				}
+				else if( chart == 'daily' && style == 'table' )
+				{
+					table_flag = 'table_flag=true';
+				}
+				else
+				{
+					alert( 'You asked for '+chart+' and '+style+' and I do not know how to do that (yet)' );
+					return;
+				}
 
+				var show_thermostat_id     = 'id='                          + document.getElementById( 'chart.daily.thermostat' ).value;
+				var daily_source_selection = 'chart.daily.source='          + document.getElementById( 'chart.daily.source' ).value;
+				var daily_interval_length  = 'chart.daily.interval.length=' + document.getElementById( 'chart.daily.interval.length' ).value;
+				var daily_interval_group   = 'chart.daily.interval.group='  + document.getElementById( 'chart.daily.interval.group' ).value;
+				var daily_to_date_string   = 'chart.daily.toDate='          + document.getElementById( 'chart.daily.toDate' ).value;
 				var show_heat_cycle_string = 'chart.daily.showHeat=' + document.getElementById( 'chart.daily.showHeat' ).checked;
 				var show_cool_cycle_string = 'chart.daily.showCool=' + document.getElementById( 'chart.daily.showCool' ).checked;
 				var show_fan_cycle_string	= 'chart.daily.showFan='	+ document.getElementById( 'chart.daily.showFan' ).checked;
-				var no_cache_string = 'nocache=' + Math.random(); // Browsers are very clever with image caching.	In this case it breaks the web page function.
-				var url_string = 'draw_daily.php?' + show_thermostat_id + '&' + daily_from_date_string + '&' + daily_to_date_string + '&' + show_heat_cycle_string	+ '&' + show_cool_cycle_string	+ '&' + show_fan_cycle_string + '&' + no_cache_string;
-				document.getElementById( 'daily_temperature_chart' ).src = url_string;
+
+				// Browsers are very clever with image caching.	In this case it breaks the web page function.
+				var no_cache_string = 'nocache=' + Math.random();
+
+				var url_string = '';
+				if( chart == 'daily' )
+				{
+					url_string = 'draw_daily.php';
+			}
+				else if( chart == 'history' )
+				{
+				}
+
+				url_string = url_string + '?' + show_thermostat_id + '&' + daily_source_selection + '&' + table_flag + '&' +
+										 daily_interval_length + '&' + daily_interval_group + '&' + daily_to_date_string + '&' +
+										 show_heat_cycle_string	+ '&' + show_cool_cycle_string	+ '&' + show_fan_cycle_string + '&' +
+										 no_cache_string;
+
+				if( style == 'chart' )
+			{
+					chart_target.src = url_string;
+				}
+				else if( style == 'table' )
+				{	// Right now it assumes the DAILY table.  Fix that later
+					//document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'"></iframe>';
+					//document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'" width="450"></iframe>';
+					document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'" height="113" width="440"></iframe>';
+				}
 			}
 
-			function display_daily_temperature_table()
-			{
-				var show_thermostat_id = 'id=' + document.getElementById( 'thermostat_id' ).value;
-				var table_flag = 'table_flag=true';
-				var daily_from_date_string = 'chart.daily.fromDate=' + document.getElementById( 'chart.daily.fromDate' ).value;
-				var daily_to_date_string = 'chart.daily.toDate=' + document.getElementById( 'chart.daily.toDate' ).value;
-				var show_heat_cycle_string = 'chart.daily.showHeat=false';
-				var show_cool_cycle_string = 'chart.daily.showCool=false';
-				var show_fan_cycle_string	= 'chart.daily.showFan=false';
-				var url_string = 'draw_daily.php?' + show_thermostat_id + '&' + table_flag + '&' + daily_from_date_string + '&' + daily_to_date_string + '&' + show_heat_cycle_string	+ '&' + show_cool_cycle_string	+ '&' + show_fan_cycle_string;
-				<!-- document.getElementById( 'foo' ).value = url_string; -->
-				document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'" height="430px" width="900px"></iframe>';
-			}
 
 			/**
 			  *	Save the value of the checkbox for later - and update the chart with the new value
@@ -114,7 +139,7 @@ if( $isLoggedIn )
 //Change names of the IDs to match this naming convention 'chart.history.toDate' instead of this convention 'history_to_date'
 			function display_historic_chart()
 			{
-				var show_thermostat_id = 'id=' + document.getElementById( 'thermostat_id' ).value;
+				var show_thermostat_id = 'id=' + document.getElementById( 'chart.history.thermostat' ).value;
 				var show_indoor = 'Indoor=' + document.getElementById( 'history_selection' ).value;
 				var show_hvac_runtime = 'show_hvac_runtime=' + document.getElementById( 'show_hvac_runtime' ).checked;
 
@@ -191,19 +216,19 @@ if( $isLoggedIn )
 			{
 				if( chart == 0 )
 				{	// Clear cookies that remember daily settings
-				setCookie( 'auto_refresh', '', -1 );
-				setCookie( 'chart.daily.showHeat', '', -1 );
-				setCookie( 'chart.daily.showCool', '', -1 );
-				setCookie( 'chart.daily.showFan', '', -1 );
-				setCookie( 'chart.daily.fromDate', '', -1 );
-				setCookie( 'chart.daily.toDate', '', -1 );
+					setCookie( 'auto_refresh', '', -1 );
+					setCookie( 'chart.daily.showHeat', '', -1 );
+					setCookie( 'chart.daily.showCool', '', -1 );
+					setCookie( 'chart.daily.showFan', '', -1 );
+					setCookie( 'chart.daily.fromDate', '', -1 );
+					setCookie( 'chart.daily.toDate', '', -1 );
 
-				document.getElementById('chart.daily.showHeat').className = '';
-				document.getElementById('chart.daily.showCool').className = '';
-				document.getElementById('chart.daily.showFan').className = '';
-				document.getElementById('chart.daily.fromDate').className = '';
-				document.getElementById('chart.daily.toDate').className = '';
-			}
+					document.getElementById('chart.daily.showHeat').className = '';
+					document.getElementById('chart.daily.showCool').className = '';
+					document.getElementById('chart.daily.showFan').className = '';
+					document.getElementById('chart.daily.fromDate').className = '';
+					document.getElementById('chart.daily.toDate').className = '';
+				}
 
 				if( chart == 1 )
 				{	// Clear cookies that remember history settings
@@ -310,7 +335,7 @@ if( $isLoggedIn )
 <!--	<th>WLAN Firmware</th> -->
 								</tr>
 <?php
-					foreach ($thermostats as $thermostatRec):
+					foreach( $thermostats as $thermostatRec ):
 ?>
 								<tr>
 								 <td style='text-align: right'><a href='index.php?id=<?php echo $thermostatRec['id']?>'><?php echo $thermostatRec['name'] ?></a></td>
@@ -343,33 +368,44 @@ if( $isLoggedIn )
 			<div class='tab' id='daily'> <a href='#daily'> Daily Detail </a>
 				<div class='container'>
 					<div class='tab-toolbar'>
-						<input type='button' onClick='javascript: display_daily_temperature();' value='Refresh'>
-						Choose thermostat
-						<select id='thermostat_id' name='thermostat_id' onChange='javascript: display_daily_temperature();'>
+						<input type='button' onClick='javascript: display_chart( "daily", "chart" );' value='Show'>
+						<select id='chart.daily.thermostat'>
 							<?php foreach( $thermostats as $thermostatRec ): ?>
 								<option <?php if( $id == $thermostatRec['id'] ): echo 'selected '; endif; ?>value='<?php echo $thermostatRec['id'] ?>'><?php echo $thermostatRec['name'] ?></option>
 							<?php endforeach; ?>
 						</select>
-<!-- <button type='button' onClick='javascript: show_date.stepDown(); display_daily_temperature();'>&lt;&#8212;</button> -->
+						<select id='chart.daily.source'>
+							<option value='0'>Outoor</option>
+							<option value='1'>Indoor</option>
+							<option value='2' selected>Both</option>
+						</select>
+						temperatures for <input type='text' id='chart.daily.interval.length' value='7' size='3'>
+						<select id='chart.daily.interval.group' style='width: 65px'>
+							<option value='0' selected>days</option>
+							<option value='1'>weeks</option>
+							<option value='2'>months</option>
+							<option value='3'>years</option>
+						<select>
 						<!-- Need to change the max value to a date computed by Javascript so it stays current -->
-<!-- &nbsp;Choose Date<input type='date' id='show_date' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' onInput='javascript: display_daily_temperature();' step='1'/> -->
-						&nbsp;From Date<input type='date' id='chart.daily.fromDate' size='10' value='<?php echo date( 'Y-m-d', time() - 259000 ); ?>' max='<?php echo $show_date; ?>' onInput='javascript: update_daily_value( "chart.daily.fromDate" );' step='1'/>
-						&nbsp;To Date<input type='date' id='chart.daily.toDate' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' onInput='javascript: update_daily_value( "chart.daily.toDate" );' step='1'/>
-<!-- <button type='button' name='show_date' onClick='javascript: document.getElementById("show_date").stepUp(); display_daily_temperature();'>&#8212;&gt;</button> -->
-						&nbsp;Heat Cycles<input type='checkbox' id='chart.daily.showHeat' name='chart.daily.showHeat' onChange='javascript: toggle_daily_flag( "chart.daily.showHeat" );'/>
-						&nbsp;Cool Cycles<input type='checkbox' id='chart.daily.showCool' name='chart.daily.showCool' onChange='javascript: toggle_daily_flag( "chart.daily.showCool" );'/>
-						&nbsp;Fan Cycles<input type='checkbox' id='chart.daily.showFan'	name='chart.daily.showFan'	onChange='javascript: toggle_daily_flag( "chart.daily.showFan" );'/>
+						ending on <input type='date' id='chart.daily.toDate' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' step='1'/>
+						&nbsp; showing Heat<input type='checkbox' id='chart.daily.showHeat' name='chart.daily.showHeat' onChange='javascript: toggle_daily_flag( "chart.daily.showHeat" );'/>
+						&nbsp;Cool<input type='checkbox' id='chart.daily.showCool' name='chart.daily.showCool' onChange='javascript: toggle_daily_flag( "chart.daily.showCool" );'/>
+						&nbsp;Fan<input type='checkbox' id='chart.daily.showFan'	name='chart.daily.showFan'	onChange='javascript: toggle_daily_flag( "chart.daily.showFan" );'/> cycles
+						<input type='button' onClick='javascript: deleteCookies(0);' value='Un-save settings' style='float: right;'>
 <!-- Not yet working so hide it from user until it does...
 						<input type='checkbox' id='auto_refresh'		 name='auto_refresh'		 onChange='javascript: timedRefresh();'/>Auto refresh
 						<span id='daily_update' style='float: right; vertical-align: middle; visibility: hidden;'>Countdown to refresh: 00:00</span>
 -->
-						<span style='float: right;'>UN-save settings<input type='button' onClick='javascript: deleteCookies(0);' value='Clear'></span>
 					</div>
 					<div class='content'>
 						<br>
 						<div class='thermo_chart'>
 							<img id='daily_temperature_chart' src='images/daily_temperature_placeholder.png' alt='The temperatures'>
 						</div>
+						<input type='button' onClick='javascript: display_chart( "daily", "table" );' value='Chart it' style='float: right;'>
+						<div id='daily_temperature_table' class='daily_temperature_table'>
+						</div>
+
 
 						<!-- This initialization script must fall AFTER declaration of various inputs -->
 						<script type='text/javascript'>
@@ -411,27 +447,8 @@ if( $isLoggedIn )
 			timedRefresh();																						 // So start the timer too
 		}
 */
-							display_daily_temperature(); // Draw the chart using the applied settings
+							display_chart( 'daily', 'chart' ); // Draw the chart using the applied settings
 						</script>
-					</div>
-				</div>
-			</div>
-			<div class='tab_gap'></div>
-
-
-
-			<div class='tab' id='daily_table'> <a href='#daily_table'> Daily (Table) </a>
-				<div class='container'>
-					<div class='tab-toolbar'>
-						Table uses same date range as the 'Daily Detail' <input type='button' onClick='javascript: display_daily_temperature_table();' value='Chart'>
-						<span style='display: inline-block; float: right;'>&nbsp;UN-save settings<input type='button' onClick='javascript: deleteCookies(0);' value='Clear'></span>
-					</div>
-					<div class='content'>
-						<!-- keep this around, it might be useful -->
-						<!-- <textarea id='foo' rows='2' cols='110' disabled>default</textarea> -->
-						<div id='daily_temperature_table'>
-							<table><tr><th>Placekeeper header</th></tr><tr><td>Placekeeper data</td></tr></table>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -443,15 +460,20 @@ if( $isLoggedIn )
 				<div class='container'>
 					<div class='tab-toolbar'>
 						<input type='button' onClick='javascript: display_historic_chart();' value='Show'>
+						<select id='chart.history.thermostat'>
+							<?php foreach( $thermostats as $thermostatRec ): ?>
+								<option <?php if( $id == $thermostatRec['id'] ): echo 'selected '; endif; ?>value='<?php echo $thermostatRec['id'] ?>'><?php echo $thermostatRec['name'] ?></option>
+							<?php endforeach; ?>
+						</select>
 						<select id='history_selection'>
-							<option selected='selected' value='0'>Outoor</option>
+							<option value='0' selected>Outoor</option>
 							<option value='1'>Indoor</option>
 							<option value='2'>Both</option>
 						</select>
 						<!-- Show initial range as from 3 weeks ago through today -->
 <!--						From date <input type='date' id='history_from_date' size='10' value='<?php echo date( 'Y-m-d', strtotime( '3 weeks ago' ) ); ?>' max='<?php echo $show_date; ?>' onInput='javascript: display_historic_chart();' step='1'/> -->
 						temperatures for <input type='text' id='interval_length' value='21' size='3'>
-						<select id='interval_measure' style="width: 65px">
+						<select id='interval_measure' style='width: 65px'>
 							<option value='0' selected>days</option>
 							<option value='1'>weeks</option>
 							<option value='2'>months</option>

@@ -147,8 +147,6 @@ div.all_tabs > div.tab > div.container > div.tab-toolbar
 
 
 /* BEGIN -- This is a work in progress to change the appearance of controls and text on the toolbar */
-
-
 /**
 	* Set style/appearance of text on controls in the toolbar
 	*/
@@ -190,13 +188,25 @@ div.all_tabs > div.tab > div.container > div.tab-toolbar > input[type='checkbox'
 }
 /* END -- This is a work in progress to change the appearance of controls and text on the toolbar */
 
-
-/* This CSS styles the CONTENTS of the ACTIVE tab */
+/* This CSS styles the CONTENTS of the tabs (only visible on the Selected tab - duh) */
 div.all_tabs > div.tab > div.container > div.content
 {
-	width: inherit;
-	height: 564px;											/* This requires computation content = container - toolbar - border */
-	overflow: auto;									 /* Scroll bar if needed */
+	/* The scroll bars are placed INSIDE the div which effectively narrows the text area by several px */
+	overflow-y: auto;											/* Scroll bar if needed */
+
+	height: 564px;												/* Requires computation height = container-height - toolbar-height - border-height */
+	height: 567px;
+	/* 567 = 600 - 30 - 3 */
+
+	/*width: inherit;*/
+	/* To use the left/right modifiers the width must be computed instead of inherited */
+	/*margin-left: 10px;*/
+	padding-left: 10px;
+	padding-right: 10px;
+	/*width: inherit;*/
+	width: 930px;													/* Requires computation width = container-width - padding-left - padding-right */
+	/* 930 = 950 - 10 - 10 */
+
 }
 
 /**
@@ -223,7 +233,7 @@ div.all_tabs > div.tab :target
 
 
 /**
-  * BEGIN -- This is a work in progress to have visual indicator that a value was saved in a cookie */
+  * BEGIN -- This is a work in progress to have visual indicator that a value was saved in a cookie
 	*
   * This was largely a failed experiment.
   * You simply CANNOT set the background color of an HTML input element (like the checkbox)

@@ -2,18 +2,28 @@
 require_once 'common.php';
 require_once 'common_chart.php';
 
+/**
+	* If the user requests more than about 90 days it will take more than 30 seconds to render
+	*	If it takes more than 30 seconds to render the chart package pukes.
+	* Solve this perhaps by only getting one temperature per hour when span is 90+ days?
+	*
+	*/
+
 $table_flag = false;
 if( isset( $_GET['table_flag'] ) && $_GET['table_flag'] == 'true' )
 {
 	$table_flag = true;
 }
 
-$from_date = date( 'Y-m-d' );
-if( isset( $_GET['chart_daily_fromDate'] ) )
-{ // Use provided date
-	$from_date = $_GET['chart_daily_fromDate'];
+$source = 2;
+if( isset( $_GET['chart_daily_source'] ) )
+{
+	$source = $_GET['chart_daily_source'];
 }
-if( ! validate_date( $from_date ) ) return;
+if( $source < 0 || $source > 2 )
+{ // 0: outdoor, 1: indoor, 2: both
+	$source = 2;
+}
 
 $to_date = date( 'Y-m-d' );
 if( isset( $_GET['chart_daily_toDate'] ) )
@@ -23,11 +33,35 @@ if( isset( $_GET['chart_daily_toDate'] ) )
 if( ! validate_date( $to_date ) ) return;
 // Verify that date is not future?
 
-// Verify that date is at least three days BEFORE the to_date?
+$interval_measure = 0;	// Default to days
+if( isset( $_GET['chart_daily_interval_group'] ) )
+{
+  $interval_measure = $_GET['chart_daily_interval_group'];
+}
+if( $interval_measure < 0 || $interval_measure > 3 )
+{	// 0: days, 1: weeks, 2: months, 3: years
+	$interval_measure = 0;
+}
 
+if( isset( $_GET['chart_daily_interval_length'] ) )
+{
+  $interval_length = $_GET['chart_daily_interval_length'];
+
+	// Bounds checking
+	if( $interval_length < 0 ) $interval_length = 1;
+	if( $interval_length > 50 ) $interval_length = 21;
+}
+
+$date_text = array( 0 => 'days', 1 => 'weeks', 2 => 'months', 3 => 'years' );
+$interval_string = $to_date . ' -' . $interval_length . ' ' . $date_text[$interval_measure];
+
+// Compute the "from date"
+$from_date = date( 'Y-m-d', strtotime( $interval_string ) );
+
+// There is the appearance of one extra day on every chart...
+$from_date = date( 'Y-m-d', strtotime( "$from_date + 1 day" ) );
 
 // Set default cycle display to none
-// Somehow the "." is converted to an "_" which I guess I have to accept, but I don't like.
 $show_heat_cycles = (isset($_GET['chart_daily_showHeat']) && ($_GET['chart_daily_showHeat'] == 'false')) ? 0 : 1;
 $show_cool_cycles = (isset($_GET['chart_daily_showCool']) && ($_GET['chart_daily_showCool'] == 'false')) ? 0 : 1;
 $show_fan_cycles  = (isset($_GET['chart_daily_showFan'])  && ($_GET['chart_daily_showFan']  == 'false')) ? 0 : 1;
@@ -128,11 +162,19 @@ if( ! $table_flag )
 else
 {	// Start the tabular display
 	echo '<link href="resources/thermo.css" rel="stylesheet" type="text/css" />';	// It expects to be presented in an iframe which does NOT inherit the parent css
-	echo "<br>Normal low for this month is $chart_y_min.";
-	echo "<br>Normal high for this month is $chart_y_max.";
-	echo "<br>Showing data every $minutes minutes for $dayCount days from $from_date to $to_date.";
+	//echo "<br>Normal low for this month is $chart_y_min.";
+	//echo "<br>Normal high for this month is $chart_y_max.";
 	//echo "<br>The SQL<br>$sql";
-	echo '<table class="thermo_chart"><th class="thermo_chart">Date</th><th class="thermo_chart">Indoor Temp</th><th class="thermo_chart">Outdoor Temp</th>';
+	//echo '<table class="thermo_chart"><th class="thermo_chart">Date</th><th class="thermo_chart">Indoor Temp</th><th class="thermo_chart">Outdoor Temp</th>';
+	echo '<table class="thermo_table"><th>Date</th>';
+	if( $source == 1 || $source == 2 )
+	{	// Indoor or both
+		echo '<th>Indoor Temp</th>';
+	}
+	if( $source == 0 || $source == 2 )
+	{	// Outdoor or both
+		echo '<th>Outdoor Temp</th>';
+	}
 }
 
 $dates = '';
@@ -224,7 +266,17 @@ foreach( $days as $show_date )
 		}
 		else
 		{
-			echo '<tr><td class="thermo_chart">'.$row['date'].'</td><td class="thermo_chart">'.($row['indoor_temp'] == 'VOID' ? '&nbsp;' : $row['indoor_temp']).'</td><td class="thermo_chart">'.($row['outdoor_temp'] == 'VOID' ? '&nbsp;' : $row['outdoor_temp']).'</td></tr>';
+			//echo '<tr><td>'.$row['date'].'</td><td>'.($row['indoor_temp'] == 'VOID' ? '&nbsp;' : $row['indoor_temp']).'</td><td>'.($row['outdoor_temp'] == 'VOID' ? '&nbsp;' : $row['outdoor_temp']).'</td></tr>';
+			echo '<tr><td>'.$row['date'].'</td>';
+			if( $source == 1 || $source == 2 )
+			{	// Indoor or both
+				echo '<td>'.($row['indoor_temp'] == 'VOID' ? '&nbsp;' : $row['indoor_temp']).'</td>';
+			}
+			if( $source == 0 || $source == 2 )
+			{	// Outdoor or both
+				echo '<td>'.($row['outdoor_temp'] == 'VOID' ? '&nbsp;' : $row['outdoor_temp']).'</td>';
+			}
+			echo '</tr>';
 		}
 		$very_first = false;
 
@@ -243,8 +295,9 @@ foreach( $days as $show_date )
 if( $table_flag )
 {	// If we're showing the data in a chart, we're done now.  Wrap up the table tag and press the eject button.
 	echo '</table>';
-	echo "<br>Adjusted low for this month is $chart_y_min.";
-	echo "<br>Adjusted high for this month is $chart_y_max.";
+	//echo "<br>Adjusted low for this month is $chart_y_min.";
+	//echo "<br>Adjusted high for this month is $chart_y_max.";
+	echo "Showing data every $minutes minutes for $dayCount days from $from_date to $to_date.";
 	return;
 }
 
