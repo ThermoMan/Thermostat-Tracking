@@ -356,12 +356,13 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
 
 		if( $this->tmode == 1 )
 		{ // mode 1 is heat
-			$this->t_heat = $obj->{'t_heat'};			 // Present heat target temperature in deg F
+			$this->t_heat = $obj->{'t_heat'};			 // Present heat target temperature in degrees
 		}
 		else if( $this->tmode == 2 )
 		{ // mode 2 is cool
-			$this->t_cool = $obj->{'t_cool'};			 // Present cool target temperature in deg F
+			$this->t_cool = $obj->{'t_cool'};			 // Present cool target temperature in degrees
 		}
+		// I kinda wish this was $this->t_target as we only need to distinguish between heat and cool desired temperatures in the schedules.
 
 		$this->tstate = $obj->{'tstate'};				 // Present heater/compressor state 0 = off, 1 = heating, 2 = cooling
 		$this->fstate = $obj->{'fstate'};				 // Present fan state 0 = off, 1 = on

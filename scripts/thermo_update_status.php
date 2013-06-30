@@ -26,20 +26,24 @@ require(dirname(__FILE__).'/../common.php');
 
 try
 {
+	// Query to location info about the thermostat.  Might find nothing if this is the first time.
 	$sql = "SELECT * FROM {$dbConfig['table_prefix']}hvac_status WHERE tstat_uuid=?"; // Really should name columns instead of using *
-	$queryStatus = $pdo->prepare( $sql );
+	$getStatInfo = $pdo->prepare( $sql );
 
+	// If this was teh first contact, add info about the stat to the DB
 	$sql = "INSERT INTO {$dbConfig['table_prefix']}hvac_status( tstat_uuid, date, start_date_heat, start_date_cool, start_date_fan, heat_status, cool_status, fan_status ) VALUES( ?, ?, ?, ?, ?, ?, ?, ? )";
-	$queryInsert = $pdo->prepare( $sql );
+	$insertStatInfo = $pdo->prepare( $sql );
+
+	// Modify the thermostat data
+	$sql = "UPDATE {$dbConfig['table_prefix']}thermostats SET tstat_uuid = ?, description = ?, model = ?, fw_version = ?, wlan_fw_version = ? WHERE id = ?";
+	$updateStatInfo = $pdo->prepare( $sql );
 
 	$sql = "UPDATE {$dbConfig['table_prefix']}hvac_status SET date = ?, start_date_heat = ?, start_date_cool = ?, start_date_fan = ?, heat_status = ?, cool_status = ?, fan_status = ? WHERE tstat_uuid = ?";
-	$queryUpdate = $pdo->prepare( $sql );
+	$updateStatStatus = $pdo->prepare( $sql );
 
 	$sql = "INSERT INTO {$dbConfig['table_prefix']}hvac_cycles( tstat_uuid, system, start_time, end_time ) VALUES( ?, ?, ?, ? )";
 	$cycleInsert = $pdo->prepare( $sql );
 
-	$sql = "UPDATE {$dbConfig['table_prefix']}thermostats SET tstat_uuid = ?, description = ?, model = ?, fw_version = ?, wlan_fw_version = ? WHERE id = ?";
-	$queryThermInfo = $pdo->prepare( $sql );
 }
 catch( Exception $e )
 {
@@ -72,8 +76,9 @@ foreach( $thermostats as $thermostatRec )
 			//$wlanFwVersion = $stat->getWlanFwVersion(); // This data is gathered by the getSysInfo() function
 			$stat->getSysInfo();
 // Hey, guess what, need to add a timeout to the library and throw an error if no connection!
-sleep(1); // allow thermostat to catch up
+//sleep(1); // allow thermostat to catch up
 // I put the sleep back in because something fishy is going on and this might be it?
+// Took the sleep back out because that was not it.
 
 			/**
 				* On "new" contact the stat and get the "big download" that sets the most variables - instead of using multiple hits.
@@ -92,11 +97,10 @@ sleep(1); // allow thermostat to catch up
 				*/
 			$stat->getSysName();
 
-			logIt( "status: Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->sysName MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
+logIt( "status: I am declining to udpate the thermostat info for now," );
+			//logIt( "status: Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->sysName MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
 			//Update thermostat info in DB
-$stat->uuid = '5cdad4276ec5';
-logIt( 'status: Manually forced uuid to 5cdad4276ec5' );
-			$queryThermInfo->execute(array( $stat->uuid , $stat->sysName, $stat->model, $stat->fw_version, $stat->wlan_fw_version, $thermostatRec['id']));
+			//$updateStatInfo->execute(array( $stat->uuid , $stat->sysName, $stat->model, $stat->fw_version, $stat->wlan_fw_version, $thermostatRec['id']));
 
 			// Get thermostat state
 			$statData = $stat->getStat();
@@ -115,8 +119,8 @@ logIt( 'status: Manually forced uuid to 5cdad4276ec5' );
 			$priorCoolStatus = false;
 			$priorFanStatus = false;
 
-			$queryStatus->execute(array($stat->uuid));
-			if( $queryStatus->rowCount() < 1 )
+			$getStatInfo->execute(array($stat->uuid));
+			if( $getStatInfo->rowCount() < 1 )
 			{ // not found - this is the first time for this thermostat
 logIt( 'status: Something broke and I think I have never seen this stat before.' );
 // Perhaps key in on this logic to drive the deep query for the stat??
@@ -124,11 +128,11 @@ logIt( 'status: Something broke and I think I have never seen this stat before.'
 				$startDateCool = ($coolStatus) ? $now : null;
 				$startDateFan = ($fanStatus) ? $now : null;
 				logIt( "status: Inserting record for a brand new never before seen thermostat with time = ($now) H $heatStatus C $coolStatus F $fanStatus SDH $startDateHeat SDC $startDateCool SDF $startDateFan for UUID $stat->uuid" );
-				$queryInsert->execute( array( $stat->uuid, $now, $startDateHeat, $startDateCool, $startDateFan, $heatStatus, $coolStatus, $fanStatus ) );
+				$insertStatInfo->execute( array( $stat->uuid, $now, $startDateHeat, $startDateCool, $startDateFan, $heatStatus, $coolStatus, $fanStatus ) );
 			}
 			else
 			{
-				while( $row = $queryStatus->fetch( PDO::FETCH_ASSOC ) )
+				while( $row = $getStatInfo->fetch( PDO::FETCH_ASSOC ) )
 				{ // This SQL had better pull only one row or else there is a data integrity problem!
 					// and without an ORDER BY on the SELECT there is no way to know you're geting the same row from this each time
 					$priorStartDateHeat = $row['start_date_heat'];
@@ -166,7 +170,7 @@ logIt( 'status: Something broke and I think I have never seen this stat before.'
 				}
 				// update the status table
 				logIt( "status: Updating record with $now SDH $newStartDateHeat SDC $newStartDateCool SDF $newStartDateFan H $heatStatus C $coolStatus F $fanStatus for UUID $stat->uuid" );
-				$queryUpdate->execute( array( $now, $newStartDateHeat, $newStartDateCool, $newStartDateFan, $heatStatus, $coolStatus, $fanStatus, $stat->uuid ) );
+				$updateStatStatus->execute( array( $now, $newStartDateHeat, $newStartDateCool, $newStartDateFan, $heatStatus, $coolStatus, $fanStatus, $stat->uuid ) );
 			}
 		}
 		catch( Exception $e )

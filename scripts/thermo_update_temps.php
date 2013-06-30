@@ -86,8 +86,6 @@ foreach( $thermostats as $thermostatRec )
 
 			logIt( "temps: Target $target" );
 			logit( "temps: UUID $stat->uuid IT " . $stat->temp . " OT $outdoorTemp IH $stat->humidity OH $outdoorHumidity TARGT $target" );
-$stat->uuid = '5cdad4276ec5';
-logIt( 'temps: Manually forced uuid to 5cdad4276ec5' );
 			$queryTemp->execute(array( $stat->uuid, $stat->temp, $outdoorTemp, $stat->humidity, $outdoorHumidity, $target ) );
 
 			//$runTimeData = $stat->getDataLog();

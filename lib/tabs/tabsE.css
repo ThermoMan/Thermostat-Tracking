@@ -81,7 +81,7 @@ div.all_tabs > div.tab > a > img.tab-icon
 }
 
 /**
-	*  These next three classes distinguish between the 4 states a tab can be in.
+	*  These next four classes distinguish between the 4 states a tab can be in.
 	*
 	* Selected                - this one tab has the emphasis color.
 	* Inactive (Not selected) - all of the other tabs are other color.
@@ -206,7 +206,6 @@ div.all_tabs > div.tab > div.container > div.content
 	/*width: inherit;*/
 	width: 930px;													/* Requires computation width = container-width - padding-left - padding-right */
 	/* 930 = 950 - 10 - 10 */
-
 }
 
 /**
@@ -218,9 +217,10 @@ div.all_tabs > div.tab:not(:target) > div.container
 }
 
 /**
-  * Raise Select tab content above the other tabs so that you can see it
+  * Raise Selected tab content above the other tabs so that you can see it
   */
-div.all_tabs > div.tab:target > div.container, :target #about > div.container
+div.all_tabs > div.tab:target > div.container
+,:target #about > div.container
 {
 	position: absolute;								/* All these DIVs should overlap completely with each other */
 	z-index: -1;
