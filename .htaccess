@@ -1,4 +1,4 @@
-# Updated 17 Oct 2012
+# Updated 28 June 2013
 
 ServerSignature Off
 
@@ -24,6 +24,7 @@ Order Allow,Deny
 Deny from All
 </Files>
 
+
 # This prevents web browsers or spiders from seeing your .htaccess directives:
 <Files .htaccess>
 deny from all
@@ -42,5 +43,14 @@ RewriteEngine On
 #RewriteRule ^(.*).php$ %{REQUEST_URI}#daily [NE,R,L]
 # The problem is that it tries to rewrite EVERY hit and so you get a redirect loop and the page will not load.
 </IfModule>
+
+
+# Deny access to all . files (may supercede the .htaccess block above, but that is OK)
+RedirectMatch 403 /\..*$
+
+# Custom error file
+ErrorDocument 404 /common/html/404page.html
+ErrorDocument 403 /common/html/403page.html
+
 
 # End of file
