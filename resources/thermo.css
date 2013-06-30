@@ -1,5 +1,67 @@
 /* Main app specific css file */
 
+body
+{
+	background: #F0FFF0;
+}
+
+/** Here are the things that can appear inside the tabs
+	*
+	*/
+
+/** Dashboard per thermostat appearance
+	*
+	*/
+div.status
+{
+	margin: 0px;
+	margin-left: 50px;
+	width: 450px;
+	height: 200px;
+	overflow-y: auto;
+}
+div.status p
+{
+	padding: 5px;
+	top: -24;
+	vertical-align: middle;
+}
+div.status img
+{
+	vertical-align: middle;
+	height: 48px;
+	width: 48px;
+	background-image: url( '../images/HVAC-Bar.png' );
+}
+div.status img.fan_on
+{
+	background-position: 144px 0px;
+}
+div.status img.fan_off
+{
+	background-position: 144px -48px;
+}
+div.status img.compressor_on
+{
+	background-position: 96px 0px;
+}
+div.status img.compressor_off
+{
+	background-position: 96px -48px;
+}
+div.status img.heater_on
+{
+	background-position: 48px 0px;
+}
+div.status img.heater_off
+{
+	background-position: 48px -48px;
+}
+
+
+/** Charts and tables
+	*
+	*/
 div.thermo_chart
 {
 	position: relative;
@@ -23,14 +85,14 @@ div.daily_temperature_table
 
 table.thermo_table
 {
-	border-collapse: collapse;	/* Show a single line aroudn each cell instead of a double line */
+	border-collapse: collapse;	/* Show a single line around each cell instead of a double line */
 	white-space: nowrap;				/* Do not allow any text (I'm look at you date string) to wrap */
 }
 
 table.thermo_table th
 {
 	border: 1px solid black;
-	color: yellow;
+	color: #550F55;
 }
 
 table.thermo_table td
@@ -38,11 +100,3 @@ table.thermo_table td
 	border: 1px solid black;
 	color: blue;
 }
-
-
-/*
-.remembered_input
-{
-	background: #BBFFBB;
-}
-*/

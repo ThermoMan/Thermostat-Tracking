@@ -259,6 +259,39 @@ if( $isLoggedIn )
 				alert( 'Not implemented' );
 			}
 
+			function processStatus()
+			{
+				if( xmlDoc.readyState != 4 ) return ;
+
+				document.getElementById( 'status' ).innerHTML = xmlDoc.responseText;
+
+				// For testing make it look like 3 thermostats
+				document.getElementById( 'status' ).innerHTML = xmlDoc.responseText +'<br>'+
+				                                                'The data is manually tripilcated to simulate multiple stats<br>' +
+				                                                xmlDoc.responseText +'<br>'+
+				                                                xmlDoc.responseText;
+
+    	}
+
+			function updateStatus()
+			{
+				// Need to add the Wheels icon to the sprite map and set relative position in the thermo.css file
+				document.getElementById( 'status' ).innerHTML = "<p class='status'><img src='images/Wheels.png'>Looking up present conditions. (This may take some time)</p>";
+				if( typeof window.ActiveXObject != 'undefined' )
+				{
+					xmlDoc = new ActiveXObject( 'Microsoft.XMLHTTP' );
+					xmlDoc.onreadystatechange = process ;
+				}
+				else
+				{
+					xmlDoc = new XMLHttpRequest();
+					xmlDoc.onload = processStatus;
+				}
+				xmlDoc.open( 'GET', 'get_instant_status.php', true );
+				xmlDoc.send( null );
+
+			}
+
 			function switch_style( css_title )
 			{
 				// You may use this script on your site free of charge provided
@@ -310,7 +343,7 @@ if( $isLoggedIn )
 		</style>
 	</head>
 
-	<body onLoad='javascript: location.href="#daily"'>
+	<body>
 		<!-- Internal variable declarations START -->
 		<input type='hidden' name='id' value='<?php echo urlencode($id) ?>'>
 		<!-- Internal variable declarations END -->
@@ -322,45 +355,21 @@ if( $isLoggedIn )
 						Is this font is too small?
 					</div>
 					<div class='content'>
-						<br>
-						<table border='1' class='thermostatList'>
-							<tr>
-								<th>Name</th>
-								<th>Description</th>
-								<th>Last Temperature</th>
-<!-- These items are not for public consumption -->
-<!--	<th>IP</th> -->
-<!--	<th>Model</th> -->
-<!--	<th>Firmware</th> -->
-<!--	<th>WLAN Firmware</th> -->
-								</tr>
-<?php
-					foreach( $thermostats as $thermostatRec ):
-?>
-								<tr>
-								 <td style='text-align: right'><a href='index.php?id=<?php echo $thermostatRec['id']?>'><?php echo $thermostatRec['name'] ?></a></td>
-								 <td style='text-align: left'><?php echo $thermostatRec['description'] ?></td>
-								 <td style='text-align: center'>XX</td>
-							 </tr>
-<?php
-					endforeach;
-?>
-						</table>
-						<br><br><br><br>
-						<br>Trying to work out how to get around cross-site scripting to get this page to function in the fashion I want.<br>
-						<p style='margin: 0px; margin-left: 50px'>The present temperature is <span id='temperature_state'>unknown</span> &deg;<?php echo $weatherConfig['units'] ?></p>
-						<p style='margin: 0px; margin-left: 50px'>The heater is (ON/OFF) <span id='heat_state'>unknown</span></p>
-						<p style='margin: 0px; margin-left: 50px'>The compressor is (ON/OFF) <span id='cool_state'>unknown</span></p>
-						<p style='margin: 0px; margin-left: 50px'>The fan is (ON/OFF) <span id='fan_state'>unknown</span></p>
 						<br><br>
-						<br><br>The HTML5 components are tested to work in Chrome, Safari (Mac), Android 4.0.4 default browser.	They do not work (manually type in the date) in Firefox.	I've not tested the functionality in IE.	The HTML validator suggests that the HTML 5 components may also work in Opera.
+						<input type='button' onClick='javascript: updateStatus();' value='Refresh'>
+						<div id='status' class='status'>Javascript must be enabled to see this content</div>
 						<!-- Kick off dashboard refresh timers -->
 						<script type='text/javascript'>
-						// setTimeout( 'updateStatus();', updateStatusInterval );
+							updateStatus();
 						</script>
+						<br><br><br><br><br><br><br><br>The HTML5 components are tested to work in Chrome, Safari (Mac), Android 4.0.4 default browser.	They do not work (manually type in the date) in Firefox.	I've not tested the functionality in IE.	The HTML validator suggests that the HTML 5 components may also work in Opera.
 					</div>
 				</div>
 			</div>
+			<script>
+				// Now that the dashbord tab is loaded, set it to be the target
+				location.href = '#dashboard';
+			</script>
 			<div class='tab_gap'></div>
 
 

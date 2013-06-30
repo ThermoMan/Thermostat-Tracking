@@ -116,7 +116,8 @@ function logIt( $msg )
 	fclose( $fh );
 }
 
-// REplace all instnce of doError() in code with calls to logIt() using error flag.
+// Need to replace all instances of doError() in code with calls to logIt() using error flag.
+// And then delete this function
 function doError( $msg )
 {
 	echo $msg . "\n";

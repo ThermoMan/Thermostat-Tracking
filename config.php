@@ -1,6 +1,9 @@
 <?php
+/** Config file for thermostat monitoring and reporting software.
+	*
+	*/
 
-$rootDir = '~/thermo2/';
+$rootDir = dirname(__FILE__) . '/';
 $logDir =  $rootDir . 'logs/';
 
 /**
@@ -18,7 +21,7 @@ $lockFile = '/tmp/thermo.lock';
 	*  are in the same timezone as the location of all the thermostats.
 	*
 	* If you are using a system that does not understand timezones (for example Synology NAS) or you are
-	*  using it in a 100% local environment
+	*  using it in a 100% local environment then uses SYSTEM.
 	* $timezone = 'SYSTEM';
 	*/
 $timezone = 'America/Los_Angeles';
@@ -35,7 +38,7 @@ $weatherConfig = array(
 	'type'    => 'weatherunderground',			// weatherunderground, noaa, weatherbug
 	'units'   => 'F',												// F, C
 	'api_key' => '0000000000000000',				// Registered API key
-	'api_loc' => NULL                   		// NULL (but NEVER b;ank ''), http://w1.weather.gov/xml/current_obs/KUZA.xml
+	'api_loc' => NULL                   		// NULL (but NEVER blank ''), http://w1.weather.gov/xml/current_obs/KUZA.xml
 	// URL - User Specific
 	// See  http://www.wunderground.com/weather/api/d/docs
 	//      http://weather.weatherbug.com/desktop-weather/api-documents.html
