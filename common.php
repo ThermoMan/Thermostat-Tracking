@@ -6,18 +6,20 @@ require 'lib/ExternalWeather.php';
 // In order to move the pChart library to an external location I found I had to modify the includepath
 function add_include_path( $path )
 {
-    foreach (func_get_args() AS $path)
+	foreach( func_get_args() AS $path )
     {
-        if (!file_exists($path) OR (file_exists($path) && filetype($path) !== 'dir'))
+		if( !file_exists($path) OR (file_exists($path) && filetype($path) !== 'dir') )
         {
-            trigger_error("Include path '{$path}' not exists", E_USER_WARNING);
+			trigger_error( "Include path '{$path}' not exists", E_USER_WARNING );
             continue;
         }
 
         $paths = explode(PATH_SEPARATOR, get_include_path());
 
-        if (array_search($path, $paths) === false)
+		if( array_search( $path, $paths ) === false )
+		{
             array_push($paths, $path);
+		}
 
         set_include_path(implode(PATH_SEPARATOR, $paths));
     }
@@ -112,7 +114,7 @@ function logIt( $msg )
 	$logFile = $logDir . 'thermo.' . date( 'Y.m.d' ) . '.log';
 	//echo $logFile . "\n";
 	$fh = fopen( $logFile, 'a' );
-	fwrite( $fh, $msg . "\n" );
+	fwrite( $fh, date( 'H:i', time() ) . ' ' . $msg . "\n" );
 	fclose( $fh );
 }
 

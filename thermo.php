@@ -349,6 +349,9 @@ if( $isLoggedIn )
 		<!-- Internal variable declarations END -->
 
 		<div class='all_tabs'>
+			<div class='tab_gap'></div>
+			<div class='tab_gap'></div>
+
 			<div class='tab' id='dashboard'> <a href='#dashboard'> Dashboard </a>
 				<div class='container'>
 					<div class='tab-toolbar'>
@@ -394,7 +397,7 @@ if( $isLoggedIn )
 							<option value='1'>weeks</option>
 							<option value='2'>months</option>
 							<option value='3'>years</option>
-						<select>
+						</select>
 						<!-- Need to change the max value to a date computed by Javascript so it stays current -->
 						ending on <input type='date' id='chart.daily.toDate' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' step='1'/>
 						&nbsp; showing Heat<input type='checkbox' id='chart.daily.showHeat' name='chart.daily.showHeat' onChange='javascript: toggle_daily_flag( "chart.daily.showHeat" );'/>
@@ -486,7 +489,7 @@ if( $isLoggedIn )
 							<option value='0' selected>days</option>
 							<option value='1'>weeks</option>
 							<option value='2'>months</option>
-						<select>
+						</select>
 						ending on <input type='date' id='chart.history.toDate' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' step='1'/>
 						&nbsp;&nbsp;Optionally show HVAC runtimes<input type='checkbox' id='show_hvac_runtime' name='show_hvac_runtime'/>
 						<span style='float: right;'>UN-save settings<input type='button' onClick='javascript: deleteCookies(1);' value='Clear'></span>
@@ -608,12 +611,14 @@ if( $isLoggedIn )
 						<br><br>
 						<div style='text-align: center;'>
 							<a target='_blank' href='http://validator.w3.org/check?uri=referer'><img style='border:0;width:88px;height:31px;' src='images/valid-html5.png' alt='Valid HTML 5'/><div class='caveat'><!-- ANY whitespace between the start of the anchor and the start of the div adds an underscore to the page -->
+								<br>
 								<ul>
 									<li>The first warning '<b><img class='caveat' src='images/w3c_info.png' alt='Info'>Using experimental feature: HTML5 Conformance Checker.</b>' is provisional until the HTML5 specification is complete.</li>
-									<li>The 4 reported errors '<b><img class='caveat' src='images/w3c_error.png' alt='Error'>Attribute size not allowed on element input at this point.</b>' reported on use of the attribute "size" where input type="date" are incorrect because the HTML 5 validator is provisional until the specification is complete.</li>
-									<li>The 4 reported warnings '<b><img class='caveat' src='images/w3c_warning.png' alt='Warning'>The date input type is so far supported properly only by Opera. Please be sure to test your page in Opera.</b>' may also be read to include Chrome.</li>
+									<li>The 2 reported errors '<b><img class='caveat' src='images/w3c_error.png' alt='Error'>Attribute size not allowed on element input at this point.</b>' reported on use of the attribute "size" where input type="date" are incorrect because the HTML 5 validator is provisional until the specification is complete.</li>
+									<li>The 2 other reported warnings '<b><img class='caveat' src='images/w3c_warning.png' alt='Warning'>The date input type is so far supported properly only by Opera. Please be sure to test your page in Opera.</b>' may also be read to include Chrome.</li>
 <!--									<li>The final warning '<b><img class='caveat' src='images/w3c_warning.png' alt='Warning'>The scoped attribute on the style element is not supported by browsers yet. It would probably be better to wait for implementations.'</b> complains if the style is not scoped and differently when it is. The style that it is complaining about is local only to this very message and therefore should <i>not</i> be global.</li> -->
 								</ul>
+								<br>
 							</div></a> <!-- ANY whitespace between the end of the div and the end of the anchor adds an underscore to the page -->
 							<a target='_blank' href='http://jigsaw.w3.org/css-validator/check/referer'><img style='border:0;width:88px;height:31px;' src='http://jigsaw.w3.org/css-validator/images/vcss' alt='Valid CSS!'/></a>
  						</div>

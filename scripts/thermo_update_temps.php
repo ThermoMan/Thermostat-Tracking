@@ -22,7 +22,8 @@ try
 }
 catch( Exception $e )
 {
-	doError( 'DB Exception: ' . $e->getMessage() );
+	logIt( 'temps: DB Exception while preparing SQL: ' . $e->getMessage() );
+	die();
 }
 
 $outdoorTemp = null;						// Default outside temp
@@ -37,7 +38,7 @@ try
 }
 catch( Exception $e )
 {
-	doError( 'External weather failed: ' . $e->getMessage() );
+	logIt( 'temps: External weather failed: ' . $e->getMessage() );
 }
 
 foreach( $thermostats as $thermostatRec )
@@ -46,11 +47,11 @@ foreach( $thermostats as $thermostatRec )
 	$lock = @fopen( $lockFileName, 'w' );
 	if( !$lock )
 	{
-		error( "Could not write to lock file $lockFileName" );
+		logIt( "temps: Could not write to lock file $lockFileName" );
 		continue;
 	}
 
-	if( flock($lock, LOCK_EX) )
+	if( flock( $lock, LOCK_EX ) )
 	{
 		try
 		{
@@ -106,13 +107,14 @@ foreach( $thermostats as $thermostatRec )
 		}
 		catch( Exception $e )
 		{
-			doError( 'Thermostat Exception: ' . $e->getMessage() );
+			logIt( 'temps: Thermostat Exception: ' . $e->getMessage() );
 		}
 		flock( $lock, LOCK_UN );
 	}
 	else
 	{
-		die( "temps: Couldn't get file lock for thermostat {$thermostatRec['id']}" );
+		logIt( "temps: Couldn't get file lock for thermostat {$thermostatRec['id']}" );
+		die();
 	}
 	fclose($lock);
 }

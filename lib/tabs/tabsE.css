@@ -128,6 +128,7 @@ div.all_tabs > div.tab > div.container
 	height: 600px;												/* This sets the vertical height of the tab content area - regardless of the content vertical height */
 	z-index: -2;												/* Behind, because the borders overlap */
 	overflow: hidden;
+	border-radius: 9px 9px 9px 9px;       /* Tab border is rounded */
 }
 
 /** 

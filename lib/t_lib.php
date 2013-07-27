@@ -153,6 +153,7 @@ class Stat
 
 		if( $this->debug	)
 		{
+// Need to detect if run from commend line or web.  Either way using log() would be better
 			echo '<br>commandURL: ' . $commandURL . '<br>';
 		}
 
@@ -168,7 +169,10 @@ class Stat
 	protected function containsTransient( $obj )
 	{
 		$retval = false;
-		foreach ( $obj as $key => &$value )
+		// Aha!  This might be how to detect the missing connection?
+		// Warning: Invalid argument supplied for foreach() in /home/fratell1/freitag.theinscrutable.us/thermo2/lib/t_lib.php on line 171
+		// It was line 171 before I started adding comments!
+		foreach( $obj as $key => &$value )
 		{
 			if( is_object($value) )
 			{
