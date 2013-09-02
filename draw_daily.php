@@ -65,6 +65,9 @@ $from_date = date( 'Y-m-d', strtotime( "$from_date + 1 day" ) );
 $show_heat_cycles = (isset($_GET['chart_daily_showHeat']) && ($_GET['chart_daily_showHeat'] == 'false')) ? 0 : 1;
 $show_cool_cycles = (isset($_GET['chart_daily_showCool']) && ($_GET['chart_daily_showCool'] == 'false')) ? 0 : 1;
 $show_fan_cycles  = (isset($_GET['chart_daily_showFan'])  && ($_GET['chart_daily_showFan']  == 'false')) ? 0 : 1;
+// Set default for displaying set temp to "off"
+$show_setpoint     = (isset($_GET['chart_daily_setpoint'])  && ($_GET['chart_daily_setpoint']  == 'false')) ? 0 : 1;
+
 
 // OK, now that we have a bounding range of dates, build an array of all the dates in the range
 $check_date = $from_date;
@@ -137,7 +140,8 @@ while( $check_date != $to_date )
 $sql =
 "SELECT CONCAT( ?, ' ', b.time ) AS date,
 				IFNULL(a.indoor_temp, 'VOID') as indoor_temp,
-				IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp
+				IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp,
+				IFNULL(a.set_point, 'VOID') as set_point
  FROM {$dbConfig['table_prefix']}time_index b
  LEFT JOIN {$dbConfig['table_prefix']}temperatures a
  ON a.date = CONCAT( ?, ' ', b.time ) AND a.tstat_uuid = ? ";
@@ -174,6 +178,10 @@ else
 	if( $source == 0 || $source == 2 )
 	{	// Outdoor or both
 		echo '<th>Outdoor Temp</th>';
+	}
+	if ($show_setpoint == 1)
+	{       // Set point temperature (regardless of heat or cool)
+		echo '<th>Setpoint Temp</th>';
 	}
 }
 
@@ -263,6 +271,7 @@ foreach( $days as $show_date )
 			}
 			$MyData->addPoints( ($row['indoor_temp'] == 'VOID' ? VOID : $row['indoor_temp']), 'Indoor' );
 			$MyData->addPoints( ($row['outdoor_temp'] == 'VOID' ? VOID : $row['outdoor_temp']), 'Outdoor' );
+			$MyData->addPoints( ($row['set_point'] == 'VOID' ? VOID : $row['set_point']), 'Setpoint' );
 		}
 		else
 		{
@@ -275,6 +284,10 @@ foreach( $days as $show_date )
 			if( $source == 0 || $source == 2 )
 			{	// Outdoor or both
 				echo '<td>'.($row['outdoor_temp'] == 'VOID' ? '&nbsp;' : $row['outdoor_temp']).'</td>';
+			}
+			if ($show_setpoint == 1)
+			{       // Show set point temp (regardless of heat or cool)
+				echo '<td>'.($row['set_point'] == 'VOID' ? '&nbsp;' : $row['set_point']).'</td>';
 			}
 			echo '</tr>';
 		}
@@ -289,6 +302,8 @@ foreach( $days as $show_date )
 		while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) > $chart_y_max ) $chart_y_max += 10;
 		while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) < $chart_y_min ) $chart_y_min -= 10;
 		while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) > $chart_y_max ) $chart_y_max += 10;
+		while( ($row['set_point'] == 'VOID' ? 50 : $row['set_point']) < $chart_y_min ) $chart_y_min -= 10;
+		while( ($row['set_point'] == 'VOID' ? 50 : $row['set_point']) > $chart_y_max ) $chart_y_max += 10;
   }
 }
 
@@ -304,6 +319,7 @@ if( $table_flag )
 // Attach the data series to the axis (by ordinal)
 $MyData->setSerieOnAxis( 'Indoor', 0 );
 $MyData->setSerieOnAxis( 'Outdoor', 0 );
+$MyData->setSerieOnAxis( 'Setpoint', 0 );
 
 // Set line style, color, and alpha blending level
 $MyData->setSerieTicks( 'Indoor', 0 );  // 0 is a solid line
@@ -313,6 +329,10 @@ $MyData->setPalette( 'Indoor', $serieSettings );
 $MyData->setSerieTicks( 'Outdoor', 2 ); // n is length in pixels of dashes in line
 $serieSettings = array( 'R' => 150, 'G' => 50, 'B' => 80, 'Alpha' => 100 );
 $MyData->setPalette( 'Outdoor', $serieSettings );
+
+$MyData->setSerieTicks( 'Setpoint', 0 ); // n is length in pixels of dashes in line
+$serieSettings = array( 'R' => 0, 'G' => 0, 'B' => 0, 'Alpha' => 50 );
+$MyData->setPalette( 'Setpoint', $serieSettings );
 
 // Set names for Y-axis labels
 $MyData->setAxisName( 0, 'Temperatures' );
