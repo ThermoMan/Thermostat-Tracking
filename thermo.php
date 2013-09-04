@@ -62,12 +62,18 @@ if( $isLoggedIn )
 			function display_chart( chart, style )
 			{
 				var chart_target;
+				chart_target = document.getElementById( 'daily_temperature_chart' );
+				chart_target.src = 'images/daily_temperature_placeholder.png';	// Redraw the placekeeper while the chart is rendering
+				// By using setTimeout we can separate the drawing of the placeholder image from the actual chart such that the browser will always draw the placeholder
+				setTimeout(function(){ display_chart_build_and_display(chart, style);}, 100);
+			}
+			function display_chart_build_and_display( chart, style )
+			{
+				var chart_target;
 				var table_flag = '';
 				if( chart == 'daily' && style == 'chart' )
 				{
-					table_flag = 'table_flag=false';
-					chart_target = document.getElementById( 'daily_temperature_chart' );
-					chart_target.src = 'images/daily_temperature_placeholder.png';	// Redraw the placekeeper while the chart is rendering
+				        chart_target = document.getElementById( 'daily_temperature_chart' );
 				}
 				else if( chart == 'daily' && style == 'table' )
 				{
