@@ -97,7 +97,7 @@ foreach( $thermostats as $thermostatRec )
 				*/
 			$stat->getSysName();
 
-logIt( "status: I am declining to udpate the thermostat info for now," );
+logIt( "status: I am declining to update the thermostat info for now," );
 			//logIt( "status: Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->sysName MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
 			//Update thermostat info in DB
 			//$updateStatInfo->execute(array( $stat->uuid , $stat->sysName, $stat->model, $stat->fw_version, $stat->wlan_fw_version, $thermostatRec['id']));

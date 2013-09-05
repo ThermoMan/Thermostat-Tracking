@@ -483,13 +483,57 @@ echo '</tr>';
     }
   }
 //echo "</table>";
-  // If $start_date is today then also look in the hvac_status table and see if there is an open ended run going on right now.
-  /*
-  $sql = "SELECT MIN(date) FROM thermo_hvac_status WHERE heat_status = 1 and date(date) = '$start_date'";
-  $result = mysql_query( $sql );
-  $row = mysql_fetch_array( $result ); // I expect either zero or one row from the SQL
-  */
-  // From that date roll forward and see if there is more than once cycle to add
+
+// Now draw a box for a presently running session.
+	$sql = "SELECT heat_status
+					,DATEDIFF( start_date_heat, ? ) AS start_day_heat
+					,DATE_FORMAT( start_date_heat, '%k' ) AS start_hour_heat
+					,TRIM(LEADING '0' FROM DATE_FORMAT( start_date_heat, '%i' ) ) AS start_minute_heat
+
+					,cool_status
+					,DATEDIFF( start_date_cool, ? ) AS start_day_cool
+					,DATE_FORMAT( start_date_cool, '%k' ) AS start_hour_cool
+					,TRIM(LEADING '0' FROM DATE_FORMAT( start_date_cool, '%i' ) ) AS start_minute_cool
+
+					,fan_status
+					,DATEDIFF( start_date_fan, ? ) AS start_day_fan
+					,DATE_FORMAT( start_date_fan, '%k' ) AS start_hour_fan
+					,TRIM(LEADING '0' FROM DATE_FORMAT( start_date_fan, '%i' ) ) AS start_minute_fan
+
+					,DATEDIFF( date, ? ) AS end_day
+					,DATE_FORMAT( date, '%k' ) AS end_hour
+					,TRIM( LEADING '0' FROM DATE_FORMAT( date, '%i' ) ) AS end_minute
+
+					FROM {$dbConfig['table_prefix']}hvac_status
+					WHERE tstat_uuid = ?";
+
+  $query = $pdo->prepare($sql);
+  $result = $query->execute(array( $from_date, $from_date, $from_date, $from_date, $uuid ) );
+
+  while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
+  {	// Should be only one row!
+  	if( $row['heat_status'] == 1 && $show_heat_cycles == 1 )
+  	{	// If the AC is on now AND we want to draw it
+			$cycle_start = $LeftMargin + (($row['start_day_cool'] * 1440) + ($row['start_hour_cool'] * 60) + $row['start_minute_cool'] ) * $PixelsPerMinute;
+			$cycle_end   = $LeftMargin + (($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute;
+
+      $myPicture->drawGradientArea( $cycle_start, $HeatRectRow, $cycle_end, $HeatRectRow + $RectHeight, DIRECTION_HORIZONTAL, $HeatGradientSettings );
+  	}
+  	if( $row['cool_status'] == 1 && $show_cool_cycles == 1 )
+  	{	// If the AC is on now AND we want to draw it
+			$cycle_start = $LeftMargin + (($row['start_day_cool'] * 1440) + ($row['start_hour_cool'] * 60) + $row['start_minute_cool'] ) * $PixelsPerMinute;
+			$cycle_end   = $LeftMargin + (($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute;
+
+			$myPicture->drawGradientArea( $cycle_start, $CoolRectRow, $cycle_end, $CoolRectRow + $RectHeight, DIRECTION_HORIZONTAL, $CoolGradientSettings );
+  	}
+  	if( $row['fan_status'] == 1 && $show_fan_cycles == 1 )
+  	{	// If the AC is on now AND we want to draw it
+			$cycle_start = $LeftMargin + (($row['start_day_cool'] * 1440) + ($row['start_hour_cool'] * 60) + $row['start_minute_cool'] ) * $PixelsPerMinute;
+			$cycle_end   = $LeftMargin + (($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute;
+
+      $myPicture->drawGradientArea( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, DIRECTION_HORIZONTAL, $FanGradientSettings );
+  	}
+	}
 }
 
 $myPicture->autoOutput( 'images/daily_chart.png' );
