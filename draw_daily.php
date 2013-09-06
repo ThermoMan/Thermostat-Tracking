@@ -180,6 +180,8 @@ else
 $dates = '';
 $very_first = true;
 
+$saved_string = VOID;	// Used to store the current X-axis' label until we tell pChart about it
+
 foreach( $days as $show_date )
 {
 	$dates .= $show_date . '   ';
@@ -231,36 +233,47 @@ foreach( $days as $show_date )
 			}
 			else
 			{
+				// This seems pretty ugly, but pChart highlights a hash mark on the X axis whenever it finds the next point
+				// in the abscissa array as being different than the previous one.  Using VOID for the value for those hash marks
+				// you don't want to highlight (or get a grid line for) doesn't work since VOID is a valid value.  So you'd
+				// get one more highlighted hash mark and a grid line just after the one you really wanted (the date or time) -
+				// although it wouldn't actually SHOW anything because the value was "VOID".
+				//
+				// So, instead, for every hash mark that you don't want to highlight (or get a grid line for) just set it
+				// to be the same as the previous hash mark's value.
+
 				if( $dayCount <= 28 )
 				{
+					// 13,3 = minutes with colon (:MM), 11, 2 = two digit hour (HH)
 					if( ( substr( $row['date'], 13, 3 ) == ':00' ) && ( substr( $row['date'], 11, 2 ) % $labelDivisor == 0 ) )
 					{	// Only show axis every -interval- hours
 						if( substr( $row['date'], 11, 2 ) == '00' )
-						{	// At midnight show the new date (How to add emphasis to distinguish from time stamps?)
-							$MyData->addPoints( substr( $row['date'], 5, 5 ), 'Labels' );
+						{	// At midnight show the new date in MM-DD format
+							// (How to add emphasis to distinguish from time stamps?)
+							$saved_string = substr($row['date'], 5, 5);
 						}
 						else
 						{
-							$MyData->addPoints( substr( $row['date'], 11, 5 ), 'Labels' );
+							// Otherwise show the hour in HH:MM format
+							$saved_string = substr($row['date'], 11, 5);
 						}
-					}
-					else
-					{
-						$MyData->addPoints( VOID, 'Labels' );
 					}
 				}
 				else
 				{	// All other intervals...
 					if( date_format( date_create( $row[ 'date' ]), 'N' ) == 7 )
 					{ // Show the date only for the first day of each week in mm-dd format
-						$MyData->addPoints( substr( $row[ 'date' ], 5, 5 ), 'Labels' );
-					}
-					else
-					{ // Placekeeper for non-shown dates
-						$MyData->addPoints( VOID, 'Labels' );
+						$saved_string = substr($row['date'], 5, 5);
 					}
 				}
+
+				// We may, or may not, have changed $saved_string, but if we didn't change it is is because we didn't
+				// want to show a value for a particular point on the X axis - pChart detects that same value
+				// and doesn't display anything
+				
+				$MyData->addPoints( $saved_string, 'Labels' );
 			}
+
 			$MyData->addPoints( ($row['indoor_temp'] == 'VOID' ? VOID : $row['indoor_temp']), 'Indoor' );
 			$MyData->addPoints( ($row['outdoor_temp'] == 'VOID' ? VOID : $row['outdoor_temp']), 'Outdoor' );
 		}
