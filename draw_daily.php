@@ -269,9 +269,28 @@ foreach( $days as $show_date )
 					}
 				}
 			}
-			$MyData->addPoints( ($row['indoor_temp'] == 'VOID' ? VOID : $row['indoor_temp']), 'Indoor' );
-			$MyData->addPoints( ($row['outdoor_temp'] == 'VOID' ? VOID : $row['outdoor_temp']), 'Outdoor' );
-			$MyData->addPoints( ($row['set_point'] == 'VOID' ? VOID : $row['set_point']), 'Setpoint' );
+			if ($source == 0 || $source == 2)
+			{
+				$MyData->addPoints( ($row['indoor_temp'] == 'VOID' ? VOID : $row['indoor_temp']), 'Indoor' );
+			}
+			if ($source == 1 || $source == 2)
+			{
+				$MyData->addPoints( ($row['outdoor_temp'] == 'VOID' ? VOID : $row['outdoor_temp']), 'Outdoor' );
+			}
+			if ($show_setpoint == 1)
+			{
+				if ($row['set_point'] != 0)
+				{
+					$MyData->addPoints( ($row['set_point'] == 'VOID' ? VOID : $row['set_point']), 'Setpoint' );
+				}
+				else
+				{
+					// If the set point isn't defined for this data point (for instance, the thermostat was off)
+					//  set it to VOID so we don't graph these points at all
+
+					$MyData->addPoints(VOID, 'Setpoint');
+				}
+			}
 		}
 		else
 		{
