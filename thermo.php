@@ -63,27 +63,27 @@ if( $isLoggedIn )
 			{
 				var chart_target;
 				chart_target = document.getElementById( 'daily_temperature_chart' );
-				chart_target.src = 'images/daily_temperature_placeholder.png';	// Redraw the placekeeper while the chart is rendering
-				// By using setTimeout we can separate the drawing of the placeholder image from the actual chart such that the browser will always draw the placeholder
-				setTimeout(function(){ display_chart_build_and_display(chart, style);}, 100);
-			}
-			function display_chart_build_and_display( chart, style )
-			{
-				var chart_target;
-				var table_flag = '';
-				if( chart == 'daily' && style == 'chart' )
+
+				if (chart == 'daily' && style == 'chart')
 				{
-				        chart_target = document.getElementById( 'daily_temperature_chart' );
+				        chart_target.src = 'images/daily_temperature_placeholder.png';	// Redraw the placekeeper while the chart is rendering
+
+				        // By using setTimeout we can separate the drawing of the placeholder image from the actual chart such that the browser will always draw the placeholder
+				        setTimeout(function(){ display_chart_build_and_display(chart, style, 'false', chart_target);}, 500);
 				}
 				else if( chart == 'daily' && style == 'table' )
 				{
 					table_flag = 'table_flag=true';
+				        display_chart_build_and_display(chart, style, table_flag, chart_target);
 				}
 				else
 				{
 					alert( 'You asked for '+chart+' and '+style+' and I do not know how to do that (yet)' );
 					return;
 				}
+			}
+			function display_chart_build_and_display( chart, style, table_flag, chart_target )
+			{
 
 				var show_thermostat_id     = 'id='                          + document.getElementById( 'chart.daily.thermostat' ).value;
 				var daily_source_selection = 'chart.daily.source='          + document.getElementById( 'chart.daily.source' ).value;
