@@ -65,7 +65,7 @@ $from_date = date( 'Y-m-d', strtotime( "$from_date + 1 day" ) );
 $show_heat_cycles = (isset($_GET['chart_daily_showHeat']) && ($_GET['chart_daily_showHeat'] == 'false')) ? 0 : 1;
 $show_cool_cycles = (isset($_GET['chart_daily_showCool']) && ($_GET['chart_daily_showCool'] == 'false')) ? 0 : 1;
 $show_fan_cycles  = (isset($_GET['chart_daily_showFan'])  && ($_GET['chart_daily_showFan']  == 'false')) ? 0 : 1;
-// Set default for displaying set temp to "off"
+// Set default for displaying set point temp to "off"
 $show_setpoint     = (isset($_GET['chart_daily_setpoint'])  && ($_GET['chart_daily_setpoint']  == 'false')) ? 0 : 1;
 
 

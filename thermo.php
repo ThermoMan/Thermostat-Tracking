@@ -391,8 +391,8 @@ if( $isLoggedIn )
 							<option value='1'>Indoor</option>
 							<option value='2' selected>Both</option>
 						</select>
-						<!-- A checkbox to turn on/off the display of the set temp -->
-						<input type='checkbox' id='chart.daily.setpoint' name='chart.daily.setpoint' onChange='javascript: toggle_daily_flag( "chart.daily.setpoint" );'/> Set Temp
+						<!-- A checkbox to turn on/off the display of the set point temperature -->
+						<input type='checkbox' id='chart.daily.setpoint' name='chart.daily.setpoint' onChange='javascript: toggle_daily_flag( "chart.daily.setpoint" );'/> Set Point
 						&nbsp&nbsp&nbsp&nbsp&nbsp Timeframe <input type='text' id='chart.daily.interval.length' value='7' size='3'>
 						<select id='chart.daily.interval.group' style='width: 65px'>
 							<option value='0' selected>days</option>
