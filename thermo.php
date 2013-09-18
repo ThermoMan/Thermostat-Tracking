@@ -67,7 +67,6 @@ if( $isLoggedIn )
 				if (chart == 'daily' && style == 'chart')
 				{
 				        chart_target.src = 'images/daily_temperature_placeholder.png';	// Redraw the placekeeper while the chart is rendering
-
 				        // By using setTimeout we can separate the drawing of the placeholder image from the actual chart such that the browser will always draw the placeholder
 				        setTimeout(function(){ display_chart_build_and_display(chart, style, 'false', chart_target);}, 500);
 				}
@@ -86,6 +85,7 @@ if( $isLoggedIn )
 			{
 
 				var show_thermostat_id     = 'id='                          + document.getElementById( 'chart.daily.thermostat' ).value;
+				var daily_setpoint_selection = 'chart.daily.setpoint='      + document.getElementById( 'chart.daily.setpoint' ).checked;
 				var daily_source_selection = 'chart.daily.source='          + document.getElementById( 'chart.daily.source' ).value;
 				var daily_interval_length  = 'chart.daily.interval.length=' + document.getElementById( 'chart.daily.interval.length' ).value;
 				var daily_interval_group   = 'chart.daily.interval.group='  + document.getElementById( 'chart.daily.interval.group' ).value;
@@ -106,7 +106,7 @@ if( $isLoggedIn )
 				{
 				}
 
-				url_string = url_string + '?' + show_thermostat_id + '&' + daily_source_selection + '&' + table_flag + '&' +
+				url_string = url_string + '?' + show_thermostat_id + '&' + daily_source_selection + '&' + daily_setpoint_selection + '&' + table_flag + '&' +
 										 daily_interval_length + '&' + daily_interval_group + '&' + daily_to_date_string + '&' +
 										 show_heat_cycle_string	+ '&' + show_cool_cycle_string	+ '&' + show_fan_cycle_string + '&' +
 										 no_cache_string;
@@ -119,7 +119,7 @@ if( $isLoggedIn )
 				{	// Right now it assumes the DAILY table.  Fix that later
 					//document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'"></iframe>';
 					//document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'" width="450"></iframe>';
-					document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'" height="113" width="440"></iframe>';
+					document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'" height="100" width="530"></iframe>';
 				}
 			}
 
@@ -223,12 +223,14 @@ if( $isLoggedIn )
 				if( chart == 0 )
 				{	// Clear cookies that remember daily settings
 					setCookie( 'auto_refresh', '', -1 );
+					setCookie( 'chart.daily.setpoint', '', -1 );
 					setCookie( 'chart.daily.showHeat', '', -1 );
 					setCookie( 'chart.daily.showCool', '', -1 );
 					setCookie( 'chart.daily.showFan', '', -1 );
 					setCookie( 'chart.daily.fromDate', '', -1 );
 					setCookie( 'chart.daily.toDate', '', -1 );
 
+					document.getElementById('chart.daily.setpoint').className = '';
 					document.getElementById('chart.daily.showHeat').className = '';
 					document.getElementById('chart.daily.showCool').className = '';
 					document.getElementById('chart.daily.showFan').className = '';
@@ -397,7 +399,9 @@ if( $isLoggedIn )
 							<option value='1'>Indoor</option>
 							<option value='2' selected>Both</option>
 						</select>
-						temperatures for <input type='text' id='chart.daily.interval.length' value='7' size='3'>
+						<!-- A checkbox to turn on/off the display of the set point temperature -->
+						<input type='checkbox' id='chart.daily.setpoint' name='chart.daily.setpoint' onChange='javascript: toggle_daily_flag( "chart.daily.setpoint" );'/> Set Point
+						&nbsp&nbsp&nbsp&nbsp&nbsp Timeframe <input type='text' id='chart.daily.interval.length' value='7' size='3'>
 						<select id='chart.daily.interval.group' style='width: 65px'>
 							<option value='0' selected>days</option>
 							<option value='1'>weeks</option>
@@ -433,6 +437,12 @@ if( $isLoggedIn )
 								// Checkbox styles are not obeyed by browsers, they are styled by the OS.
 								document.getElementById('chart.daily.showCool').className = 'remembered_input';	// Set visual cue that cookie retains this value
 							}
+							if( getCookie('chart.daily.setpoint') )
+							{
+								document.getElementById('chart.daily.setpoint').checked = true;
+								document.getElementById('chart.daily.setpoint').className = 'remembered_input';
+							}
+
 							if( getCookie('chart.daily.showHeat') )
 							{
 								document.getElementById('chart.daily.showHeat').checked = true;
