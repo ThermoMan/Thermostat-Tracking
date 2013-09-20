@@ -67,7 +67,7 @@ try
 			$heatStatus = ($stat->tstate == 1) ? 'on' : 'off';
 			$coolStatus = ($stat->tstate == 2) ? 'on' : 'off';
 
-			// If any of the the devices are on ask the DB how long the habe been running (in hours:minutes)
+			// If any of the the devices are on ask the DB how long they have been running (in hours:minutes)
 
 			$fanStatus  = ($stat->fstate == 1) ? 'on' : 'off';
 			// Not sure why, but this just is not working.  The t_heat and t_cool are coming back blank
@@ -93,14 +93,7 @@ try
 				//$returnString = $returnString . "<p>Right now at ".date('H:i', time())." the outside temperature for $thermostatRec[name] is $outdoorTemp &deg;$weatherConfig[units]</p>";
 				// Change to display using the thermostats own time.
 				$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
-			}
-			catch( Exception $e )
-			{
-				logIt( 'External weather failed: ' . $e->getMessage() );
-				// Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
-				$returnString = $returnString . "<p><img src='images/Alert.png'/>Presently unable to read outside information.</p>";
-				$returnString = $returnString . "<p>$thermostatRec[name] says it is $stat->time</p>";
-			}
+
 			$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='heater_$heatStatus' /> The heater is $heatStatus".(($heatStatus == 'on') ? "$setPoint" : '').'.</p>';
 			$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='compressor_$coolStatus' /> The compressor is $coolStatus.";
 			if( $coolStatus == 'on' )
@@ -109,6 +102,14 @@ try
 			}
 			$returnString = $returnString . '</p>';
 			$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='fan_$fanStatus' /> The fan is $fanStatus</p>";
+			}
+			catch( Exception $e )
+			{
+				logIt( 'External weather failed: ' . $e->getMessage() );
+				// Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
+				$returnString = $returnString . "<p><img src='images/Alert.png'/>Presently unable to read outside information.</p>";
+				$returnString = $returnString . "<p>$thermostatRec[name] says it is $stat->time</p>";
+			}
 		}
 		fclose( $lock );
 	}

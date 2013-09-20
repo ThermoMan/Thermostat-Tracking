@@ -102,15 +102,18 @@ if( $isLoggedIn )
 			<div class='tab' id='dashboard'> <a href='#dashboard'> Dashboard </a>
 				<div class='container'>
 					<div class='tab-toolbar'>
-						Is this font is too small?
+						Present conditions
 					</div>
 					<div class='content'>
 						<br><br>
-						<input type='button' onClick='javascript: updateStatus();' value='Refresh'>
+						<input type='button' onClick='javascript: updateStatus(); updateForecast();' value='Refresh'>
+						<br>
 						<div id='status' class='status'>Javascript must be enabled to see this content</div>
+						<div id='forecast' class='forecast'>Javascript must be enabled to see this content</div>
 						<!-- Kick off dashboard refresh timers -->
 						<script type='text/javascript'>
 							updateStatus();
+							updateForecast();
 						</script>
 					</div>
 				</div>
@@ -370,10 +373,10 @@ if( $isLoggedIn )
 							<li style='margin-top: 11px;'><a target='_blank' href='https://github.com/ThermoMan/Tabbed-Interface-CSS-Only'>Tabbed-Interface-CSS-Only</a> by ThermoMan.</li>
 							<li style='margin-top: 11px;'><a target='_blank' href='http://www.customicondesign.com//'>Free for non-commercial use icons from Custom Icon Designs</a>.	These icons are in the package <a target='_blank' href='http://www.veryicon.com/icons/system/mini-1/'>Mini 1 Icons</a>.</li>
 							<li style='margin-top: 11px;'><a target='_blank' href='http://www.stevedawson.com/article0014.php'>Password access loosely based on code by Steve Dawson</a>.</li>
-							<li >The external temperatures come from <a target='_blank' href='http://www.wunderground.com/weather/api/'><img style='position:relative; top:10px; height:31px; border:0;' src='http://icons.wxug.com/logos/PNG/wundergroundLogo_4c_horz.png' alt='Weather Underground Logo'></a></li>
+							<li >The external temperatures and forecast come from <a target='_blank' href='http://www.wunderground.com/weather/api/'><img style='position:relative; top:10px; height:31px; border:0;' src='http://icons.wxug.com/logos/PNG/wundergroundLogo_4c_horz.png' alt='Weather Underground Logo'></a></li>
 						</ul>
 						<br><p>This project is based on the <a target='_blank' href='http://www.radiothermostat.com/filtrete/products/3M-50/'>Filtrete 3M Radio Thermostat</a>.
-						<br><br><br><br><br><br>
+						<br><br><br><br>
 						<div style='text-align: center;'>
 							<a target='_blank' href='http://validator.w3.org/check?uri=referer'><img style='border:0;width:88px;height:31px;' src='images/valid-html5.png' alt='Valid HTML 5'/><div class='caveat'><!-- ANY whitespace between the start of the anchor and the start of the div adds an underscore to the page -->
 								<br>

@@ -220,11 +220,11 @@ function processStatus()
 {
 	if( xmlDoc.readyState != 4 ) return ;
 
-	document.getElementById( 'status' ).innerHTML = xmlDoc.responseText;
+	//document.getElementById( 'status' ).innerHTML = xmlDoc.responseText;
 
 	// For testing make it look like 3 thermostats
 	document.getElementById( 'status' ).innerHTML = xmlDoc.responseText +'<br>'+
-																									'The data is manually tripilcated to simulate multiple stats<br>' +
+																									'The data is manually triplicated to simulate multiple stats in a single location.<br>' +
 																									xmlDoc.responseText +'<br>'+
 																									xmlDoc.responseText;
 
@@ -252,6 +252,39 @@ function updateStatus()
 	xmlDoc.open( 'GET', 'get_instant_status.php', true );
 	xmlDoc.send( null );
 }
+
+var xmlDoc2;
+function processForecast()
+{
+	if( xmlDoc2.readyState != 4 ) return ;
+
+	document.getElementById( 'forecast' ).innerHTML = xmlDoc2.responseText;
+}
+
+function updateForecast()
+{
+	// Need to add the Wheels icon to the sprite map and set relative position in the thermo.css file
+	document.getElementById( 'forecast' ).innerHTML = "<p class='status'><img src='images/img_trans.gif' width='1' height='1' class='wheels' />Looking up the forecast. (This may take some time)</p>";
+	
+	if( typeof window.ActiveXObject != 'undefined' )
+	{
+		xmlDoc2 = new ActiveXObject( 'Microsoft.XMLHTTP' );
+		xmlDoc2.onreadystatechange = process ;
+	}
+	else
+	{
+		xmlDoc2 = new XMLHttpRequest();
+		//xmlDoc.onload = processForecast;
+		xmlDoc2.onload = function(){return processForecast()};	// Can use arguments in here if I wrap in an anonymous function
+	}
+	// Replace use of session ID here with thermo.seed and a pseudorandom generator.  Send both the prng and the iteration number
+	// On server side, check that iteration number matches what it should be (each one used once and that the prng is right (because seed is stored there too)
+	//var session_id = getCookie( 'thermo.session' );
+	
+	xmlDoc2.open( 'GET', 'get_instant_forecast.php', true );
+	xmlDoc2.send( null );
+}
+
 
 function switch_style( css_title )
 {

@@ -23,14 +23,16 @@ body
 	*
 	*/
 
-/** Dashboard per thermostat appearance
+/** Dashboard per thermostat/location appearance
 	*
 	*/
 div.status
 {
+	display:inline-block; 
 	margin: 0px;
 	margin-left: 50px;
-	width: 450px;
+	float: left;
+	width: 400px;
 	height: 200px;
 	overflow-y: auto;
 }
@@ -39,6 +41,12 @@ div.status p
 	padding: 5px;
 	top: -24px;
 	vertical-align: middle;
+}
+div.forecast
+{
+	margin: 0px;
+	margin-right: 50px;
+	float: right;
 }
 
 /** Sprite map to replace individual graphics
