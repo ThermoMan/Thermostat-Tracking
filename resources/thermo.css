@@ -2,7 +2,21 @@
 
 body
 {
-	background: #F0FFF0;
+	/* background: #F0FFF0; */
+	/* background-image: url( '../images/FFNBackground.png' ); */
+	background-image: url( '../images/grid.png' );
+	background-size: contain;
+	background-repeat: repeat-y;
+	text-align: center;
+}
+
+/** Absolutely everything that appeas on the ENTIRE web page should be in this big box
+	*
+	*/
+#bigbox
+{
+	width: 1000px;
+	margin:0px auto;
 }
 
 /** Here are the things that can appear inside the tabs
@@ -26,6 +40,17 @@ div.status p
 	top: -24px;
 	vertical-align: middle;
 }
+
+/** Sprite map to replace individual graphics
+	*
+	* When adding new images to the sprite map do the following steps.
+	*
+	* 1. Determine width of new sprite and make the whole image that many pixels wider.
+	* 2. Add the new sprite to the LEFT side of the sprite map.
+	* 3. Compute the background-position to be offset from top left of new sprite to top right of whole map
+	*
+	*  Define sprite map basics
+	*/
 div.status img
 {
 	vertical-align: middle;
@@ -33,31 +58,38 @@ div.status img
 	width: 48px;
 	background-image: url( '../images/HVAC-Bar.png' );
 }
+
+/** Locate individual sprites within the map.
+	*
+	*/
 div.status img.fan_on
 {
-	background-position: 144px 0px;
+	background-position: 192px 0px;
 }
 div.status img.fan_off
 {
-	background-position: 144px -48px;
+	background-position: 192px -48px;
 }
 div.status img.compressor_on
 {
-	background-position: 96px 0px;
+	background-position: 144px 0px;
 }
 div.status img.compressor_off
 {
-	background-position: 96px -48px;
+	background-position: 144px -48px;
 }
 div.status img.heater_on
 {
-	background-position: 48px 0px;
+	background-position: 96px 0px;
 }
 div.status img.heater_off
 {
-	background-position: 48px -48px;
+	background-position: 96px -48px;
 }
-
+div.status img.wheels
+{
+	background-position: 336px 0px;
+}
 
 /** Charts and tables
 	*
@@ -100,3 +132,43 @@ table.thermo_table td
 	border: 1px solid black;
 	color: blue;
 }
+
+div.header
+{
+	text-align: right;
+	/*height: 30px;*/
+	background-color: #EEEEEE;
+	padding: 5px;
+	position: fixed;
+	width: 99%;
+	z-index: 10;
+}
+
+body.account
+{
+	margin: 10px;
+}
+fieldset.auto-width
+{
+	border: 1px solid #FF0000;
+	width: 50em;
+	display: inline-block;
+	padding: 10px;
+}
+fieldset.auto-width legend
+{
+	/* margin: 0 15px; */
+	padding:  0 10px;
+}
+table.form
+{
+}
+table.form td.label
+{
+	text-align: right;
+}
+table.form td.input, td.hint
+{
+	test-align: left;
+}
+

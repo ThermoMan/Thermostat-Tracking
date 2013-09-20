@@ -137,7 +137,7 @@ while( $check_date != $to_date )
 	*           presentation needs.
 	*/
 
-$sql =
+$sqlOne =
 "SELECT CONCAT( ?, ' ', b.time ) AS date,
 				IFNULL(a.indoor_temp, 'VOID') as indoor_temp,
 				IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp,
@@ -149,10 +149,10 @@ $minutes = '30';
 
 if( $dayCount >= 70 )
 {	// Reduce data set if there are more than 70 days.
-	$sql .= "WHERE SUBSTR( b.time, 3, 3 ) != ':30' ";
+	$sqlOne .= "WHERE SUBSTR( b.time, 3, 3 ) != ':30' ";
 	$minutes = '60';	// Repeated setting is redundant, but it's better to keep this text change with the SQL change.
 }
-$query = $pdo->prepare( $sql );
+$queryOne = $pdo->prepare( $sqlOne );
 
 
 // Set default boundaries for chart
@@ -168,7 +168,7 @@ else
 	echo '<link href="resources/thermo.css" rel="stylesheet" type="text/css" />';	// It expects to be presented in an iframe which does NOT inherit the parent css
 	//echo "<br>Normal low for this month is $chart_y_min.";
 	//echo "<br>Normal high for this month is $chart_y_max.";
-	//echo "<br>The SQL<br>$sql";
+	//echo "<br>The SQL<br>$sqlOne";
 	//echo '<table class="thermo_chart"><th class="thermo_chart">Date</th><th class="thermo_chart">Indoor Temp</th><th class="thermo_chart">Outdoor Temp</th>';
 	echo '<table class="thermo_table"><th>Date</th>';
 	if( $source == 1 || $source == 2 )
@@ -194,11 +194,11 @@ foreach( $days as $show_date )
 {
 	$dates .= $show_date . '   ';
 
-	$query->execute( array( $show_date, $show_date, $uuid ) );
+	$queryOne->execute( array( $show_date, $show_date, $uuid ) );
 
 	$counter = 0;
 	$first_row = true;
-	while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
+	while( $row = $queryOne->fetch( PDO::FETCH_ASSOC ) )
 	{
 		/**
 	* Chart of things that work for X-axis labels (work in progress to have optimal spacing)
@@ -343,6 +343,74 @@ foreach( $days as $show_date )
   }
 }
 
+//EXPERIMENT
+//EXPERIMENT Do all three SQLs BEFORE the new pImage() command and see if it makes the drawing faster/not timeout
+//EXPERIMENT
+if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
+{ // For a $show_date of '2012-07-10' get the start and end bounding datetimes
+  $start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));	// "2012-07-10 00:00:00";
+  $end_date = strftime( '%Y-%m-%d 23:59:59', strtotime($to_date));			// "2012-07-10 23:59:59";
+
+  /**
+		* This SQL should include cycles that started on the previous night or ended on the
+		*  following morning for any given date.
+		*
+		* Ought to graphically differentiate those open ended cycles somehow?
+		*/
+  $sqlTwo =
+  "SELECT system,
+					DATEDIFF( start_time, ? ) AS start_day,
+					DATEDIFF( end_time, ? ) AS end_day,
+          DATE_FORMAT( GREATEST( start_time, ? ), '%k' ) AS start_hour,
+          TRIM(LEADING '0' FROM DATE_FORMAT( GREATEST( start_time, ? ), '%i' ) ) AS start_minute,
+          DATE_FORMAT( LEAST( end_time, ? ), '%k' ) AS end_hour,
+          TRIM( LEADING '0' FROM DATE_FORMAT( LEAST( end_time, ? ), '%i' ) ) AS end_minute
+  FROM {$dbConfig['table_prefix']}hvac_cycles
+  WHERE start_time >= ? AND end_time <= ? AND tstat_uuid = ?
+  ORDER BY start_time ASC";
+
+/*
+echo "<br>sql is $sqlTwo";
+echo "<br>start_date is $start_date";
+echo "<br>end_date is $end_date";
+echo "<br>uuid is $uuid";
+*/
+  $queryTwo = $pdo->prepare($sqlTwo);
+  $result = $queryTwo->execute(array( $start_date, $start_date, $start_date, $start_date, $end_date, $end_date, $start_date, $end_date, $uuid ) );
+
+	$sqlThree = "SELECT heat_status
+					,DATEDIFF( start_date_heat, ? ) AS start_day_heat
+					,DATE_FORMAT( start_date_heat, '%k' ) AS start_hour_heat
+					,TRIM(LEADING '0' FROM DATE_FORMAT( start_date_heat, '%i' ) ) AS start_minute_heat
+
+					,cool_status
+					,DATEDIFF( start_date_cool, ? ) AS start_day_cool
+					,DATE_FORMAT( start_date_cool, '%k' ) AS start_hour_cool
+					,TRIM(LEADING '0' FROM DATE_FORMAT( start_date_cool, '%i' ) ) AS start_minute_cool
+
+					,fan_status
+					,DATEDIFF( start_date_fan, ? ) AS start_day_fan
+					,DATE_FORMAT( start_date_fan, '%k' ) AS start_hour_fan
+					,TRIM(LEADING '0' FROM DATE_FORMAT( start_date_fan, '%i' ) ) AS start_minute_fan
+
+					,DATEDIFF( date, ? ) AS end_day
+					,DATE_FORMAT( date, '%k' ) AS end_hour
+					,TRIM( LEADING '0' FROM DATE_FORMAT( date, '%i' ) ) AS end_minute
+
+					FROM {$dbConfig['table_prefix']}hvac_status
+					WHERE tstat_uuid = ?";
+
+  $queryThree = $pdo->prepare($sqlThree);
+  $result = $queryThree->execute(array( $from_date, $from_date, $from_date, $from_date, $uuid ) );
+
+
+}
+//EXPERIMENT
+//EXPERIMENT End
+//EXPERIMENT
+
+
+
 if( $table_flag )
 {	// If we're showing the data in a chart, we're done now.  Wrap up the table tag and press the eject button.
 	echo '</table>';
@@ -392,7 +460,7 @@ $AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_m
 	* START of common block - this code should be identical for all charts so that they have a common look and feel
 	*/
 $myPicture = new pImage( 900, 430, $MyData );	// Create the pChart object
-$myPicture->Antialias = TRUE;									// Turn on Antialiasing
+$myPicture->Antialias = FALSE;								// Turn OFF Antialiasing (it draws faster)
 
 // Draw the background
 $Settings = array( 'R' => 170, 'G' => 183, 'B' => 87, 'Dash' => 1, 'DashR' => 190, 'DashG' => 203, 'DashB' => 107, 'Alpha' => 60 );
@@ -455,36 +523,8 @@ $myPicture->drawLineChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DI
 	*/
 
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
-{ // For a $show_date of '2012-07-10' get the start and end bounding datetimes
-  $start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));	// "2012-07-10 00:00:00";
-  $end_date = strftime( '%Y-%m-%d 23:59:59', strtotime($to_date));			// "2012-07-10 23:59:59";
-
-  /**
-		* This SQL should include cycles that started on the previous night or ended on the
-		*  following morning for any given date.
-		*
-		* Ought to graphically differentiate those open ended cycles somehow?
-		*/
-  $sql =
-  "SELECT system,
-					DATEDIFF( start_time, ? ) AS start_day,
-					DATEDIFF( end_time, ? ) AS end_day,
-          DATE_FORMAT( GREATEST( start_time, ? ), '%k' ) AS start_hour,
-          TRIM(LEADING '0' FROM DATE_FORMAT( GREATEST( start_time, ? ), '%i' ) ) AS start_minute,
-          DATE_FORMAT( LEAST( end_time, ? ), '%k' ) AS end_hour,
-          TRIM( LEADING '0' FROM DATE_FORMAT( LEAST( end_time, ? ), '%i' ) ) AS end_minute
-  FROM {$dbConfig['table_prefix']}hvac_cycles
-  WHERE start_time >= ? AND end_time <= ? AND tstat_uuid = ?
-  ORDER BY start_time ASC";
-
-/*
-echo "<br>sql is $sql";
-echo "<br>start_date is $start_date";
-echo "<br>end_date is $end_date";
-echo "<br>uuid is $uuid";
-*/
-  $query = $pdo->prepare($sql);
-  $result = $query->execute(array( $start_date, $start_date, $start_date, $start_date, $end_date, $end_date, $start_date, $end_date, $uuid ) );
+{
+	// The SQL has already been executed.  Now just draw it.
 
   // The rounded corners look so much better, but the run times are so short that the rounds seldom appear.
   $HeatGradientSettings = array( 'StartR' => 200, 'StartG' => 100, 'StartB' => 100, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
@@ -514,7 +554,7 @@ echo "<br>uuid is $uuid";
 		*/
 
 //echo "<table border='1'>";
-  while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
+  while( $row = $queryTwo->fetch( PDO::FETCH_ASSOC ) )
   {
 /*
 echo '<tr>';
@@ -540,33 +580,9 @@ echo '</tr>';
   }
 //echo "</table>";
 
-// Now draw a box for a presently running session.
-	$sql = "SELECT heat_status
-					,DATEDIFF( start_date_heat, ? ) AS start_day_heat
-					,DATE_FORMAT( start_date_heat, '%k' ) AS start_hour_heat
-					,TRIM(LEADING '0' FROM DATE_FORMAT( start_date_heat, '%i' ) ) AS start_minute_heat
+	// Now draw boxes for a presently running heat/cool/fan sessions.
 
-					,cool_status
-					,DATEDIFF( start_date_cool, ? ) AS start_day_cool
-					,DATE_FORMAT( start_date_cool, '%k' ) AS start_hour_cool
-					,TRIM(LEADING '0' FROM DATE_FORMAT( start_date_cool, '%i' ) ) AS start_minute_cool
-
-					,fan_status
-					,DATEDIFF( start_date_fan, ? ) AS start_day_fan
-					,DATE_FORMAT( start_date_fan, '%k' ) AS start_hour_fan
-					,TRIM(LEADING '0' FROM DATE_FORMAT( start_date_fan, '%i' ) ) AS start_minute_fan
-
-					,DATEDIFF( date, ? ) AS end_day
-					,DATE_FORMAT( date, '%k' ) AS end_hour
-					,TRIM( LEADING '0' FROM DATE_FORMAT( date, '%i' ) ) AS end_minute
-
-					FROM {$dbConfig['table_prefix']}hvac_status
-					WHERE tstat_uuid = ?";
-
-  $query = $pdo->prepare($sql);
-  $result = $query->execute(array( $from_date, $from_date, $from_date, $from_date, $uuid ) );
-
-  while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
+  while( $row = $queryThree->fetch( PDO::FETCH_ASSOC ) )
   {	// Should be only one row!
   	if( $row['heat_status'] == 1 && $show_heat_cycles == 1 )
   	{	// If the AC is on now AND we want to draw it

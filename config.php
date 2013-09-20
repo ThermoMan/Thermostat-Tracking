@@ -58,8 +58,6 @@ $dbConfig = array(
 // Config edit PW
 $password = 'admin';
 
-
-
 // Display variables
 
 /**

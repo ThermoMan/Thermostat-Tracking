@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <?php
 require_once 'common.php';
 
@@ -22,13 +21,13 @@ if( isset($_POST['password']) && ($_POST['password'] == $password ) )
 
 // Now do things that depend on that newly determined login status
 // Set Config tab icon default value
-$lockIcon = 'images/Lock.png';			// Default to locked
+$lockIcon = 'tab-sprite lock';			// Default to locked
 $lockAlt = 'icon: lock';
 $verifyText = 'No';
 if( $isLoggedIn )
 {
 	// Set Config tab icon logged-in value
-	$lockIcon = 'images/Unlock.png';	// Change to UNlocked icon only when user is logged in
+	$lockIcon = 'tab-sprite unlock';	// Change to UNlocked icon only when user is logged in
 	$lockAlt = 'icon: unlock';
 
 	if( isset($_POST['save_settings'] ) )
@@ -39,6 +38,7 @@ if( $isLoggedIn )
 }
 ?>
 
+<!DOCTYPE html>
 <html>
 	<head>
 		<meta http-equiv=Content-Type content='text/html; charset=utf-8'>
@@ -53,272 +53,8 @@ if( $isLoggedIn )
 		<meta http-equiv='Default-Style' content='green'>
 		<link rel='stylesheet' type='text/css' title='white' href='lib/tabs/tabs-white.css'>
 
-		<script type='text/javascript'>
-				/**
-				* chart is one of 'daily' or 'history'
-				* sytle is one of 'chart' or 'table'
-				  *
-				  */
-			function display_chart( chart, style )
-			{
-				var chart_target;
-				chart_target = document.getElementById( 'daily_temperature_chart' );
-
-				if (chart == 'daily' && style == 'chart')
-				{
-				        chart_target.src = 'images/daily_temperature_placeholder.png';	// Redraw the placekeeper while the chart is rendering
-				        // By using setTimeout we can separate the drawing of the placeholder image from the actual chart such that the browser will always draw the placeholder
-				        setTimeout(function(){ display_chart_build_and_display(chart, style, 'false', chart_target);}, 500);
-				}
-				else if( chart == 'daily' && style == 'table' )
-				{
-					table_flag = 'table_flag=true';
-				        display_chart_build_and_display(chart, style, table_flag, chart_target);
-				}
-				else
-				{
-					alert( 'You asked for '+chart+' and '+style+' and I do not know how to do that (yet)' );
-					return;
-				}
-			}
-			function display_chart_build_and_display( chart, style, table_flag, chart_target )
-			{
-
-				var show_thermostat_id     = 'id='                          + document.getElementById( 'chart.daily.thermostat' ).value;
-				var daily_setpoint_selection = 'chart.daily.setpoint='      + document.getElementById( 'chart.daily.setpoint' ).checked;
-				var daily_source_selection = 'chart.daily.source='          + document.getElementById( 'chart.daily.source' ).value;
-				var daily_interval_length  = 'chart.daily.interval.length=' + document.getElementById( 'chart.daily.interval.length' ).value;
-				var daily_interval_group   = 'chart.daily.interval.group='  + document.getElementById( 'chart.daily.interval.group' ).value;
-				var daily_to_date_string   = 'chart.daily.toDate='          + document.getElementById( 'chart.daily.toDate' ).value;
-				var show_heat_cycle_string = 'chart.daily.showHeat=' + document.getElementById( 'chart.daily.showHeat' ).checked;
-				var show_cool_cycle_string = 'chart.daily.showCool=' + document.getElementById( 'chart.daily.showCool' ).checked;
-				var show_fan_cycle_string	= 'chart.daily.showFan='	+ document.getElementById( 'chart.daily.showFan' ).checked;
-
-				// Browsers are very clever with image caching.	In this case it breaks the web page function.
-				var no_cache_string = 'nocache=' + Math.random();
-
-				var url_string = '';
-				if( chart == 'daily' )
-				{
-					url_string = 'draw_daily.php';
-			}
-				else if( chart == 'history' )
-				{
-				}
-
-				url_string = url_string + '?' + show_thermostat_id + '&' + daily_source_selection + '&' + daily_setpoint_selection + '&' + table_flag + '&' +
-										 daily_interval_length + '&' + daily_interval_group + '&' + daily_to_date_string + '&' +
-										 show_heat_cycle_string	+ '&' + show_cool_cycle_string	+ '&' + show_fan_cycle_string + '&' +
-										 no_cache_string;
-
-				if( style == 'chart' )
-			{
-					chart_target.src = url_string;
-				}
-				else if( style == 'table' )
-				{	// Right now it assumes the DAILY table.  Fix that later
-					//document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'"></iframe>';
-					//document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'" width="450"></iframe>';
-					document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'" height="100" width="530"></iframe>';
-				}
-			}
-
-
-			/**
-			  *	Save the value of the checkbox for later - and update the chart with the new value
-			  */
-			function toggle_daily_flag( flag )
-			{
-				setCookie( flag, document.getElementById(flag).checked );
-				display_daily_temperature();
-			}
-
-			/**
-			  *	Save the value of the field for later - and update the chart with the new value
-			  */
-			function update_daily_value( field )
-			{
-				setCookie( field, document.getElementById(field).value );
-				display_daily_temperature();
-			}
-
-//Change names of the IDs to match this naming convention 'chart.history.toDate' instead of this convention 'history_to_date'
-			function display_historic_chart()
-			{
-				var show_thermostat_id = 'id=' + document.getElementById( 'chart.history.thermostat' ).value;
-				var show_indoor = 'Indoor=' + document.getElementById( 'history_selection' ).value;
-				var show_hvac_runtime = 'show_hvac_runtime=' + document.getElementById( 'show_hvac_runtime' ).checked;
-
-				var interval_measure_string = 'interval_measure=' + document.getElementById( 'interval_measure' ).value;
-				var interval_length_string = 'interval_length=' + document.getElementById( 'interval_length' ).value;
-
-				var history_to_date_string = 'history_to_date=' + document.getElementById( 'chart.history.toDate' ).value;
-
-				var no_cache_string = 'nocache=' + Math.random(); // Browsers are very clever with image caching.	That cleverness breaks this web page's function.
-
-				var url_string = 'draw_weekly.php?' + show_thermostat_id + '&' + show_indoor + '&' + show_hvac_runtime + '&' + interval_measure_string + '&' + interval_length_string + '&' + history_to_date_string	+ '&' + no_cache_string;
-				console.log( url_string );
-				document.getElementById( 'history_chart' ).src = url_string;
-			}
-
-
-			var refreshInterval = 20 * 60 * 1000;	// It's measured in milliseconds and I want a unit of minutes.
-			function timedRefresh()
-			{
-				// Save value (either true or false) for next time (keep cookie up to ten days)
-				setCookie( 'auto_refresh', document.getElementById( 'auto_refresh' ).checked, 10 );
-
-				if( document.getElementById( 'auto_refresh' ).checked == true )
-				{
-					document.getElementById( 'daily_update' ).style.visibility = 'visible';
-					/**
-					  * Need to add a check here for present day.	Only present day actually has changing data
-					  * so don't bother with refresh on historic data.	But do leave the refresh flag set for later.
-					  */
-					update_daily_chart();
-					setTimeout( 'timedRefresh();', refreshInterval );
-				}
-				else
-				{
-					document.getElementById( 'daily_update' ).style.visibility = 'hidden';
-				}
-			}
-
-			/**
-			  * Default cookies last for ten years.
-			  *
-			  * exdays is an optional parameter that defaults to ten years when missing.
-			  */
-			function setCookie( c_name, value, exdays )
-			{
-				// Chrome does not like to see '=' in the argument list of a function declaration.  Here is plan B.
-				if( typeof( exdays ) === 'undefined' ) exdays = 3650;
-
-				var exdate = new Date();
-				exdate.setDate( exdate.getDate() + exdays );
-				var c_value = escape(value) + ( ( exdays == null ) ? '' : '; expires = ' + exdate.toUTCString() );
-				document.cookie = c_name + '=' + c_value;
-			}
-
-			function getCookie( c_name )
-			{
-				var i, key, value, ARRcookies = document.cookie.split( ';' );
-				for( i = 0; i < ARRcookies.length; i++ )
-				{
-					key = ARRcookies[i].substr( 0, ARRcookies[i].indexOf( '=' ) );
-					value = ARRcookies[i].substr( ARRcookies[i].indexOf( '=' ) + 1);
-					key = key.replace( /^\s+|\s+$/g, '' );
-					if( key == c_name )
-					{
-						return unescape( value );
-					}
-				}
-			}
-
-			/**
-			  * To erase a cookie, set it with an expiration date prior to now.
-			  */
-			function deleteCookies( chart )
-			{
-				if( chart == 0 )
-				{	// Clear cookies that remember daily settings
-					setCookie( 'auto_refresh', '', -1 );
-					setCookie( 'chart.daily.setpoint', '', -1 );
-					setCookie( 'chart.daily.showHeat', '', -1 );
-					setCookie( 'chart.daily.showCool', '', -1 );
-					setCookie( 'chart.daily.showFan', '', -1 );
-					setCookie( 'chart.daily.fromDate', '', -1 );
-					setCookie( 'chart.daily.toDate', '', -1 );
-
-					document.getElementById('chart.daily.setpoint').className = '';
-					document.getElementById('chart.daily.showHeat').className = '';
-					document.getElementById('chart.daily.showCool').className = '';
-					document.getElementById('chart.daily.showFan').className = '';
-					document.getElementById('chart.daily.fromDate').className = '';
-					document.getElementById('chart.daily.toDate').className = '';
-				}
-
-				if( chart == 1 )
-				{	// Clear cookies that remember history settings
-					setCookie( 'chart.history.toDate', '', -1 );
-
-					document.getElementById('chart.history.toDate').className = '';
-				}
-			}
-
-			/**
-			  * Either set up a countdown timer that both updates this clock AND triggers the chart update when hitting 0
-			  * or set up a second timer that is a countdown clock and hope it stays in sync with the update routine.
-			  */
-			function showRefreshTime()
-			{
-				var today = new Date();
-				var h = '' + today.getHours();
-				var m = '' + today.getMinutes();
-				//var s = today.getSeconds();
-				if( h < 10 ) h = '0' + h;
-				if( m < 10 ) m = '0' + m;
-
-				document.getElementById( 'daily_update' ).innerHTML = 'Countdown to refresh: ' + h + ':' + m;
-			}
-
-			function doLogout()
-			{
-				alert( 'Not implemented' );
-			}
-
-			function processStatus()
-			{
-				if( xmlDoc.readyState != 4 ) return ;
-
-				document.getElementById( 'status' ).innerHTML = xmlDoc.responseText;
-
-				// For testing make it look like 3 thermostats
-				document.getElementById( 'status' ).innerHTML = xmlDoc.responseText +'<br>'+
-				                                                'The data is manually tripilcated to simulate multiple stats<br>' +
-				                                                xmlDoc.responseText +'<br>'+
-				                                                xmlDoc.responseText;
-
-    	}
-
-			function updateStatus()
-			{
-				// Need to add the Wheels icon to the sprite map and set relative position in the thermo.css file
-				document.getElementById( 'status' ).innerHTML = "<p class='status'><img src='images/Wheels.png'>Looking up present conditions. (This may take some time)</p>";
-				if( typeof window.ActiveXObject != 'undefined' )
-				{
-					xmlDoc = new ActiveXObject( 'Microsoft.XMLHTTP' );
-					xmlDoc.onreadystatechange = process ;
-				}
-				else
-				{
-					xmlDoc = new XMLHttpRequest();
-					xmlDoc.onload = processStatus;
-				}
-				xmlDoc.open( 'GET', 'get_instant_status.php', true );
-				xmlDoc.send( null );
-
-			}
-
-			function switch_style( css_title )
-			{
-				// You may use this script on your site free of charge provided
-				// you do not remove this notice or the URL below. Script from
-				// http://www.thesitewizard.com/javascripts/change-style-sheets.shtml
-				var i, link_tag;
-				for( i = 0, link_tag = document.getElementsByTagName('link'); i < link_tag.length ; i++ )
-				{
-					if( (link_tag[i].rel.indexOf( 'stylesheet' ) != -1 ) && link_tag[i].title )
-					{
-						link_tag[i].disabled = true ;
-						if( link_tag[i].title == css_title )
-						{
-							link_tag[i].disabled = false;
-						}
-					}
-				}
-			}
-		</script>
+		<!-- Load the stuff that makes it go -->
+		<script type='text/javascript' src='resources/thermo.js'></script>
 
 		<!-- These styles are applied to the W3C HTML button on the About tab only and do not need to be part of the .css file -->
 		<style>
@@ -352,6 +88,9 @@ if( $isLoggedIn )
 	</head>
 
 	<body>
+	<div class='header'><?php include( $rootDir . '/header.php' ); ?></div>
+	<br><br><br>
+	<div id='bigbox'>
 		<!-- Internal variable declarations START -->
 		<input type='hidden' name='id' value='<?php echo urlencode($id) ?>'>
 		<!-- Internal variable declarations END -->
@@ -373,7 +112,6 @@ if( $isLoggedIn )
 						<script type='text/javascript'>
 							updateStatus();
 						</script>
-						<br><br><br><br><br><br><br><br>The HTML5 components are tested to work in Chrome, Safari (Mac), Android 4.0.4 default browser.	They do not work (manually type in the date) in Firefox.	I've not tested the functionality in IE.	The HTML validator suggests that the HTML 5 components may also work in Opera.
 					</div>
 				</div>
 			</div>
@@ -431,24 +169,25 @@ if( $isLoggedIn )
 
 						<!-- This initialization script must fall AFTER declaration of various inputs -->
 						<script type='text/javascript'>
-							if( getCookie('chart.daily.showCool') )
+							// A literal value of "false" is a string of non zero length and so it tests as logically true uinless you look for the literal string "true"
+							if( getCookie('chart.daily.showCool') == 'true' )
 							{
 								document.getElementById('chart.daily.showCool').checked = true;									// Set flag
 								// Checkbox styles are not obeyed by browsers, they are styled by the OS.
 								document.getElementById('chart.daily.showCool').className = 'remembered_input';	// Set visual cue that cookie retains this value
 							}
-							if( getCookie('chart.daily.setpoint') )
+							if( getCookie('chart.daily.setpoint') == 'true' )
 							{
 								document.getElementById('chart.daily.setpoint').checked = true;
 								document.getElementById('chart.daily.setpoint').className = 'remembered_input';
 							}
 
-							if( getCookie('chart.daily.showHeat') )
+							if( getCookie('chart.daily.showHeat') == 'true' )
 							{
 								document.getElementById('chart.daily.showHeat').checked = true;
 								document.getElementById('chart.daily.showHeat').className = 'remembered_input';
 							}
-							if( getCookie('chart.daily.showFan') )
+							if( getCookie('chart.daily.showFan') == 'true' )
 							{
 								document.getElementById('chart.daily.showFan').checked = true;
 								document.getElementById('chart.daily.showFan').className = 'remembered_input';
@@ -500,7 +239,7 @@ if( $isLoggedIn )
 						</select>
 						<!-- Show initial range as from 3 weeks ago through today -->
 <!--						From date <input type='date' id='history_from_date' size='10' value='<?php echo date( 'Y-m-d', strtotime( '3 weeks ago' ) ); ?>' max='<?php echo $show_date; ?>' onInput='javascript: display_historic_chart();' step='1'/> -->
-						temperatures for <input type='text' id='interval_length' value='21' size='3'>
+						Timeframe <input type='text' id='interval_length' value='21' size='3'>
 						<select id='interval_measure' style='width: 65px'>
 							<option value='0' selected>days</option>
 							<option value='1'>weeks</option>
@@ -508,7 +247,8 @@ if( $isLoggedIn )
 						</select>
 						ending on <input type='date' id='chart.history.toDate' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' step='1'/>
 						&nbsp;&nbsp;Optionally show HVAC runtimes<input type='checkbox' id='show_hvac_runtime' name='show_hvac_runtime'/>
-						<span style='float: right;'>UN-save settings<input type='button' onClick='javascript: deleteCookies(1);' value='Clear'></span>
+						<!-- <span style='float: right;'>UN-save settings<input type='button' onClick='javascript: deleteCookies(1);' value='Clear'></span>-->
+						<input type='button' onClick='javascript: deleteCookies(1);' value='Un-save settings' style='float: right;'>
 					</div>
 					<div class='content'>
 						<br>
@@ -525,106 +265,115 @@ if( $isLoggedIn )
 
 
 
-			<div class='tab' id='config'> <a href='#config'> <img class='tab-icon' src='<?php echo $lockIcon;?>' alt='<?php echo $lockAlt;?>'/>Configure </a>
+
+<?php
+		// Only show the account administration tab is the user is logged in.  Don't even hint that this tab exists unless they are logged in.
+		if( $isLoggedIn )
+		{
+?>
+			<div class='tab' id='account'> <a href='#account'> <img class='<?php echo $lockIcon;?>' src='images/img_trans.gif' width='1' height='1' alt='<?php echo $lockAlt;?>'/> Account </a>
 				<div class='container'>
 					<div class='tab-toolbar'>
-<?php
-		// Prompt for pwd to login -or- present logout button
-		if( ! $isLoggedIn )
-		{
-			echo '<form method="post">';
-			echo '<input name="password" type="password" size="25" maxlength="25"><input value="Login" type="submit">Please enter your password for access.';
-			if( isset($_POST['password']) && ($_POST['password'] != $password ) )
-			{
-				echo "<font color='red'> Incorrect Username or Password - I think you typed &quot; {$_POST['password']} ?>&quot; </font>";
-			}
-			echo '</form>';
-		}
-		if( $isLoggedIn )
-		{
-			echo '<input value="Logout" type="button" onClick="doLogout();">Logout doesn&rsquo;t work yet....';
-		}
-?>
+					Edit your account details here
 					</div>
 					<div class='content'>
-						<br>
-<?php
-		// If password is valid let the user get access
-		if( $isLoggedIn )
-		{
-?>
-						<table border='1'>
+						<br>Manage login and thermostat details here in some kind of form.  This is where the add/edit/delete location and thermostat processes live.
+						<br><br>
+						<table>
 							<tr>
-								<th>Name</th>
-								<th>Description</th>
-								<th>IP</th>
-								<th>Model</th>
-								<th>Firmware</th>
-								<th>WLAN Firmware</th>
-								<th>Action</th>
+								<th style="padding: 5px;">Name</th>
+								<th style="padding: 5px;">Description</th>
+								<th style="padding: 5px;">IP</th>
+								<th style="padding: 5px;">Model</th>
+								<th style="padding: 5px;">Firmware</th>
+								<th style="padding: 5px;">WLAN Firmware</th>
+								<th style="padding: 5px;">Action</th>
 							</tr>
 <?php
+			//foreach( $userThermostats as $thermostatRec ):
 			foreach( $thermostats as $thermostatRec ):
 ?>
 							<tr>
-								<td align='right'><a href='index.php?id=<?php echo $thermostatRec['id']?>'><?php echo $thermostatRec['name'] ?></a></td>
-								<td align='left'><?php echo $thermostatRec['description'] ?></td>
-								<td align='center'><?php echo $thermostatRec['ip'] ?></td>
-								<td align='center'><?php echo $thermostatRec['model'] ?></td>
-								<td align='left'><?php echo $thermostatRec['fw_version'] ?></td>
-								<td align='left'><?php echo $thermostatRec['wlan_fw_version'] ?></td>
-								<td align='center'><input type='button' value='Edit' onClick='javascript: alert("Not implemented");'></td>
+								<td align='left' style="padding: 5px;"><?php echo $thermostatRec['name'] ?></td>
+								<td align='left' style="padding: 5px;"><?php echo $thermostatRec['description'] ?></td>
+								<td align='center' style="padding: 5px;"><?php echo $thermostatRec['ip'] ?></td>
+								<td align='center' style="padding: 5px;"><?php echo $thermostatRec['model'] ?></td>
+								<td align='left' style="padding: 5px;"><?php echo $thermostatRec['fw_version'] ?></td>
+								<td align='left' style="padding: 5px;"><?php echo $thermostatRec['wlan_fw_version'] ?></td>
+								<td align='center' style="padding: 5px;"><input type='button' value='Edit' onClick='javascript: alert("Not implemented");'></td>
 						 </tr>
 <?php
 			endforeach;
 ?>
 						</table>
+						<br><br>
 						<p>Choose appearance: <select id='colorPicker' onChange='javascript: switch_style( document.getElementById( "colorPicker" ).value )'>
 							<option value='white'>Ice</option>
 							<option value='green' selected>Leafy</option>
 						</select></p>
-						<!-- Put save settings button here later -->
-<?php
-		}
-		else
-		{
-			echo 'You must enter password to access config information.';
-		}
-?>
+						<br><br>
 <form method='post'>
 <input name='save_settings' type='hidden' value=''>
 <!-- Would be better to handle this as an ajax call, but for now this is it -->
 <input value='Save Changes' type='submit' onClick='javascript: save_settings.value="Save"; return( true );'>
-<br>HERE[<?php echo $verifyText ?>]
-</form>
-
 					</div>
 				</div>
 			</div>
 			<div class='tab_gap'></div>
+<?php
+		}
+?>
 
 
 
-			<div class='tab' id='about'> <a href='#about'><img class='tab-icon' src='images/Info.png' alt='icon: about'/> About </a>
+<?php
+		// Only show the registration tab if no user is logged in.
+		if( ! $isLoggedIn )
+		{
+?>
+			<div class='tab' id='register'> <a href='#register'> <img class='<?php echo $lockIcon;?>' src='images/img_trans.gif' width='1' height='1' alt='<?php echo $lockAlt;?>'/> Register </a>
+				<div class='container'>
+					<div class='tab-toolbar'>
+					Enter ysour log in details here.
+					</div>
+					<div class='content'>
+						<br><hr>
+<?php
+						//require_once( __ROOT__ . '/lib/users/register.class' );
+						//$user = new register();
+						//$user->displayForm();
+?>
+						<br>Stuff goes in here to allow a user to create an ID on the system.
+						<br>After they are verified and logged in, they can edit locations and thermostats on a different tab.
+					</div>
+				</div>
+			</div>
+			<div class='tab_gap'></div>
+<?php
+		}
+?>
+
+
+			<div class='tab' id='about'> <a href='#about'><img class='tab-sprite info' src='images/img_trans.gif' width='1' height='1' alt='icon: about'/> About </a>
 				<div class='container'>
 					<div class='content'>
 						<br>
 						<p>
 						<p>Source code for this project can be found on <a target='_blank' href='https://github.com/ThermoMan/3M-50-Thermostat-Tracking'>github</a>
 						<p>
-						<br>The project originated on Windows Home Server v1 running <a target='_blank' href='http://www.apachefriends.org/en/xampp.html'>xampp</a>. Migrated to a 'real host' to solve issues with Windows Scheduler.
+						<br><br>The project originated on Windows Home Server v1 running <a target='_blank' href='http://www.apachefriends.org/en/xampp.html'>xampp</a>. Migrated to a 'real host' to solve issues with Windows Scheduler.
 						<br>I used <a target='_blank' href='http://www.winscp.net'>WinSCP</a> to connect and edited the code using <a target='_blank' href='http://www.textpad.com'>TextPad</a>.
 						<p>
 						<p>This project also uses code from the following external projects
-						<ul>
-							<li><a target='_blank' href='http://www.pchart.net/'>pChart</a>.</li>
-							<li><a target='_blank' href='https://github.com/ThermoMan/Tabbed-Interface-CSS-Only'>Tabbed-Interface-CSS-Only</a> by ThermoMan.</li>
-							<li><a target='_blank' href='http://www.customicondesign.com//'>Free for non-commercial use icons from Custom Icon Designs</a>.	These icons are in the package <a target='_blank' href='http://www.veryicon.com/icons/system/mini-1/'>Mini 1 Icons</a>.</li>
-							<li><a target='_blank' href='http://www.stevedawson.com/article0014.php'>Password access loosely based on code by Steve Dawson</a>.</li>
-							<li>The external temperatures come from <a target='_blank' href='http://www.wunderground.com/weather/api/'><img style='position:relative; top:10px; height:31px; border:0;' src='http://icons.wxug.com/logos/PNG/wundergroundLogo_4c_horz.png' alt='Weather Underground Logo'></a></li>
+						<ul style='list-style-type: circle; margin-left: 20px;'>
+							<li style='margin-top: 11px;'><a target='_blank' href='http://www.pchart.net/'>pChart</a>.</li>
+							<li style='margin-top: 11px;'><a target='_blank' href='https://github.com/ThermoMan/Tabbed-Interface-CSS-Only'>Tabbed-Interface-CSS-Only</a> by ThermoMan.</li>
+							<li style='margin-top: 11px;'><a target='_blank' href='http://www.customicondesign.com//'>Free for non-commercial use icons from Custom Icon Designs</a>.	These icons are in the package <a target='_blank' href='http://www.veryicon.com/icons/system/mini-1/'>Mini 1 Icons</a>.</li>
+							<li style='margin-top: 11px;'><a target='_blank' href='http://www.stevedawson.com/article0014.php'>Password access loosely based on code by Steve Dawson</a>.</li>
+							<li >The external temperatures come from <a target='_blank' href='http://www.wunderground.com/weather/api/'><img style='position:relative; top:10px; height:31px; border:0;' src='http://icons.wxug.com/logos/PNG/wundergroundLogo_4c_horz.png' alt='Weather Underground Logo'></a></li>
 						</ul>
-						<p>This project is based on the <a target='_blank' href='http://www.radiothermostat.com/filtrete/products/3M-50/'>Filtrete 3M Radio Thermostat</a>.
-						<br><br>
+						<br><p>This project is based on the <a target='_blank' href='http://www.radiothermostat.com/filtrete/products/3M-50/'>Filtrete 3M Radio Thermostat</a>.
+						<br><br><br><br><br><br>
 						<div style='text-align: center;'>
 							<a target='_blank' href='http://validator.w3.org/check?uri=referer'><img style='border:0;width:88px;height:31px;' src='images/valid-html5.png' alt='Valid HTML 5'/><div class='caveat'><!-- ANY whitespace between the start of the anchor and the start of the div adds an underscore to the page -->
 								<br>
@@ -637,7 +386,9 @@ if( $isLoggedIn )
 								<br>
 							</div></a> <!-- ANY whitespace between the end of the div and the end of the anchor adds an underscore to the page -->
 							<a target='_blank' href='http://jigsaw.w3.org/css-validator/check/referer'><img style='border:0;width:88px;height:31px;' src='http://jigsaw.w3.org/css-validator/images/vcss' alt='Valid CSS!'/></a>
+							<br><br><br>The HTML5 components are tested to work in Chrome, Safari (Mac), Android 4.0.4 default browser.	They do not work (manually type in the date) in Firefox.	I've not tested the functionality in IE.	The HTML validator suggests that the HTML 5 components may also work in Opera.
  						</div>
+						<br><br><br><br>
 
 						<div style='text-align: center;'>
 <?php
@@ -679,5 +430,6 @@ if( $isLoggedIn )
 
 		</div>
 
+	</div>
 	</body>
 </html>

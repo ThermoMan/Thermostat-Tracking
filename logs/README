@@ -1,0 +1,3 @@
+This directory holds the logs, primarily generated from the Dashboard, but errors can get logged here from other areas.
+
+This directory must be writable by your http server.

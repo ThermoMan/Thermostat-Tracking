@@ -80,6 +80,33 @@ div.all_tabs > div.tab > a > img.tab-icon
 	vertical-align: top;
 }
 
+div.all_tabs > div.tab > a > img.tab-sprite
+{
+	/*vertical-align: middle;*/
+	position: relative; 
+	top: -3px;														/* The top and height relate to the padding-top of the "div.all_tabs > div.tab > a" element. */
+	vertical-align: top;
+	height: 22px;
+	width: 22px;
+	background-image: url( '../../images/HVAC-Bar-x22.png' );
+}
+div.all_tabs > div.tab > a > img.lock
+{
+	background-position: 110px 0px;
+}
+div.all_tabs > div.tab > a > img.unlock
+{
+	background-position: 111px -22px;
+}
+div.all_tabs > div.tab > a > img.info
+{
+	background-position: 133px 0px;
+}
+div.all_tabs > div.tab > a > img.wheels
+{
+	background-position: 154px 0px;
+}
+
 /**
 	*  These next four classes distinguish between the 4 states a tab can be in.
 	*
@@ -128,6 +155,7 @@ div.all_tabs > div.tab > div.container
 	height: 600px;												/* This sets the vertical height of the tab content area - regardless of the content vertical height */
 	z-index: -2;												/* Behind, because the borders overlap */
 	overflow: hidden;
+	text-align: left;											/* Now that I have a non-default position for a large bounding box, I must specify */
 	border-radius: 9px 9px 9px 9px;       /* Tab border is rounded */
 }
 
@@ -143,6 +171,7 @@ div.all_tabs > div.tab > div.container > div.tab-toolbar
 	vertical-align: middle;
 	font-family: 'theToolbarFonts';
 	font-size: 0.6em;
+	padding-left: 9px;										/* Same as border radius looks nice */
 	overflow: hidden;
 }
 
