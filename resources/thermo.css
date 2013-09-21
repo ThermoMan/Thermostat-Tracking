@@ -2,8 +2,6 @@
 
 body
 {
-	/* background: #F0FFF0; */
-	/* background-image: url( '../images/FFNBackground.png' ); */
 	background-image: url( '../images/grid.png' );
 	background-size: contain;
 	background-repeat: repeat-y;
@@ -117,8 +115,7 @@ div.daily_temperature_table
 	height: 113px;
 	width: 540px;
 	float: right;
-	/*overflow: hidden;*/
-	/*overflow: auto;*/
+	background-image: none;
 	overflow-y: auto;
 	overflow-x: hidden;
 }

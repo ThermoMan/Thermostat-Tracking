@@ -10,9 +10,9 @@ function display_chart( chart, style )
 	var chart_target;
 	var table_flag = '';
 	
-	chart_target = document.getElementById( 'daily_temperature_chart' );
 	if( chart == 'daily' && style == 'chart' )
 	{
+		chart_target = document.getElementById( 'daily_temperature_chart' );
 		chart_target.src = 'images/daily_temperature_placeholder.png';	// Redraw the placekeeper while the chart is rendering
 		// By using setTimeout we can separate the drawing of the placeholder image from the actual chart such that the browser will always draw the placeholder
 		setTimeout(function(){ display_chart_build_and_display(chart, style, 'false', chart_target);}, 500);
@@ -20,6 +20,7 @@ function display_chart( chart, style )
 	else if( chart == 'daily' && style == 'table' )
 	{
 		table_flag = 'table_flag=true';
+		chart_target = document.getElementById( 'daily_temperature_table' );
 		display_chart_build_and_display( chart, style, table_flag, chart_target );
 	}
 	else
@@ -61,13 +62,15 @@ function display_chart_build_and_display( chart, style, table_flag, chart_target
 							 no_cache_string;
 
 	if( style == 'chart' )
-{
+	{
 		chart_target.src = url_string;
 	}
 	else if( style == 'table' )
 	{	// Right now it assumes the DAILY table.  Fix that later
 		// Size should be in the CSS file?
-		document.getElementById( 'daily_temperature_table' ).innerHTML = '<iframe src="'+url_string+'" height="100" width="530"></iframe>';
+		
+		// Gosh this iframe is a whole load of overkill and I hate it.
+		chart_target.innerHTML = '<iframe src="'+url_string+'" height="100" width="530"></iframe>';
 	}
 }
 
@@ -79,6 +82,52 @@ function toggle_daily_flag( flag )
 {
 	setCookie( flag, document.getElementById(flag).checked );
 }
+
+/**
+	* chart is one of 'daily' or 'historic'
+	*/
+function saveDateData( chart )
+{
+	switch( chart )
+	{
+		case 'daily':
+			setCookie( 'chart.daily.interval.length', document.getElementById( 'chart.daily.interval.length' ) );	// How many?
+			setCookie( 'chart.daily.interval.group',  document.getElementById( 'chart.daily.interval.group' ) );	// Days, weeks, months, years
+			setCookie( 'chart.daily.toDate',          document.getElementById( 'chart.daily.toDate' ) );					// Ending on date
+		break;
+		
+		case 'historic':
+			setCookie( 'chart.history.interval.length', document.getElementById( 'chart.history.interval.length' ) );	// How many?
+			setCookie( 'chart.history.interval.group',  document.getElementById( 'chart.history.interval.group' ) );	// Days, weeks, months, years
+			setCookie( 'chart.history.toDate',          document.getElementById( 'chart.history.toDate' ) );					// Ending on date
+		break;
+		
+		default:
+		break;
+	}
+}
+
+function loadDateData( chart )
+{
+	switch( chart )
+	{
+		case 'daily':
+			if( getCookie( 'chart.daily.interval.length' ) ) document.getElementById( 'chart.daily.interval.length' ) = getCookie( 'chart.daily.interval.length' );	// How many?
+			if( getCookie( 'chart.daily.interval.group' ) )  document.getElementById( 'chart.daily.interval.group' )  = getCookie( 'chart.daily.interval.group' );	// Days, weeks, months, years
+			if( getCookie( 'chart.daily.toDate' ) )          document.getElementById( 'chart.daily.toDate' )          = getCookie( 'chart.daily.toDate' );					// Ending on date
+		break;
+		
+		case 'historic':
+			if( getCookie( 'chart.history.interval.length' ) ) document.getElementById( 'chart.history.interval.length' ) = getCookie( 'chart.history.interval.length' );	// How many?
+			if( getCookie( 'chart.history.interval.group' ) )  document.getElementById( 'chart.history.interval.group' )  = getCookie( 'chart.history.interval.group' );	// Days, weeks, months, years
+			if( getCookie( 'chart.history.toDate' ) )          document.getElementById( 'chart.history.toDate' )          = getCookie( 'chart.history.toDate' );					// Ending on date
+		break;
+		
+		default:
+		break;
+	}
+}
+
 
 /**
 	*	Save the value of the field for later - and update the chart with the new value
@@ -108,29 +157,6 @@ function display_historic_chart()
 	document.getElementById( 'history_chart' ).src = url_string;
 }
 
-
-var refreshInterval = 20 * 60 * 1000;	// It's measured in milliseconds and I want a unit of minutes.
-function timedRefresh()
-{
-	// Save value (either true or false) for next time (keep cookie up to ten days)
-	setCookie( 'auto_refresh', document.getElementById( 'auto_refresh' ).checked, 10 );
-
-	if( document.getElementById( 'auto_refresh' ).checked == true )
-	{
-		document.getElementById( 'daily_update' ).style.visibility = 'visible';
-		/**
-			* Need to add a check here for present day.	Only present day actually has changing data
-			* so don't bother with refresh on historic data.	But do leave the refresh flag set for later.
-			*/
-		update_daily_chart();
-		setTimeout( 'timedRefresh();', refreshInterval );
-	}
-	else
-	{
-		document.getElementById( 'daily_update' ).style.visibility = 'hidden';
-	}
-}
-
 /**
 	* Default cookies last for ten years.
 	*
@@ -138,8 +164,8 @@ function timedRefresh()
 	*/
 function setCookie( c_name, value, exdays )
 {
-	// Chrome does not like to see '=' in the argument list of a function declaration.  Here is plan B.
-	if( typeof( exdays ) === 'undefined' ) exdays = 3650;
+	// Chrome does not like to see '=' in the argument list of a function declaration.  Here is plan B that works in all browsers.
+	if( typeof( exdays ) === 'undefined' ) exdays = 3650;	// Three === check type as well as value.
 
 	var exdate = new Date();
 	exdate.setDate( exdate.getDate() + exdays );
@@ -147,7 +173,8 @@ function setCookie( c_name, value, exdays )
 	document.cookie = c_name + '=' + c_value;
 }
 
-// Got a problem here because "false" in the cookie is coming back as being "set" and it should not
+// Got a problem here because "false" in the cookie is coming back as being "set" and it should not.
+// The work around is to test for a literal "true" in the value when using the cookie and anything that is not true is therefore false.
 function getCookie( c_name )
 {
 	var i, key, value, ARRcookies = document.cookie.split( ';' );
@@ -175,39 +202,35 @@ function deleteCookies( chart )
 		setCookie( 'chart.daily.showHeat', '', -1 );
 		setCookie( 'chart.daily.showCool', '', -1 );
 		setCookie( 'chart.daily.showFan', '', -1 );
-		setCookie( 'chart.daily.fromDate', '', -1 );
+		setCookie( 'chart.daily.interval.length', '', -1 );
+		setCookie( 'chart.daily.interval.group', '', -1 );
 		setCookie( 'chart.daily.toDate', '', -1 );
 
+		/* These are left over fro teh failed experiment to set a background color when a value came from a cookie
+		   The experiment failed because browsers do not let you set styles on ALL the imputs.  Several inherit from the OS
 		document.getElementById('chart.daily.setpoint').className = '';
 		document.getElementById('chart.daily.showHeat').className = '';
 		document.getElementById('chart.daily.showCool').className = '';
 		document.getElementById('chart.daily.showFan').className = '';
-		document.getElementById('chart.daily.fromDate').className = '';
+		document.getElementById('chart.daily.interval.length').className = '';
+		document.getElementById('chart.daily.interval.group').className = '';
 		document.getElementById('chart.daily.toDate').className = '';
+		*/
 	}
 
 	if( chart == 1 )
 	{	// Clear cookies that remember history settings
+		setCookie( 'chart.history.interval.length', '', -1 );
+		setCookie( 'chart.history.interval.group', '', -1 );
 		setCookie( 'chart.history.toDate', '', -1 );
 
+		/* These are left over fro teh failed experiment to set a background color when a value came from a cookie
+		   The experiment failed because browsers do not let you set styles on ALL the imputs.  Several inherit from the OS
+		document.getElementById('chart.history.interval.length').className = '';
+		document.getElementById('chart.history.interval.group').className = '';
 		document.getElementById('chart.history.toDate').className = '';
-	}
-}
-
-/**
-	* Either set up a countdown timer that both updates this clock AND triggers the chart update when hitting 0
-	* or set up a second timer that is a countdown clock and hope it stays in sync with the update routine.
 	*/
-function showRefreshTime()
-{
-	var today = new Date();
-	var h = '' + today.getHours();
-	var m = '' + today.getMinutes();
-	//var s = today.getSeconds();
-	if( h < 10 ) h = '0' + h;
-	if( m < 10 ) m = '0' + m;
-
-	document.getElementById( 'daily_update' ).innerHTML = 'Countdown to refresh: ' + h + ':' + m;
+	}
 }
 
 function doLogout()
@@ -215,74 +238,83 @@ function doLogout()
 	alert( 'Not implemented yet.' );
 }
 
-var xmlDoc;
-function processStatus()
+/**
+	* Process return from Ajax call.
+	*/
+function processAjaxResponse( doc, action )
 {
-	if( xmlDoc.readyState != 4 ) return ;
+	if( doc.readyState != 4 ) return;	// Not done cooking yet, ignore...
 
-	//document.getElementById( 'status' ).innerHTML = xmlDoc.responseText;
+	switch( action )
+	{
+		case 'conditions':
+			document.getElementById( 'status' ).innerHTML = doc.responseText;
+		break;
 
-	// For testing make it look like 3 thermostats
-	document.getElementById( 'status' ).innerHTML = xmlDoc.responseText +'<br>'+
-																									'The data is manually triplicated to simulate multiple stats in a single location.<br>' +
-																									xmlDoc.responseText +'<br>'+
-																									xmlDoc.responseText;
+		case 'forecast':
+			document.getElementById( 'forecast' ).innerHTML = doc.responseText;
+		break;
 
+		default:
+			// Do nothing - not even complain!
+		break;
+	}
 }
 
-function updateStatus()
+/**
+	* Make Ajax call to get present data to fill in blanks on the dashboard
+	*/
+function update( action )
 {
-	// Need to add the Wheels icon to the sprite map and set relative position in the thermo.css file
-	document.getElementById( 'status' ).innerHTML = "<p class='status'><img src='images/img_trans.gif' width='1' height='1' class='wheels' />Looking up present conditions. (This may take some time)</p>";
+	var xmlDoc;
 	
+	// Need to add the Wheels icon to the sprite map and set relative position in the thermo.css file
+	switch( action )
+	{
+		case 'conditions':
+			document.getElementById( 'status' ).innerHTML = "<p class='status'><table><tr><td><img src='images/img_trans.gif' width='1' height='1' class='wheels' /></td><td>Looking up present status and conditions. (This may take some time)</td></tr></table></p>";
+		break;
+		
+		case 'forecast':
+			document.getElementById( 'forecast' ).innerHTML = "<p class='status'><table><tr><td><img src='images/img_trans.gif' width='1' height='1' class='wheels' /></td><td>Looking up the forecast.</td></tr></table></p>";
+		break;
+	
+		default:
+			// Do nothing - not even complain!
+		break;
+	}
+	
+	// Please someone test that this actually works in IE (I don't even have IE on my system)
 	if( typeof window.ActiveXObject != 'undefined' )
 	{
 		xmlDoc = new ActiveXObject( 'Microsoft.XMLHTTP' );
-		xmlDoc.onreadystatechange = process ;
+		xmlDoc.onreadystatechange = function(){ processAjaxResponse( xmlDoc, action ); };
 	}
 	else
 	{
 		xmlDoc = new XMLHttpRequest();
-		xmlDoc.onload = processStatus;
+		xmlDoc.onload = function(){return processAjaxResponse( xmlDoc, action ); };	// Can use arguments in here if I wrap in an anonymous function
 	}
 	// Replace use of session ID here with thermo.seed and a pseudorandom generator.  Send both the prng and the iteration number
 	// On server side, check that iteration number matches what it should be (each one used once and that the prng is right (because seed is stored there too)
 	//var session_id = getCookie( 'thermo.session' );
 	
+	switch( action )
+	{
+		case 'conditions':
 	xmlDoc.open( 'GET', 'get_instant_status.php', true );
+		break;
+
+		case 'forecast':
+			xmlDoc.open( 'GET', 'get_instant_forecast.php', true );
+		break;
+		
+		default:
+			// Do nothing - not even complain!
+		break;
+	}
+	
 	xmlDoc.send( null );
-}
-
-var xmlDoc2;
-function processForecast()
-{
-	if( xmlDoc2.readyState != 4 ) return ;
-
-	document.getElementById( 'forecast' ).innerHTML = xmlDoc2.responseText;
-}
-
-function updateForecast()
-{
-	// Need to add the Wheels icon to the sprite map and set relative position in the thermo.css file
-	document.getElementById( 'forecast' ).innerHTML = "<p class='status'><img src='images/img_trans.gif' width='1' height='1' class='wheels' />Looking up the forecast. (This may take some time)</p>";
-	
-	if( typeof window.ActiveXObject != 'undefined' )
-	{
-		xmlDoc2 = new ActiveXObject( 'Microsoft.XMLHTTP' );
-		xmlDoc2.onreadystatechange = process ;
-	}
-	else
-	{
-		xmlDoc2 = new XMLHttpRequest();
-		//xmlDoc.onload = processForecast;
-		xmlDoc2.onload = function(){return processForecast()};	// Can use arguments in here if I wrap in an anonymous function
-	}
-	// Replace use of session ID here with thermo.seed and a pseudorandom generator.  Send both the prng and the iteration number
-	// On server side, check that iteration number matches what it should be (each one used once and that the prng is right (because seed is stored there too)
-	//var session_id = getCookie( 'thermo.session' );
-	
-	xmlDoc2.open( 'GET', 'get_instant_forecast.php', true );
-	xmlDoc2.send( null );
 }
 
 

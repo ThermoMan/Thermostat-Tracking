@@ -1,5 +1,4 @@
 <?php
-
 class ExternalWeather_Exception extends Exception
 {
 }

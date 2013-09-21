@@ -106,14 +106,14 @@ if( $isLoggedIn )
 					</div>
 					<div class='content'>
 						<br><br>
-						<input type='button' onClick='javascript: updateStatus(); updateForecast();' value='Refresh'>
+						<input type='button' onClick='javascript: update( "conditions" ; update( "forecast" );' value='Refresh'>
 						<br>
 						<div id='status' class='status'>Javascript must be enabled to see this content</div>
-						<div id='forecast' class='forecast'>Javascript must be enabled to see this content</div>
+						<div id='forecast' class='status forecast'>Javascript must be enabled to see this content</div>
 						<!-- Kick off dashboard refresh timers -->
 						<script type='text/javascript'>
-							updateStatus();
-							updateForecast();
+							update( 'conditions' );
+							update( 'forecast' );
 						</script>
 					</div>
 				</div>
@@ -142,15 +142,15 @@ if( $isLoggedIn )
 						</select>
 						<!-- A checkbox to turn on/off the display of the set point temperature -->
 						<input type='checkbox' id='chart.daily.setpoint' name='chart.daily.setpoint' onChange='javascript: toggle_daily_flag( "chart.daily.setpoint" );'/> Set Point
-						&nbsp&nbsp&nbsp&nbsp&nbsp Timeframe <input type='text' id='chart.daily.interval.length' value='7' size='3'>
-						<select id='chart.daily.interval.group' style='width: 65px'>
+						&nbsp&nbsp&nbsp&nbsp&nbsp Timeframe <input type='text' id='chart.daily.interval.length' onChange='javascript: saveDateData("daily");' value='7' size='3'>
+						<select id='chart.daily.interval.group' onChange='javascript: saveDateData("daily");' style='width: 65px'>
 							<option value='0' selected>days</option>
 							<option value='1'>weeks</option>
 							<option value='2'>months</option>
 							<option value='3'>years</option>
 						</select>
 						<!-- Need to change the max value to a date computed by Javascript so it stays current -->
-						ending on <input type='date' id='chart.daily.toDate' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' step='1'/>
+						ending on <input type='date' id='chart.daily.toDate' onChange='javascript: saveDateData("daily");' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' step='1'/>
 						&nbsp; showing Heat<input type='checkbox' id='chart.daily.showHeat' name='chart.daily.showHeat' onChange='javascript: toggle_daily_flag( "chart.daily.showHeat" );'/>
 						&nbsp;Cool<input type='checkbox' id='chart.daily.showCool' name='chart.daily.showCool' onChange='javascript: toggle_daily_flag( "chart.daily.showCool" );'/>
 						&nbsp;Fan<input type='checkbox' id='chart.daily.showFan'	name='chart.daily.showFan'	onChange='javascript: toggle_daily_flag( "chart.daily.showFan" );'/> cycles
@@ -167,6 +167,7 @@ if( $isLoggedIn )
 						</div>
 						<input type='button' onClick='javascript: display_chart( "daily", "table" );' value='Chart it' style='float: right;'>
 						<div id='daily_temperature_table' class='daily_temperature_table'>
+							<!-- Gets replaced by chart data -->
 						</div>
 
 
@@ -198,25 +199,14 @@ if( $isLoggedIn )
 
 
 							// Test values before use, don't let null (not set) change the defaults
-							if( getCookie('chart.daily.fromDate') )
-							{
-								document.getElementById('chart.daily.fromDate').value = getCookie('chart.daily.fromDate');
-								document.getElementById('chart.daily.fromDate').className = 'remembered_input';
-							}
+							loadDateData( 'daily' );
+							/*
 							if( getCookie('chart.daily.toDate') )
 							{
 								document.getElementById('chart.daily.toDate').value = getCookie('chart.daily.toDate');
-								document.getElementById('chart.daily.toDate').className = 'remembered_input';
-							}
-/* Set a timer to implement the auto refresh
-"chart.daily.autoRefresh"
-
-		if( getCookie( 'auto_refresh' ) == 'true' )
-		{
-			document.getElementById( 'auto_refresh' ).checked = true;	 // Simply setting the check box does not start the timer.
-			timedRefresh();																						 // So start the timer too
+								//document.getElementById('chart.daily.toDate').className = 'remembered_input';
 		}
-*/
+							*/
 							display_chart( 'daily', 'chart' ); // Draw the chart using the applied settings
 						</script>
 					</div>
