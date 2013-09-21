@@ -1,8 +1,8 @@
 "use strict";
 
 	/**
-	* chart is one of 'daily' or 'history'
-	* sytle is one of 'chart' or 'table'
+		* chart is one of 'daily' or 'history'
+		* sytle is one of 'chart' or 'table'
 		*
 		*/
 function display_chart( chart, style )
@@ -91,15 +91,15 @@ function saveDateData( chart )
 	switch( chart )
 	{
 		case 'daily':
-			setCookie( 'chart.daily.interval.length', document.getElementById( 'chart.daily.interval.length' ) );	// How many?
-			setCookie( 'chart.daily.interval.group',  document.getElementById( 'chart.daily.interval.group' ) );	// Days, weeks, months, years
-			setCookie( 'chart.daily.toDate',          document.getElementById( 'chart.daily.toDate' ) );					// Ending on date
+			setCookie( 'chart.daily.interval.length', document.getElementById( 'chart.daily.interval.length' ).value );	// How many?
+			setCookie( 'chart.daily.interval.group',  document.getElementById( 'chart.daily.interval.group' ).value );	// Days, weeks, months, years
+			setCookie( 'chart.daily.toDate',          document.getElementById( 'chart.daily.toDate' ).value );					// Ending on date
 		break;
 		
 		case 'historic':
-			setCookie( 'chart.history.interval.length', document.getElementById( 'chart.history.interval.length' ) );	// How many?
-			setCookie( 'chart.history.interval.group',  document.getElementById( 'chart.history.interval.group' ) );	// Days, weeks, months, years
-			setCookie( 'chart.history.toDate',          document.getElementById( 'chart.history.toDate' ) );					// Ending on date
+			setCookie( 'chart.history.interval.length', document.getElementById( 'chart.history.interval.length' ).value );	// How many?
+			setCookie( 'chart.history.interval.group',  document.getElementById( 'chart.history.interval.group' ).value );	// Days, weeks, months, years
+			setCookie( 'chart.history.toDate',          document.getElementById( 'chart.history.toDate' ).value );					// Ending on date
 		break;
 		
 		default:
@@ -112,15 +112,15 @@ function loadDateData( chart )
 	switch( chart )
 	{
 		case 'daily':
-			if( getCookie( 'chart.daily.interval.length' ) ) document.getElementById( 'chart.daily.interval.length' ) = getCookie( 'chart.daily.interval.length' );	// How many?
-			if( getCookie( 'chart.daily.interval.group' ) )  document.getElementById( 'chart.daily.interval.group' )  = getCookie( 'chart.daily.interval.group' );	// Days, weeks, months, years
-			if( getCookie( 'chart.daily.toDate' ) )          document.getElementById( 'chart.daily.toDate' )          = getCookie( 'chart.daily.toDate' );					// Ending on date
+			if( getCookie( 'chart.daily.interval.length' ) ) document.getElementById( 'chart.daily.interval.length' ).value = getCookie( 'chart.daily.interval.length' );	// How many?
+			if( getCookie( 'chart.daily.interval.group' ) )  document.getElementById( 'chart.daily.interval.group' ).value  = getCookie( 'chart.daily.interval.group' );	// Days, weeks, months, years
+			if( getCookie( 'chart.daily.toDate' ) )          document.getElementById( 'chart.daily.toDate' ).value          = getCookie( 'chart.daily.toDate' );					// Ending on date
 		break;
 		
 		case 'historic':
-			if( getCookie( 'chart.history.interval.length' ) ) document.getElementById( 'chart.history.interval.length' ) = getCookie( 'chart.history.interval.length' );	// How many?
-			if( getCookie( 'chart.history.interval.group' ) )  document.getElementById( 'chart.history.interval.group' )  = getCookie( 'chart.history.interval.group' );	// Days, weeks, months, years
-			if( getCookie( 'chart.history.toDate' ) )          document.getElementById( 'chart.history.toDate' )          = getCookie( 'chart.history.toDate' );					// Ending on date
+			if( getCookie( 'chart.history.interval.length' ) ) document.getElementById( 'chart.history.interval.length' ).value = getCookie( 'chart.history.interval.length' );	// How many?
+			if( getCookie( 'chart.history.interval.group' ) )  document.getElementById( 'chart.history.interval.group' ).value  = getCookie( 'chart.history.interval.group' );	// Days, weeks, months, years
+			if( getCookie( 'chart.history.toDate' ) )          document.getElementById( 'chart.history.toDate' ).value          = getCookie( 'chart.history.toDate' );					// Ending on date
 		break;
 		
 		default:
@@ -229,7 +229,7 @@ function deleteCookies( chart )
 		document.getElementById('chart.history.interval.length').className = '';
 		document.getElementById('chart.history.interval.group').className = '';
 		document.getElementById('chart.history.toDate').className = '';
-	*/
+		*/
 	}
 }
 
@@ -250,11 +250,11 @@ function processAjaxResponse( doc, action )
 		case 'conditions':
 			document.getElementById( 'status' ).innerHTML = doc.responseText;
 		break;
-
+		
 		case 'forecast':
 			document.getElementById( 'forecast' ).innerHTML = doc.responseText;
 		break;
-
+		
 		default:
 			// Do nothing - not even complain!
 		break;
@@ -278,7 +278,7 @@ function update( action )
 		case 'forecast':
 			document.getElementById( 'forecast' ).innerHTML = "<p class='status'><table><tr><td><img src='images/img_trans.gif' width='1' height='1' class='wheels' /></td><td>Looking up the forecast.</td></tr></table></p>";
 		break;
-	
+		
 		default:
 			// Do nothing - not even complain!
 		break;
@@ -302,9 +302,9 @@ function update( action )
 	switch( action )
 	{
 		case 'conditions':
-	xmlDoc.open( 'GET', 'get_instant_status.php', true );
+			xmlDoc.open( 'GET', 'get_instant_status.php', true );
 		break;
-
+		
 		case 'forecast':
 			xmlDoc.open( 'GET', 'get_instant_forecast.php', true );
 		break;
@@ -313,7 +313,7 @@ function update( action )
 			// Do nothing - not even complain!
 		break;
 	}
-	
+
 	xmlDoc.send( null );
 }
 
