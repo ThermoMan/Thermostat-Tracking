@@ -81,12 +81,7 @@ div.all_tabs > div.tab > div.container > div.tab-toolbar
   background-color: #FFFFFF;	/* Match the color of the Selected tab */
 }
 
-/**
-	* This is the background color that informs users that the input field is remembered via cookie.
-	* Clear the style to remove the chroma code.
-	*/
-.remembered_input
+div.header
 {
-  background-color: #BBFFBB;	/* original color from old code */
-  background-color: #555555;	/* get your attention color that something needs to be done here in the code */
+	background: linear-gradient( 0deg, #CFCFCF 33%, #F2F2F2 66% );
 }

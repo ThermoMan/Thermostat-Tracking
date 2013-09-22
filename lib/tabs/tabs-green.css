@@ -10,6 +10,10 @@
 	*/
 
 
+body
+{
+	background-color: #FFFFFF;
+}
 
 /* Visually connect tab and tab body (border around tabs and between tabs and body) */
 div.all_tabs > div.tab > a
@@ -71,11 +75,8 @@ div.all_tabs > div.tab > div.container > div.tab-toolbar
 	background-color: #448873;
 }
 
-/**
-	* This is the background color that informs users that the input field is remembered via cookie.
-	* Clear the style to remove the chroma code.
-	*/
-.remembered_input
+div.header
 {
-	background-color: #BBFFBB;
+	/*background: linear-gradient( to right, #B4E391 0%, #61C419 50%, #B4E391 100% );*/
+	background-color: #B0D86D;
 }

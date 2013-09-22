@@ -123,7 +123,7 @@ catch( Exception $e )
 
 
 
-// Need to JSON the text so that there is an object with values passed back
+// Need to JSON the text so that there is an object with values passed back?
 
 echo $returnString;
 

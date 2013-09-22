@@ -255,6 +255,10 @@ function processAjaxResponse( doc, action )
 			document.getElementById( 'forecast' ).innerHTML = doc.responseText;
 		break;
 		
+		case 'backup':
+			document.getElementById( 'backup' ).innerHTML = doc.responseText;
+		break;
+		
 		default:
 			// Do nothing - not even complain!
 		break;
@@ -277,6 +281,10 @@ function update( action )
 		
 		case 'forecast':
 			document.getElementById( 'forecast' ).innerHTML = "<p class='status'><table><tr><td><img src='images/img_trans.gif' width='1' height='1' class='wheels' /></td><td>Looking up the forecast.</td></tr></table></p>";
+		break;
+		
+		case 'backup':
+			document.getElementById( 'backup' ).innerHTML = "Backup started";
 		break;
 		
 		default:
@@ -309,6 +317,10 @@ function update( action )
 			xmlDoc.open( 'GET', 'get_instant_forecast.php', true );
 		break;
 		
+		case 'backup':
+			xmlDoc.open( 'GET', 'backup.php', true );
+		break;
+		
 		default:
 			// Do nothing - not even complain!
 		break;
@@ -317,6 +329,11 @@ function update( action )
 	xmlDoc.send( null );
 }
 
+function backup()
+{
+	//alert( 'Not imlemented yet.' );
+	update( 'backup' );	// Need a more accurate name than "update" if I'm going to use it for this too!
+}
 
 function switch_style( css_title )
 {

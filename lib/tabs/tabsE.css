@@ -261,24 +261,14 @@ div.all_tabs > div.tab :target
 	outline: none;
 }
 
-
-/**
-  * BEGIN -- This is a work in progress to have visual indicator that a value was saved in a cookie
-	*
-  * This was largely a failed experiment.
-  * You simply CANNOT set the background color of an HTML input element (like the checkbox)
-  * without having to go into the entire effort of having to create a whole set of inputs yhourself.
-	*
-	* Browsers default these elements to the appearance of the OS on which they live and actively resist change.
-  */
-
-/**
-	* This is the background color that informs users that the input field is remembered via cookie.
-	* Clear the style to remove the chroma code.
-	*/
-.remembered_input
+div.header
 {
-	/* background: #BBFFBB; */
+	white-space: nowrap;
+	text-align: right;
+	padding: 5px 0px 5px 0px;
+	position: fixed;
+	width: 100%;
+	z-index: 10;
+	font-family: 'theToolbarFonts';
+	font-size: 0.8em;
 }
-
-/* END -- This is a work in progress to have visual indicator that a value was saved in a cookie */

@@ -106,7 +106,7 @@ if( $isLoggedIn )
 					</div>
 					<div class='content'>
 						<br><br>
-						<input type='button' onClick='javascript: update( "conditions" ; update( "forecast" );' value='Refresh'>
+						<input type='button' onClick='javascript: update( "conditions" ); update( "forecast" );' value='Refresh'>
 						<br>
 						<div id='status' class='status'>Javascript must be enabled to see this content</div>
 						<div id='forecast' class='status forecast'>Javascript must be enabled to see this content</div>
@@ -299,6 +299,8 @@ if( $isLoggedIn )
 			endforeach;
 ?>
 						</table>
+						<br><br>
+						<button type='button' onClick='javascript: backup();'>Backup</button>database.  Should be SITE admin function, not USER admin function.<span id='backup' class='backup'>.</span>
 						<br><br>
 						<p>Choose appearance: <select id='colorPicker' onChange='javascript: switch_style( document.getElementById( "colorPicker" ).value )'>
 							<option value='white'>Ice</option>

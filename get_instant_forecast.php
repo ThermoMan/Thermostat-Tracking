@@ -1,19 +1,20 @@
 <?php
 require_once 'common.php';
 
-/* Put usefuyl comments here and either merge code with get_instant_status,php or make this a virtual clone of that file */
+/* Put useful comments here and either merge code with get_instant_status.php or make this a virtual clone of that file */
 
 $lastZIP = '';
 
 
-/** Get stat info
-	*
-	*/
 try
 {
+	/** Get stat info
+		*
+		*/
 	foreach( $thermostats as $thermostatRec )
 	{
 		$returnString = '';
+		/* DO NOT NEED TO GET LOCK, NOT TALKING TO THERMOSTAT!
 		$lockFileName = $lockFile . $thermostatRec['id'];
 		$lock = @fopen( $lockFileName, 'w' );
 		if( !$lock )
@@ -23,15 +24,12 @@ try
 		}
 		if( flock($lock, LOCK_EX) )
 		{
-			logIt( "get_instant_forecast: Getching forecast" );
+		*/
+			//logIt( "get_instant_forecast: Fetching forecast" );
 
 			//$stat = new Stat( $thermostatRec['ip'], $thermostatRec['tstat_id'] );
 			$stat = new Stat( $thermostatRec['ip'] );
 
-
-			/** Get environmental info
-				*
-				*/
 			try
 			{
 				if( $lastZIP != $ZIP )
@@ -40,22 +38,40 @@ try
 
 					$externalWeatherAPI = new ExternalWeather( $weatherConfig );
 
+					/** Get environmental info
+						*
+						*/
 					$forecastData = $externalWeatherAPI->getOutdoorForcast( $ZIP );
+					//logIt( "get_instant_forecast: I got data" );
 
-					$returnString .= "<p>The forecast for {$ZIP} is</p><table><tr>";
+					// Format data for screen presentation
+					$returnString .= "<p>The forecast for {$ZIP} is</p><br><table><tr>";
 					foreach( $forecastData as $day )
 					{
-						$returnString .= "<td style='text-align: center;'>" . $day->high->fahrenheit . "</td>";
+						$returnString .= "<td style='text-align: center;'>{$day->date->weekday}</td>";
 					}
 					$returnString .= "</tr><tr>";
 					foreach( $forecastData as $day )
 					{
-						$returnString .= "<td style='text-align: center; padding: 10px;'><img src='" . $day->icon_url ."'></td>";
+						$returnString .= "<td style='text-align: center; width: 90px;'><img src='" . $day->icon_url ."'></td>";
+					}
+					$returnString .= "</tr><tr>";
+					foreach( $forecastData as $day )
+					{
+						if( $weatherConfig[units] == 'C' )
+						{
+							$tth = $day->high->celsius;
+							$ttl = $day->low->celsius;
+						}
+						else
+						{	// If it's not C assume it is F (what, you want Kelvin or Rankine?)
+							$tth = $day->high->fahrenheit;
+							$ttl = $day->low->fahrenheit;
+					}
+
+						$returnString .= "<td style='text-align: center;'>$tth&deg;$weatherConfig[units] / $ttl&deg;$weatherConfig[units]</td>";
 					}
 					$returnString .= "</tr></table>";
-
-
-					//logIt( "get_instant_forecast: I got data" );
 				}
 
 			}
@@ -65,20 +81,17 @@ try
 				// Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
 				$returnString = $returnString . "<p><img src='images/Alert.png'/>Presently unable to read forecast.</p>";
 			}
+		/* DO NOT NEED TO GET LOCK, NOT TALKING TO THERMOSTAT!
 		}
 		fclose( $lock );
+		*/
 	}
 }
 catch( Exception $e )
 {
-	logIt( 'Thermostat failed: ' . $e->getMessage() );
-	// die();
-	$returnString = "<p>No response from unit, please check WiFi connection at unit location.";
+	logIt( 'get_instant_forecast: Some bugs failure or other ' . $e->getMessage() );
+	$returnString = "<p><img src='images/Alert.png'/>Presently unable to read forecast.</p>";
 }
-
-
-
-// Need to JSON the text so that there is an object with values passed back
 
 echo $returnString;
 

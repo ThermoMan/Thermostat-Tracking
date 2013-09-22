@@ -9,12 +9,12 @@ body
 }
 
 /** Absolutely everything that appeas on the ENTIRE web page should be in this big box
-	*
+	* Except the header - which should completely span the top.
 	*/
 #bigbox
 {
 	width: 1000px;
-	margin:0px auto;
+	margin: 0px auto;
 }
 
 /** Here are the things that can appear inside the tabs
@@ -26,7 +26,7 @@ body
 	*/
 div.status
 {
-	display:inline-block; 
+	display: inline-block; 
 	margin: 0px;
 	margin-left: 50px;
 	float: left;
@@ -136,17 +136,6 @@ table.thermo_table td
 {
 	border: 1px solid black;
 	color: blue;
-}
-
-div.header
-{
-	text-align: right;
-	/*height: 30px;*/
-	background-color: #EEEEEE;
-	padding: 5px;
-	position: fixed;
-	width: 99%;
-	z-index: 10;
 }
 
 body.account

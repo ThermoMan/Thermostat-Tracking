@@ -118,6 +118,7 @@ function logIt( $msg )
 	fclose( $fh );
 }
 
+/*
 // Need to replace all instances of doError() in code with calls to logIt() using error flag.
 // And then delete this function
 function doError( $msg )
@@ -127,7 +128,7 @@ function doError( $msg )
 
 	logIt( "ERROR: " . $msg );
 }
-
+*/
 
 // Common code that should run for EVERY page follows here
 
@@ -137,13 +138,15 @@ global $timezone;
 date_default_timezone_set( $timezone );
 
 // Always connect to the database, don't wait for a request to connect
-$pdo = new PDO( $dbConfig['dsn'], $dbConfig['username'], $dbConfig['password'] );
+//$pdo = new PDO( $dbConfig['dsn'], $dbConfig['username'], $dbConfig['password'] );
+$pdo = new PDO( "mysql:host={$dbConfig['host']};port={$dbConfig['port']};dbname={$dbConfig['db']}", $dbConfig['username'], $dbConfig['password'] );
 $pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
 // Set timezone for all MySQL functions
-$pdo->exec( "SET time_zone = '$timezone'" );		// Like old one
+$pdo->exec( "SET time_zone = '$timezone'" );
 
 // Get list of thermostats
+// Move this to after user login in future and get only stats for the selected user
 try
 {
 	$thermostats = array();

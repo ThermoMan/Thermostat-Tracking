@@ -1,4 +1,8 @@
 <?php
+/**
+	* This is a separate file because I *think* it's where all the user ID code will go.
+	*
+	*/
 
 //Things that show in the common header
 $htmlString = '';

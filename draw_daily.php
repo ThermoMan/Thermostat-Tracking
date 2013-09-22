@@ -199,8 +199,7 @@ foreach( $days as $show_date )
 	$counter = 0;
 	$first_row = true;
 	while( $row = $queryOne->fetch( PDO::FETCH_ASSOC ) )
-	{
-		/**
+	{	/**
 	* Chart of things that work for X-axis labels (work in progress to have optimal spacing)
 	* days  divisor
 	*  1		 $dayCount
@@ -241,8 +240,7 @@ foreach( $days as $show_date )
 				}
 			}
 			else
-			{
-				/**
+			{	/**
 					* This seems pretty ugly, but pChart highlights a hash mark on the X axis whenever it finds the next point
 					* in the abscissa array as being different than the previous one.  Using VOID for the value for those hash marks
 					* you don't want to highlight (or get a grid line for) doesn't work since VOID is a valid value.  So you'd
@@ -255,8 +253,7 @@ foreach( $days as $show_date )
 					*/
 
 				if( $dayCount <= 28 )
-				{
-					// 13,3 = minutes with colon (:MM), 11, 2 = two digit hour (HH)
+				{	// 13,3 = minutes with colon (:MM), 11, 2 = two digit hour (HH)
 					if( ( substr( $row['date'], 13, 3 ) == ':00' ) && ( substr( $row['date'], 11, 2 ) % $labelDivisor == 0 ) )
 					{	// Only show axis every -interval- hours
 						if( substr( $row['date'], 11, 2 ) == '00' )
@@ -265,8 +262,7 @@ foreach( $days as $show_date )
 							$saved_string = substr($row['date'], 5, 5);
 						}
 						else
-						{
-							// Otherwise show the hour in HH:MM format
+						{	// Otherwise show the hour in HH:MM format
 							$saved_string = substr($row['date'], 11, 5);
 						}
 					}
@@ -301,8 +297,7 @@ foreach( $days as $show_date )
 					$MyData->addPoints( ($row['set_point'] == 'VOID' ? VOID : $row['set_point']), 'Setpoint' );
 				}
 				else
-				{
-					// If the set point isn't defined for this data point (for instance, the thermostat was off)
+				{	// If the set point isn't defined for this data point (for instance, the thermostat was off)
 					//  set it to VOID so we don't graph these points at all
 
 					$MyData->addPoints(VOID, 'Setpoint');
@@ -343,9 +338,6 @@ foreach( $days as $show_date )
   }
 }
 
-//EXPERIMENT
-//EXPERIMENT Do all three SQLs BEFORE the new pImage() command and see if it makes the drawing faster/not timeout
-//EXPERIMENT
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
 { // For a $show_date of '2012-07-10' get the start and end bounding datetimes
   $start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));	// "2012-07-10 00:00:00";
@@ -405,10 +397,6 @@ echo "<br>uuid is $uuid";
 
 
 }
-//EXPERIMENT
-//EXPERIMENT End
-//EXPERIMENT
-
 
 
 if( $table_flag )
@@ -523,8 +511,7 @@ $myPicture->drawLineChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DI
 	*/
 
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
-{
-	// The SQL has already been executed.  Now just draw it.
+{	// The SQL has already been executed.  Now just draw it.
 
   // The rounded corners look so much better, but the run times are so short that the rounds seldom appear.
   $HeatGradientSettings = array( 'StartR' => 200, 'StartG' => 100, 'StartB' => 100, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );

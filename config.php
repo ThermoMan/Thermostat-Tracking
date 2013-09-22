@@ -48,11 +48,14 @@ $weatherConfig = array(
 
 // Database connection parameters
 $dbConfig = array(
-	'dsn'          => 'mysql:host=localhost:port=3306;dbname=thermo',
 	'username'     => 'user',
 	'password'     => 'password',
+	'host'					=> 'localhost',
+	'db'          	=> 'thermo',
+	'port'         	=> '3306',
 	'table_prefix' => 'thermo2__'             // Prefix to attach to all table/procedure names to make unique in unknown environment.
 	// DO make this prefix DIFFERENT than you used for version 1 (if you had the old code installed)
+	// Using a double underscore as the end of the prefix enables some magic in phpMyAdmin
 );
 
 // Config edit PW
