@@ -1,30 +1,35 @@
 <?php
-require 'config.php';
-require 'lib/t_lib.php';
-require 'lib/ExternalWeather.php';
+require_once 'config.php';
+require_once 'lib/t_lib.php';
+require_once 'lib/ExternalWeather.php';
+require_once 'lib/KLogger.php';
 
 // In order to move the pChart library to an external location I found I had to modify the includepath
 function add_include_path( $path )
 {
 	foreach( func_get_args() AS $path )
     {
-		if( !file_exists($path) OR (file_exists($path) && filetype($path) !== 'dir') )
+		if( !file_exists( $path ) OR ( file_exists( $path ) && filetype( $path ) !== 'dir' ) )
         {
 			trigger_error( "Include path '{$path}' not exists", E_USER_WARNING );
             continue;
         }
 
-        $paths = explode(PATH_SEPARATOR, get_include_path());
+		$paths = explode( PATH_SEPARATOR, get_include_path() );
 
 		if( array_search( $path, $paths ) === false )
 		{
-            array_push($paths, $path);
+			array_push( $paths, $path );
 		}
 
-        set_include_path(implode(PATH_SEPARATOR, $paths));
+		set_include_path( implode( PATH_SEPARATOR, $paths ) );
     }
 }
 
+/* This is an idea that is not implemetned.  It would replace config.php with config.ini
+   And it might be a dumb idea as config.php seems to work just fine.
+   It was intended to let a user have a GUI to change settings, but that was teh old single-user model.
+   The multi-user model will have those settings in the DB
 function write_ini_file( $assoc_arr, $path, $has_sections = FALSE )
 {
 	$content = '';
@@ -92,43 +97,17 @@ function save_settings()
 	$settingsFile = $rootDir . 'config.ini';
 	write_ini_file( $assoc_arr, $settingsFile, TRUE );
 }
+*/
 
-/**
-  * Need to set levels to control verbosity.  Here are the typical levels of verbosity I've seen. Not sure where to
-	* draw the line on what is needed.
-	*
-	* FATAL
-	* ERROR
-	* WARN
-	* INFO
-	* DEBUG
-	* TRACE
-	*
-	*/
+$log = KLogger::instance( $logDir );
+
+// Wrapper function so I can update the other procs later....
 function logIt( $msg )
 {
-	// Old - write to screen only
-	//echo $msg . "\n";
-	global $logDir;
+	global $log;
 
-	$logFile = $logDir . 'thermo.' . date( 'Y.m.d' ) . '.log';
-	//echo $logFile . "\n";
-	$fh = fopen( $logFile, 'a' );
-	fwrite( $fh, date( 'H:i', time() ) . ' ' . $msg . "\n" );
-	fclose( $fh );
+	$log->logInfo( 'WRAPPER: ' . $msg );
 }
-
-/*
-// Need to replace all instances of doError() in code with calls to logIt() using error flag.
-// And then delete this function
-function doError( $msg )
-{
-	echo $msg . "\n";
-	file_put_contents( 'php://stderr', $msg . "\n" );
-
-	logIt( "ERROR: " . $msg );
-}
-*/
 
 // Common code that should run for EVERY page follows here
 
@@ -158,6 +137,6 @@ try
 }
 catch( Exception $e )
 {
-	logIt( 'Error getting thermostat list' );
+	$log->logFatal( 'Error getting thermostat list' );
 }
 ?>
