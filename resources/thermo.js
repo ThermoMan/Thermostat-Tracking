@@ -86,8 +86,9 @@ function toggle_daily_flag( flag )
 /**
 	* chart is one of 'daily' or 'historic'
 	*/
-function saveDateData( chart )
+function saveDateData( chart )	// Change to use actual name of element...
 {
+	// These need to be split apart to individual saves
 	switch( chart )
 	{
 		case 'daily':
@@ -96,7 +97,7 @@ function saveDateData( chart )
 			setCookie( 'chart.daily.toDate',          document.getElementById( 'chart.daily.toDate' ).value );					// Ending on date
 		break;
 		
-		case 'historic':
+		case 'historic':	// Change this to literal "history"
 			setCookie( 'chart.history.interval.length', document.getElementById( 'chart.history.interval.length' ).value );	// How many?
 			setCookie( 'chart.history.interval.group',  document.getElementById( 'chart.history.interval.group' ).value );	// Days, weeks, months, years
 			setCookie( 'chart.history.toDate',          document.getElementById( 'chart.history.toDate' ).value );					// Ending on date
@@ -233,10 +234,12 @@ function deleteCookies( chart )
 	}
 }
 
+/*
 function doLogout()
 {
 	alert( 'Not implemented yet.' );
 }
+*/
 
 /**
 	* Process return from Ajax call.
@@ -280,6 +283,14 @@ function update( action )
 		break;
 		
 		case 'forecast':
+			//alert( 'If it is true, I should see this.  It is (' + document.getElementsByName('useForecast')[0].value + ')' );
+			
+			// The hidden input field may only have a string value, it may not have a Boolean, so have to test for literal "false"
+			if( document.getElementsByName('useForecast')[0].value === 'false' )
+			{	// Only bother asking for info if we're set up to ask for it.
+				return;
+			}
+			alert( 'If it is false, I should not see this.  It is (' + document.getElementsByName('useForecast')[0].value + ')' );
 			document.getElementById( 'forecast' ).innerHTML = "<p class='status'><table><tr><td><img src='images/img_trans.gif' width='1' height='1' class='wheels' /></td><td>Looking up the forecast.</td></tr></table></p>";
 		break;
 		

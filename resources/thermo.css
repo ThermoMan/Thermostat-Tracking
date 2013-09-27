@@ -142,27 +142,4 @@ body.account
 {
 	margin: 10px;
 }
-fieldset.auto-width
-{
-	border: 1px solid #FF0000;
-	width: 50em;
-	display: inline-block;
-	padding: 10px;
-}
-fieldset.auto-width legend
-{
-	/* margin: 0 15px; */
-	padding:  0 10px;
-}
-table.form
-{
-}
-table.form td.label
-{
-	text-align: right;
-}
-table.form td.input, td.hint
-{
-	test-align: left;
-}
 

@@ -88,12 +88,15 @@ if( $isLoggedIn )
 	</head>
 
 	<body>
+		<!-- Internal variable declarations START -->
+		<input type='hidden' name='id' value='<?php echo urlencode($id) ?>'>
+	<input type='hidden' name='useWeather' value=<?php echo $weatherConfig['useWeather']?'true':'false' ?>>
+	<input type='hidden' name='useForecast' value=<?php echo $weatherConfig['useForecast']?'true':'false' ?>>
+		<!-- Internal variable declarations END -->
+
 	<div class='header'><?php include( $rootDir . '/header.php' ); ?></div>
 	<br><br><br>
 	<div id='bigbox'>
-		<!-- Internal variable declarations START -->
-		<input type='hidden' name='id' value='<?php echo urlencode($id) ?>'>
-		<!-- Internal variable declarations END -->
 
 		<div class='all_tabs'>
 			<div class='tab_gap'></div>
@@ -108,8 +111,8 @@ if( $isLoggedIn )
 						<br><br>
 						<input type='button' onClick='javascript: update( "conditions" ); update( "forecast" );' value='Refresh'>
 						<br>
-						<div id='status' class='status'>Javascript must be enabled to see this content</div>
-						<div id='forecast' class='status forecast'>Javascript must be enabled to see this content</div>
+						<div id='status' class='status'></div>
+						<div id='forecast' class='status forecast'></div>
 						<!-- Kick off dashboard refresh timers -->
 						<script type='text/javascript'>
 							update( 'conditions' );
@@ -300,7 +303,7 @@ if( $isLoggedIn )
 ?>
 						</table>
 						<br><br>
-						<button type='button' onClick='javascript: backup();'>Backup</button>database.  Should be SITE admin function, not USER admin function.<span id='backup' class='backup'>.</span>
+						<button type='button' onClick='javascript: backup();'>Backup</button>database. Should be SITE admin function, not USER admin function. <span id='backup' class='backup'></span>
 						<br><br>
 						<p>Choose appearance: <select id='colorPicker' onChange='javascript: switch_style( document.getElementById( "colorPicker" ).value )'>
 							<option value='white'>Ice</option>
@@ -329,17 +332,16 @@ if( $isLoggedIn )
 			<div class='tab' id='register'> <a href='#register'> <img class='<?php echo $lockIcon;?>' src='images/img_trans.gif' width='1' height='1' alt='<?php echo $lockAlt;?>'/> Register </a>
 				<div class='container'>
 					<div class='tab-toolbar'>
-					Enter ysour log in details here.
+					Enter your log in details here.
 					</div>
 					<div class='content'>
 						<br><hr>
 <?php
-						//require_once( __ROOT__ . '/lib/users/register.class' );
-						//$user = new register();
-						//$user->displayForm();
+						// This file was getting too large so I'm looking for other ways to make things go
+						require_once( 'register.class' );
+						$form = new register();
+						$form->displayForm();
 ?>
-						<br>Stuff goes in here to allow a user to create an ID on the system.
-						<br>After they are verified and logged in, they can edit locations and thermostats on a different tab.
 					</div>
 				</div>
 			</div>

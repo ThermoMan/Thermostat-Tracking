@@ -1,0 +1,195 @@
+<script type='text/javascript'>
+/**  Callback for checking availability of requested username.
+	*
+	*/
+function processAjaxReply()
+{
+	if( xmlDoc.readyState != 4 ) return ;
+
+	var xml = new DOMParser().parseFromString( this.response, 'text/xml' );
+
+	var cmd = xml.getElementsByTagName('command')[0].childNodes[0].nodeValue;
+	var val = xml.getElementsByTagName('value')[0].childNodes[0].nodeValue;
+
+	switch( cmd )
+	{
+		case 'name_avail':
+			document.getElementById( 'name_avail' ).innerHTML = val;
+		break;
+
+		default:
+			// Do nothing
+		break;
+	}
+
+
+}
+/** On these ajax things I need a common call out that has a function name passed to server.
+	* And a common answer that uses a case statement to process replies.
+	* The call out should set a flag for what function was called and the answer should check that the flag was set and clear it before processing the answer
+	*/
+function checkAvailability()
+{
+	var desiredUsername = document.getElementById( 'username' ).value;
+	if( desiredUsername == "" ) return;
+
+	document.getElementById( 'name_avail' ).innerHTML = 'Checking availability of requested ID.';
+	if( typeof window.ActiveXObject != 'undefined' )
+	{
+		xmlDoc = new ActiveXObject( 'Microsoft.XMLHTTP' );
+		xmlDoc.onreadystatechange = process ;
+	}
+	else
+	{
+		xmlDoc = new XMLHttpRequest();
+		xmlDoc.onload = processAjaxReply;
+	}
+	xmlDoc.open( 'GET', 'action.php?' + 'ac=name_avail' + '&data=' + desiredUsername, true );
+	xmlDoc.send( null );
+}
+
+function checkComplexity()
+{
+	document.getElementById( 'pass_complex' ).innerHTML = 'Is PW good enough?';
+	// Borrow idea from here: http://www.passwordmeter.com/
+	// And link users to this http://xkcd.com/936/
+}
+
+function strncmp( a, b, length )
+{
+	 a = a.substring( 0, length );
+	 b = b.substring( 0, length );
+
+	 return a == b;
+}
+
+function checkDuplicate()
+{
+	//Not a direct string compare. Match length and show incrementally that you are correct or incorrect.  When an exact match is found say so.
+	//Can a 'bong' on an error/mismatch?
+	var p1 = document.getElementById( 'password' ).value;
+	var p2 = document.getElementById( 'password2' ).value;
+	var msg = 'no';
+	if( strncmp( p1, p2, p2.length ) )
+	{
+		msg = 'sort of';
+	}
+	if( strncmp( p1, p2, p2.length ) && p1.length == p2.length )
+	{
+		msg = 'Yes!';
+	}
+	if( p2.length == 0 )
+	{
+		msg = '';
+	}
+	document.getElementById( 'pass_duplicate' ).innerHTML = msg;
+}
+
+function validateUsername()
+{
+	//Check length.
+	//Put message text on screen
+	//return true/false
+	return false;
+}
+function validatePassword()
+{
+	//Check length and complexity.
+	//Put message text on screen
+	//return true/false
+	return false;
+}
+function validateEmail()
+{
+	// Check format str1 @ str2 (str2 contains one or more dots)
+	//return true/false
+	return false;
+}
+
+function validateBeforeSubmit()
+{
+	//Just to help the user out validate all the data.  On the server side do not rely upon this fact.
+	// Call all validate functions.  Return overall true/false for submit action.
+	// On the server side, don't trust that the input is in any proper format.  Re-validate it all!
+	//Perhaps do that action as AJAX and put message on screen with results (one of "Error" or "Look for validate email")
+	// And read this page: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_%28CSRF%29_Prevention_Cheat_Sheet
+	return false;
+}
+</script>
+
+<style>
+fieldset.auto-width
+{
+	border: 1px solid #FF0000;
+	/* width: 40em; */
+	width: 50%;
+	display: inline-block;
+	padding: 10px;
+}
+fieldset.auto-width legend
+{
+	/* margin: 0 15px; */
+	padding:  0 10px;
+}
+table.form
+{
+}
+table.form td.label
+{
+	text-align: right;
+}
+table.form td.input, td.hint
+{
+	test-align: left;
+}
+</style>
+
+<?php
+/* The point of this is that the $secureConfig may be DIFFERENT than the thermostat DB info.
+require_once( dirname( __FILE__ ) . '/config.php' );
+if( ! isset( $secureConfig ) )
+{
+	die();
+}
+*/
+
+class register
+{
+	function __construct()
+	{
+		//echo 'hi!';
+	}
+
+	function displayForm()
+	{
+		$htmlString = '';
+
+// All attempts to center the red box have failed
+//		$htmlString .= "<div sytle='margin-left: auto; margin-right: auto;' >";
+
+// Do not use an "action", send the data via Ajax instead.  Want to limit the number of page reloads.
+// But only if it is secure.  Really need https, otherwise all the security is just pretend.
+//
+
+		$htmlString .= "<form id='register' action='index.php' method='post' accept-charset='UTF-8'>";
+		$htmlString .= "	<fieldset class='auto-width'>";
+		$htmlString .= "		<legend>Register</legend>";
+		$htmlString .= "		<input type='hidden' name='ac' value='register'>";
+		$htmlString .= "		<table class='form'>";
+		$htmlString .= "		<tr><td class='label'><label for='username' >UserName* </label></td>        <td class='input'><input type='text'     name='username'  id='username'  maxLength='25' size='25' onBlur='javascript: checkAvailability();' /></td><td class='hint'><span id='name_avail'></span></td></tr>";
+		$htmlString .= "		<tr><td class='label'><label for='password' >Password* </label></td>        <td class='input'><input type='password' name='password'  id='password'  maxLength='25' size='25' onKeyUp='javascript: checkComplexity();' /></td><td class='hint'><span id='pass_complex'></span></td></tr>";
+		$htmlString .= "		<tr><td class='label'><label for'password2' >Re-enter password </label></td><td class='input'><input type='password' name='password2' id='password2' maxLength='25' size='25' onKeyUp='javascript: checkDuplicate();'></td><td class='hint'><span id='pass_duplicate'></span></td></tr>";
+		$htmlString .= "		<tr><td class='label'><label for='email' >Email address* </label></td>      <td class='input'><input type='text'     name='email'     id='email'     maxLength='75' size='25' /></td></td><td class='hint'></td></tr>";
+		$htmlString .= "		</table>";
+		$htmlString .= "		<span style='float: right;'><input type='submit' value='Submit' />";
+		$htmlString .= "		<input type='reset' value='Reset' /></span>";
+		$htmlString .= "	</fieldset>";
+		$htmlString .= "</form>";
+//		$htmlString .= '</div>';
+
+		echo $htmlString;
+	}
+}
+
+
+?>

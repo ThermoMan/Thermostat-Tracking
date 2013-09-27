@@ -35,6 +35,8 @@ $ZIP = '90210';
 	* noaa requires an api_loc - see http://w1.weather.gov/xml/current_obs/ for the correct xml url for your location
 	*/
 $weatherConfig = array(
+	'useWeather'  => TRUE,											// TRUE, FALSE (Flag to use external temperature for all stats)
+	'useForecast' => TRUE,											// TRUE, FALSE (Flag to show forecast on dashboard))
 	'type'    => 'weatherunderground',			// weatherunderground, noaa, weatherbug
 	'units'   => 'F',												// F, C
 	'api_key' => '0000000000000000',				// Registered API key

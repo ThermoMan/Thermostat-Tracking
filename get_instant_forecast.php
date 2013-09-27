@@ -4,28 +4,19 @@ require_once 'common.php';
 /* Put useful comments here and either merge code with get_instant_status.php or make this a virtual clone of that file */
 
 $lastZIP = '';
+$returnString = '';
 
-
-try
-{
+if( $weatherConfig['useForecast'] )
+{	// Only check forecast if we're asking for it.
+	try
+	{
 	/** Get stat info
 		*
 		*/
 	foreach( $thermostats as $thermostatRec )
 	{
 		$returnString = '';
-		/* DO NOT NEED TO GET LOCK, NOT TALKING TO THERMOSTAT!
-		$lockFileName = $lockFile . $thermostatRec['id'];
-		$lock = @fopen( $lockFileName, 'w' );
-		if( !$lock )
-		{
-			logIt( "get_instant_forecast: Could not write to lock file $lockFileName" );
-			continue;
-		}
-		if( flock($lock, LOCK_EX) )
-		{
-		*/
-			//logIt( "get_instant_forecast: Fetching forecast" );
+				//$log->logInfo( "get_instant_forecast: Fetching forecast" );
 
 			//$stat = new Stat( $thermostatRec['ip'], $thermostatRec['tstat_id'] );
 			$stat = new Stat( $thermostatRec['ip'] );
@@ -42,9 +33,11 @@ try
 						*
 						*/
 					$forecastData = $externalWeatherAPI->getOutdoorForcast( $ZIP );
-					//logIt( "get_instant_forecast: I got data" );
+						//$log->logInfo( "get_instant_forecast: I got data" );
 
 					// Format data for screen presentation
+						if( is_array( $forecastData ) )
+						{
 					$returnString .= "<p>The forecast for {$ZIP} is</p><br><table><tr>";
 					foreach( $forecastData as $day )
 					{
@@ -71,28 +64,30 @@ try
 
 						$returnString .= "<td style='text-align: center;'>$tth&deg;$weatherConfig[units] / $ttl&deg;$weatherConfig[units]</td>";
 					}
-					$returnString .= "</tr></table>";
+							$returnString .= '</tr></table>';
+						}
+						else
+						{
+							$log->logError( 'Expected to get an array back from $externalWeatherAPI->getOutdoorForcast( $ZIP ) but did not.' );
+							$returnString .= 'No response from forecast provider.';
+						}
 				}
 
 			}
 			catch( Exception $e )
 			{
-				logIt( 'get_instant_forecast: External forecast failed: ' . $e->getMessage() );
+					$log-logError( 'get_instant_forecast: External forecast failed: ' . $e->getMessage() );
 				// Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
 				$returnString = $returnString . "<p><img src='images/Alert.png'/>Presently unable to read forecast.</p>";
 			}
-		/* DO NOT NEED TO GET LOCK, NOT TALKING TO THERMOSTAT!
 		}
-		fclose( $lock );
-		*/
+	}
+	catch( Exception $e )
+	{
+		$log->logError( 'get_instant_forecast: Some bugs failure or other ' . $e->getMessage() );
+	$returnString = "<p><img src='images/Alert.png'/>Presently unable to read forecast.</p>";
 	}
 }
-catch( Exception $e )
-{
-	logIt( 'get_instant_forecast: Some bugs failure or other ' . $e->getMessage() );
-	$returnString = "<p><img src='images/Alert.png'/>Presently unable to read forecast.</p>";
-}
-
 echo $returnString;
 
 ?>

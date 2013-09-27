@@ -22,8 +22,17 @@ class ExternalWeather
 		}
 	}
 
+	/**
+		* Should the calling function test $this->config['useWeather']
+		* or should that happen in here and just return -1 for each value
+		*/
 	public function getOutdoorWeather( $zip = null )
 	{
+		if( ! $this->config['useWeather'] )
+		{
+			return array( 'temp' => -1, 'humidity' => -1 );
+		}
+
 		if( empty($zip) )
 		{
 			throw new ExternalWeather_Exception( 'Zip not set' );
@@ -132,11 +141,16 @@ class ExternalWeather
 				$this->outdoorHumidity = str_replace('%', '', $this->outdoorHumidity);
 			break;
 		}
-		return array('temp' => $this->outdoorTemp, 'humidity' => $this->outdoorHumidity);
+		return array( 'temp' => $this->outdoorTemp, 'humidity' => $this->outdoorHumidity );
 	}
 
 	public function getOutdoorForcast( $zip = null )
 	{
+		if( ! $this->config['useForecast'] )
+		{
+			return NULL;
+		}
+
 		if( empty($zip) )
 		{
 			throw new ExternalWeather_Exception( 'Zip not set' );
