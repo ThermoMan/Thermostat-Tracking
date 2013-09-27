@@ -290,7 +290,7 @@ function update( action )
 			{	// Only bother asking for info if we're set up to ask for it.
 				return;
 			}
-			alert( 'If it is false, I should not see this.  It is (' + document.getElementsByName('useForecast')[0].value + ')' );
+			//alert( 'If it is false, I should not see this.  It is (' + document.getElementsByName('useForecast')[0].value + ')' );
 			document.getElementById( 'forecast' ).innerHTML = "<p class='status'><table><tr><td><img src='images/img_trans.gif' width='1' height='1' class='wheels' /></td><td>Looking up the forecast.</td></tr></table></p>";
 		break;
 		
