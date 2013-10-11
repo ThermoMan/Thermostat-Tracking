@@ -15,7 +15,7 @@ if( isset( $_GET['table_flag'] ) && $_GET['table_flag'] == 'true' )
 	$table_flag = true;
 }
 
-$source = 2;	// Default to shoing both
+$source = 2;	// Default to showing both
 if( isset( $_GET['chart_daily_source'] ) )
 {	// The "." character in the URL is somehow converted to an "_" character when PHP goes to look at it.
 	$source = $_GET['chart_daily_source'];
