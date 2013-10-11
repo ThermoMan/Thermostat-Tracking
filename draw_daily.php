@@ -15,13 +15,13 @@ if( isset( $_GET['table_flag'] ) && $_GET['table_flag'] == 'true' )
 	$table_flag = true;
 }
 
-$source = 2;
+$source = 2;	// Default to shoing both
 if( isset( $_GET['chart_daily_source'] ) )
-{
+{	// The "." character in the URL is somehow converted to an "_" character when PHP goes to look at it.
 	$source = $_GET['chart_daily_source'];
 }
 if( $source < 0 || $source > 2 )
-{ // 0: outdoor, 1: indoor, 2: both
+{ // If it is out of bounds, show both.  0: outdoor, 1: indoor, 2: both
 	$source = 2;
 }
 
@@ -66,7 +66,7 @@ $show_heat_cycles = (isset($_GET['chart_daily_showHeat']) && ($_GET['chart_daily
 $show_cool_cycles = (isset($_GET['chart_daily_showCool']) && ($_GET['chart_daily_showCool'] == 'false')) ? 0 : 1;
 $show_fan_cycles  = (isset($_GET['chart_daily_showFan'])  && ($_GET['chart_daily_showFan']  == 'false')) ? 0 : 1;
 // Set default for displaying set point temp to "off"
-$show_setpoint     = (isset($_GET['chart_daily_setpoint'])  && ($_GET['chart_daily_setpoint']  == 'false')) ? 0 : 1;
+$show_setpoint    = (isset($_GET['chart_daily_setpoint']) && ($_GET['chart_daily_setpoint']  == 'false')) ? 0 : 1;
 
 
 // OK, now that we have a bounding range of dates, build an array of all the dates in the range
@@ -82,7 +82,7 @@ while( $check_date != $to_date )
 	{ // Special logic for large data sets
 		/**
 			* A large data set takes a long time to graph.  90 days at one temp per half-hour takes more than
-			* 30 seconds and that is osme kind of hard-limit coded into the chart package.  And the chart
+			* 30 seconds and that is some kind of hard-limit coded into the chart package.  And the chart
 			* package just aborts...
 			*
 			* One fix it to find that limit and change it.  Another is to deal with it (and the actual user
@@ -179,8 +179,8 @@ else
 	{	// Outdoor or both
 		echo '<th>Outdoor Temp</th>';
 	}
-	if ($show_setpoint == 1)
-	{       // Set point temperature (regardless of heat or cool)
+	if( $show_setpoint == 1 )
+	{	// Set point temperature (regardless of heat or cool)
 		echo '<th>Setpoint Temp</th>';
 	}
 }
@@ -200,25 +200,25 @@ foreach( $days as $show_date )
 	$first_row = true;
 	while( $row = $queryOne->fetch( PDO::FETCH_ASSOC ) )
 	{	/**
-	* Chart of things that work for X-axis labels (work in progress to have optimal spacing)
-	* days  divisor
-	*  1		 $dayCount
-	*  6		 $dayCount
-	*  7		 6
-	*  8		 6
-	*  9		 8
-	* 10		 8
-	* 11		12 (date and noon)
-	* 16		12
-	* 17		24 (date only)
-	* 31		24
-	* 32		each week start date
-	* 70 Change to every hour SELECT instead of every half hour SELECT
-	* The charting software borks if the internal rendering time limit of 30 seconds is hit.  Happens around
-	* ~75 days of every half-hour
-	* ~80 days of hours
-	* This crash is VERY is dependant upon server load...
-	*/
+			* Chart of things that work for X-axis labels (work in progress to have optimal spacing)
+			* days  divisor
+			*  1		 $dayCount
+			*  6		 $dayCount
+			*  7		 6
+			*  8		 6
+			*  9		 8
+			* 10		 8
+			* 11		12 (date and noon)
+			* 16		12
+			* 17		24 (date only)
+			* 31		24
+			* 32		each week start date
+			* 70 Change to every hour SELECT instead of every half hour SELECT
+			* The charting software borks if the internal rendering time limit of 30 seconds is hit.  Happens around
+			* ~75 days of every half-hour
+			* ~80 days of hours
+			* This crash is VERY is dependant upon server load...
+			*/
 
 		if( $dayCount > 13 ) $labelDivisor = 24;
 		else if( $dayCount > 10 ) $labelDivisor = 12;
@@ -278,28 +278,27 @@ foreach( $days as $show_date )
 				// We may, or may not, have changed $saved_string, but if we didn't change it is is because we didn't
 				// want to show a value for a particular point on the X axis - pChart detects that same value
 				// and doesn't display anything
-				
+
 				$MyData->addPoints( $saved_string, 'Labels' );
 			}
 
-			if ($source == 0 || $source == 2)
-			{
-			$MyData->addPoints( ($row['indoor_temp'] == 'VOID' ? VOID : $row['indoor_temp']), 'Indoor' );
+			if( $source == 1 || $source == 2 )
+			{	// Indoor or both
+				$MyData->addPoints( ($row['indoor_temp'] == 'VOID' ? VOID : $row['indoor_temp']), 'Indoor' );
 			}
-			if ($source == 1 || $source == 2)
+			if( $source == 0 || $source == 2 )
+			{	// Outdoor or both
+				$MyData->addPoints( ($row['outdoor_temp'] == 'VOID' ? VOID : $row['outdoor_temp']), 'Outdoor' );
+			}
+			if( $show_setpoint == 1 )
 			{
-			$MyData->addPoints( ($row['outdoor_temp'] == 'VOID' ? VOID : $row['outdoor_temp']), 'Outdoor' );
-		}
-			if ($show_setpoint == 1)
-			{
-				if ($row['set_point'] != 0)
+				if( $row['set_point'] != 0 )
 				{
 					$MyData->addPoints( ($row['set_point'] == 'VOID' ? VOID : $row['set_point']), 'Setpoint' );
 				}
 				else
 				{	// If the set point isn't defined for this data point (for instance, the thermostat was off)
 					//  set it to VOID so we don't graph these points at all
-
 					$MyData->addPoints(VOID, 'Setpoint');
 				}
 			}
@@ -316,8 +315,8 @@ foreach( $days as $show_date )
 			{	// Outdoor or both
 				echo '<td>'.($row['outdoor_temp'] == 'VOID' ? '&nbsp;' : $row['outdoor_temp']).'</td>';
 			}
-			if ($show_setpoint == 1)
-			{       // Show set point temp (regardless of heat or cool)
+			if( $show_setpoint == 1 )
+			{	// Show set point temp (regardless of heat or cool)
 				echo '<td>'.($row['set_point'] == 'VOID' ? '&nbsp;' : $row['set_point']).'</td>';
 			}
 			echo '</tr>';
@@ -327,14 +326,23 @@ foreach( $days as $show_date )
 		/**
 		  * Expand chart boundaries to contain data that exceeds the default boundaries
 		  * 'VOID' values test poorly in inequality against numeric values so us 50 when the data is bad.
-		  * Increement or decrement by ten to keep the chart boundaries pretty
+		  * Increment or decrement by ten to keep the chart boundaries pretty
 			*/
-		while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) < $chart_y_min ) $chart_y_min -= 10;
-		while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) > $chart_y_max ) $chart_y_max += 10;
-		while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) < $chart_y_min ) $chart_y_min -= 10;
-		while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) > $chart_y_max ) $chart_y_max += 10;
-		while( ($row['set_point'] == 'VOID' ? 50 : $row['set_point']) < $chart_y_min ) $chart_y_min -= 10;
-		while( ($row['set_point'] == 'VOID' ? 50 : $row['set_point']) > $chart_y_max ) $chart_y_max += 10;
+		if( $source == 1 || $source == 2 )
+		{	// Indoor or both
+			while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) < $chart_y_min ) $chart_y_min -= 10;
+			while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) > $chart_y_max ) $chart_y_max += 10;
+		}
+		if( $source == 0 || $source == 2 )
+		{	// Outdoor or both
+			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) < $chart_y_min ) $chart_y_min -= 10;
+			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) > $chart_y_max ) $chart_y_max += 10;
+		}
+		if( $show_setpoint == 1 )
+		{	// Show set point temp (regardless of heat or cool)
+			while( ($row['set_point'] == 'VOID' ? 50 : $row['set_point']) < $chart_y_min ) $chart_y_min -= 10;
+			while( ($row['set_point'] == 'VOID' ? 50 : $row['set_point']) > $chart_y_max ) $chart_y_max += 10;
+		}
   }
 }
 
