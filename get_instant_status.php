@@ -35,7 +35,7 @@ Need to compare who the user claims to be (via his session ID) and his IP addres
 
 If he is properly logged in, then and only htn look up the data requested and return it.
 
-Otherwise fail silently (or maybe send back an alert icon with an error "not authorised for this content")
+Otherwise fail silently (or maybe send back an alert icon with an error "not authorized for this content")
 
 
 */
@@ -55,6 +55,8 @@ try
 			logIt( "get_instant_status: Could not write to lock file $lockFileName" );
 			continue;
 		}
+		$setPoint = '';
+
 		if( flock($lock, LOCK_EX) )
 		{
 			//logIt( "get_instant_status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
@@ -71,8 +73,9 @@ try
 
 			$fanStatus  = ($stat->fstate == 1) ? 'on' : 'off';
 			// Not sure why, but this just is not working.  The t_heat and t_cool are coming back blank
-			//$setPoint   = ' and the target is ' . (string)(($stat->tstate == 1) ? $stat->t_heat : $stat->_t_cool);
-			$setPoint = 'Hello World';	// Why isn't this text showing up?????
+			$setPoint   = ' The target is ' . (string)(($stat->tstate == 1) ? $stat->t_heat : $stat->t_cool);
+			//$setPoint = 'Hello World';	// Why isn't this text showing up?????
+
 
 			/** Get environmental info
 				*
@@ -94,14 +97,14 @@ try
 				// Change to display using the thermostats own time.
 				$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
 
-			$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='heater_$heatStatus' /> The heater is $heatStatus".(($heatStatus == 'on') ? "$setPoint" : '').'.</p>';
-			$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='compressor_$coolStatus' /> The compressor is $coolStatus.";
-			if( $coolStatus == 'on' )
-			{
-				$returnString = $returnString .  "  $setPoint";
-			}
-			$returnString = $returnString . '</p>';
-			$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='fan_$fanStatus' /> The fan is $fanStatus</p>";
+				$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='heater_$heatStatus' /> The heater is $heatStatus".(($heatStatus == 'on') ? "$setPoint" : '').'.</p>';
+				$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='compressor_$coolStatus' /> The compressor is $coolStatus.";
+				if( $coolStatus == 'on' )
+				{
+					$returnString = $returnString .  "  $setPoint";
+				}
+				$returnString = $returnString . '</p>';
+				$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='fan_$fanStatus' /> The fan is $fanStatus</p>";
 			}
 			catch( Exception $e )
 			{
