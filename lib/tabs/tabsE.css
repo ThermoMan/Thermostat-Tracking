@@ -56,8 +56,9 @@ div.all_tabs > div.tab_gap
 /* Visually connect tab and tab body (border around tabs and between tabs and body) */
 div.all_tabs > div.tab > a
 {        /* top right bottom left */
-	padding: 0.3em 0.4em 0.3em 0.4em;			/* Some breathing space - space around tab title text - leave gap between button and content (see below) */
-	padding: 7px 9px 3px 9px;
+	/*padding: 0.3em 0.4em 0.3em 0.4em;*/
+	padding: 7px 9px 3px 9px;							/* Some breathing space - space around tab title text - leave gap between button and content (see below) */
+	-webkit-padding-after: 4px;						/* Because Chrome measures space differently "after" = "bottom" */
 
 	border: 0.15em outset;								/* Gives the tab a 3Dish effect */
 	font-family: 'theToolbarFonts';				/* This font choice impacts the padding-bottom choice (see above) */

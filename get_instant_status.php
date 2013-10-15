@@ -92,16 +92,16 @@ try
 				// Change to display using the thermostats own time.
 				$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
 
-				$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='heater_$heatStatus' /> The heater is $heatStatus".(($heatStatus == 'on') ? "$setPoint" : '').'.</p>';
-				$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='compressor_$coolStatus' /> The compressor is $coolStatus.".(($coolStatus == 'on') ? "$setPoint" : '').'.</p>';
+				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='heater_$heatStatus'     alt='heat' title='The heater is $heatStatus' /> The heater is $heatStatus.".(($heatStatus == 'on') ? "$setPoint" : '').'</p>';
+				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='compressor_$coolStatus' alt='cool' title='The compressor is $coolStatus' /> The compressor is $coolStatus.".(($coolStatus == 'on') ? "$setPoint" : '').'</p>';
 				$returnString = $returnString . '</p>';
-				$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='fan_$fanStatus' /> The fan is $fanStatus</p>";
+				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='fan_$fanStatus' alt='fan' title='The fan is $fanStatus'/> The fan is $fanStatus.</p>";
 			}
 			catch( Exception $e )
 			{
 				$log->logError( 'External weather failed: ' . $e->getMessage() );
 				// Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
-				$returnString = $returnString . "<p><img src='images/Alert.png'/>Presently unable to read outside information.</p>";
+				$returnString = $returnString . "<p><img src='images/Alert.png'/ alt='alert'>Presently unable to read outside information.</p>";
 				$returnString = $returnString . "<p>$thermostatRec[name] says it is $stat->time</p>";
 			}
 		}

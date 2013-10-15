@@ -28,6 +28,12 @@ if( $weatherConfig['useForecast'] )
 					$lastZIP = $ZIP;
 
 					$externalWeatherAPI = new ExternalWeather( $weatherConfig );
+						/** Bad code follows.
+							* I'm directly loading the data structure from weatherunderground and I ought to be using my own structure
+							*
+							* So the following code is specific to one data supplier and not generic at all.
+							* To fix it, I need to change not only this, but also ExternalWeather.php
+							*/
 
 					/** Get environmental info
 						*
@@ -46,7 +52,7 @@ if( $weatherConfig['useForecast'] )
 					$returnString .= "</tr><tr>";
 					foreach( $forecastData as $day )
 					{
-						$returnString .= "<td style='text-align: center; width: 90px;'><img src='" . $day->icon_url ."'></td>";
+								$returnString .= "<td style='text-align: center; width: 90px;'><img src='$day->icon_url' alt='$day->icon' title='$day->conditions'></td>";
 					}
 					$returnString .= "</tr><tr>";
 					foreach( $forecastData as $day )

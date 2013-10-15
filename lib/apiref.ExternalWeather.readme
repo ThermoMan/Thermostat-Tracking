@@ -1,0 +1,398 @@
+
+The following is the result of calling teh forecast from weatherunderground
+http://api.wunderground.com/api/API/forecast/q/90210.xml
+
+<response>
+	<version>0.1</version>
+	<termsofService>http://www.wunderground.com/weather/api/d/terms.html</termsofService>
+	<features>
+		<feature>forecast</feature>
+	</features>
+	<forecast>
+		<txt_forecast>
+		<date>8:00 PM PDT</date>
+		<forecastdays>
+		<forecastday>
+		<period>0</period>
+		<icon>clear</icon>
+		<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+		<title>Tuesday</title>
+		<fcttext><![CDATA[Clear. High of 82F. Winds from the West at 5 to 10 mph shifting to the SSW in the afternoon.]]></fcttext>
+		<fcttext_metric><![CDATA[Clear. High of 28C. Winds from the West at 10 to 15 km/h shifting to the SSW in the afternoon.]]></fcttext_metric>
+		<pop>0</pop>
+		</forecastday>
+		<forecastday>
+		<period>1</period>
+		<icon>clear</icon>
+		<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+		<title>Tuesday Night</title>
+		<fcttext><![CDATA[Clear. Low of 59F. Winds from the NNE at 5 to 10 mph.]]></fcttext>
+		<fcttext_metric><![CDATA[Clear. Low of 15C. Winds from the NNE at 10 to 15 km/h.]]></fcttext_metric>
+		<pop>0</pop>
+		</forecastday>
+		<forecastday>
+		<period>2</period>
+		<icon>clear</icon>
+		<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+		<title>Wednesday</title>
+		<fcttext><![CDATA[Clear. High of 84F. Winds from the North at 10 to 15 mph.]]></fcttext>
+		<fcttext_metric><![CDATA[Clear. High of 29C. Breezy. Winds from the North at 15 to 20 km/h.]]></fcttext_metric>
+		<pop>0</pop>
+		</forecastday>
+		<forecastday>
+		<period>3</period>
+		<icon>clear</icon>
+		<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+		<title>Wednesday Night</title>
+		<fcttext><![CDATA[Clear. Low of 57F. Winds from the NW at 5 to 10 mph shifting to the NNE after midnight.]]></fcttext>
+		<fcttext_metric><![CDATA[Clear. Low of 14C. Winds from the NW at 5 to 10 km/h shifting to the NNE after midnight.]]></fcttext_metric>
+		<pop>0</pop>
+		</forecastday>
+		<forecastday>
+		<period>4</period>
+		<icon>clear</icon>
+		<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+		<title>Thursday</title>
+		<fcttext><![CDATA[Clear. High of 77F. Winds from the NW at 5 to 10 mph shifting to the SW in the afternoon.]]></fcttext>
+		<fcttext_metric><![CDATA[Clear. High of 25C. Winds from the NW at 10 to 15 km/h shifting to the SW in the afternoon.]]></fcttext_metric>
+		<pop>0</pop>
+		</forecastday>
+		<forecastday>
+		<period>5</period>
+		<icon>clear</icon>
+		<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+		<title>Thursday Night</title>
+		<fcttext><![CDATA[Clear. Low of 59F. Winds less than 5 mph.]]></fcttext>
+		<fcttext_metric><![CDATA[Clear. Low of 15C. Winds less than 5 km/h.]]></fcttext_metric>
+		<pop>0</pop>
+		</forecastday>
+		<forecastday>
+		<period>6</period>
+		<icon>clear</icon>
+		<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+		<title>Friday</title>
+		<fcttext><![CDATA[Clear. High of 77F. Winds from the NNW at 5 to 10 mph shifting to the WSW in the afternoon.]]></fcttext>
+		<fcttext_metric><![CDATA[Clear. High of 25C. Winds from the NNW at 5 to 20 km/h shifting to the WSW in the afternoon.]]></fcttext_metric>
+		<pop>0</pop>
+		</forecastday>
+		<forecastday>
+		<period>7</period>
+		<icon>clear</icon>
+		<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+		<title>Friday Night</title>
+		<fcttext><![CDATA[Clear. Low of 59F. Winds less than 5 mph.]]></fcttext>
+		<fcttext_metric><![CDATA[Clear. Low of 15C. Winds less than 5 km/h.]]></fcttext_metric>
+		<pop>0</pop>
+		</forecastday>
+		</forecastdays>
+		</txt_forecast>
+		<simpleforecast>
+		<forecastdays>
+		<forecastday>
+		<date>
+  <epoch>1381903200</epoch>
+  <pretty_short>11:00 PM PDT</pretty_short>
+  <pretty>11:00 PM PDT on October 15, 2013</pretty>
+  <day>15</day>
+  <month>10</month>
+  <year>2013</year>
+  <yday>287</yday>
+  <hour>23</hour>
+  <min>00</min>
+  <sec>0</sec>
+  <isdst>1</isdst>
+  <monthname>October</monthname>
+  <weekday_short>Tue</weekday_short>
+  <weekday>Tuesday</weekday>
+  <ampm>PM</ampm>
+  <tz_short>PDT</tz_short>
+  <tz_long>America/Los_Angeles</tz_long>
+</date>
+					<period>1</period>
+					<high>
+						<fahrenheit>82</fahrenheit>
+						<celsius>28</celsius>
+					</high>
+					<low>
+						<fahrenheit>59</fahrenheit>
+						<celsius>15</celsius>
+					</low>
+					<conditions>Clear</conditions>
+					
+					<icon>clear</icon>
+					<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+					<skyicon>sunny</skyicon>
+					<pop>0</pop>
+					<qpf_allday>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_allday>
+					<qpf_day>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_day>
+					<qpf_night>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_night>
+					<snow_allday>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_allday>
+					<snow_day>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_day>
+					<snow_night>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_night>
+					<maxwind>
+						<mph>8</mph>
+						<kph>13</kph>
+						<dir>SW</dir>
+						<degrees>216</degrees>
+					</maxwind>
+					<avewind>
+						<mph>4</mph>
+						<kph>6</kph>
+						<dir>SSW</dir>
+						<degrees>194</degrees>
+					</avewind>
+					<avehumidity>29</avehumidity>
+					<maxhumidity>60</maxhumidity>
+					<minhumidity>15</minhumidity>
+				</forecastday>
+				
+				<forecastday>
+					<date>
+  <epoch>1381989600</epoch>
+  <pretty_short>11:00 PM PDT</pretty_short>
+  <pretty>11:00 PM PDT on October 16, 2013</pretty>
+  <day>16</day>
+  <month>10</month>
+  <year>2013</year>
+  <yday>288</yday>
+  <hour>23</hour>
+  <min>00</min>
+  <sec>0</sec>
+  <isdst>1</isdst>
+  <monthname>October</monthname>
+  <weekday_short>Wed</weekday_short>
+  <weekday>Wednesday</weekday>
+  <ampm>PM</ampm>
+  <tz_short>PDT</tz_short>
+  <tz_long>America/Los_Angeles</tz_long>
+</date>
+					<period>2</period>
+					<high>
+						<fahrenheit>84</fahrenheit>
+						<celsius>29</celsius>
+					</high>
+					<low>
+						<fahrenheit>57</fahrenheit>
+						<celsius>14</celsius>
+					</low>
+					<conditions>Clear</conditions>
+					
+					<icon>clear</icon>
+					<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+					<skyicon>sunny</skyicon>
+					<pop>0</pop>
+					<qpf_allday>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_allday>
+					<qpf_day>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_day>
+					<qpf_night>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_night>
+					<snow_allday>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_allday>
+					<snow_day>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_day>
+					<snow_night>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_night>
+					<maxwind>
+						<mph>10</mph>
+						<kph>16</kph>
+						<dir>NE</dir>
+						<degrees>52</degrees>
+					</maxwind>
+					<avewind>
+						<mph>6</mph>
+						<kph>10</kph>
+						<dir>SSE</dir>
+						<degrees>153</degrees>
+					</avewind>
+					<avehumidity>26</avehumidity>
+					<maxhumidity>43</maxhumidity>
+					<minhumidity>12</minhumidity>
+				</forecastday>
+				
+				<forecastday>
+					<date>
+  <epoch>1382076000</epoch>
+  <pretty_short>11:00 PM PDT</pretty_short>
+  <pretty>11:00 PM PDT on October 17, 2013</pretty>
+  <day>17</day>
+  <month>10</month>
+  <year>2013</year>
+  <yday>289</yday>
+  <hour>23</hour>
+  <min>00</min>
+  <sec>0</sec>
+  <isdst>1</isdst>
+  <monthname>October</monthname>
+  <weekday_short>Thu</weekday_short>
+  <weekday>Thursday</weekday>
+  <ampm>PM</ampm>
+  <tz_short>PDT</tz_short>
+  <tz_long>America/Los_Angeles</tz_long>
+</date>
+					<period>3</period>
+					<high>
+						<fahrenheit>77</fahrenheit>
+						<celsius>25</celsius>
+					</high>
+					<low>
+						<fahrenheit>59</fahrenheit>
+						<celsius>15</celsius>
+					</low>
+					<conditions>Clear</conditions>
+					
+					<icon>clear</icon>
+					<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+					<skyicon>sunny</skyicon>
+					<pop>0</pop>
+					<qpf_allday>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_allday>
+					<qpf_day>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_day>
+					<qpf_night>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_night>
+					<snow_allday>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_allday>
+					<snow_day>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_day>
+					<snow_night>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_night>
+					<maxwind>
+						<mph>9</mph>
+						<kph>14</kph>
+						<dir>SW</dir>
+						<degrees>218</degrees>
+					</maxwind>
+					<avewind>
+						<mph>8</mph>
+						<kph>13</kph>
+						<dir>SSW</dir>
+						<degrees>196</degrees>
+					</avewind>
+					<avehumidity>33</avehumidity>
+					<maxhumidity>44</maxhumidity>
+					<minhumidity>23</minhumidity>
+				</forecastday>
+				
+				<forecastday>
+					<date>
+  <epoch>1382162400</epoch>
+  <pretty_short>11:00 PM PDT</pretty_short>
+  <pretty>11:00 PM PDT on October 18, 2013</pretty>
+  <day>18</day>
+  <month>10</month>
+  <year>2013</year>
+  <yday>290</yday>
+  <hour>23</hour>
+  <min>00</min>
+  <sec>0</sec>
+  <isdst>1</isdst>
+  <monthname>October</monthname>
+  <weekday_short>Fri</weekday_short>
+  <weekday>Friday</weekday>
+  <ampm>PM</ampm>
+  <tz_short>PDT</tz_short>
+  <tz_long>America/Los_Angeles</tz_long>
+</date>
+					<period>4</period>
+					<high>
+						<fahrenheit>77</fahrenheit>
+						<celsius>25</celsius>
+					</high>
+					<low>
+						<fahrenheit>59</fahrenheit>
+						<celsius>15</celsius>
+					</low>
+					<conditions>Clear</conditions>
+					
+					<icon>clear</icon>
+					<icon_url>http://icons-ak.wxug.com/i/c/k/clear.gif</icon_url>
+					<skyicon>sunny</skyicon>
+					<pop>0</pop>
+					<qpf_allday>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_allday>
+					<qpf_day>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_day>
+					<qpf_night>
+						<in>0.00</in>
+						<mm>0.0</mm>
+					</qpf_night>
+					<snow_allday>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_allday>
+					<snow_day>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_day>
+					<snow_night>
+						<in>0</in>
+						<cm>0</cm>
+					</snow_night>
+					<maxwind>
+						<mph>10</mph>
+						<kph>16</kph>
+						<dir>WSW</dir>
+						<degrees>250</degrees>
+					</maxwind>
+					<avewind>
+						<mph>7</mph>
+						<kph>11</kph>
+						<dir>SW</dir>
+						<degrees>223</degrees>
+					</avewind>
+					<avehumidity>31</avehumidity>
+					<maxhumidity>37</maxhumidity>
+					<minhumidity>17</minhumidity>
+				</forecastday>
+				
+			</forecastdays>
+		</simpleforecast>
+	</forecast>
+</response>

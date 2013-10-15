@@ -31,7 +31,7 @@ div.status
 	margin-left: 50px;
 	float: left;
 	width: 400px;
-	height: 200px;
+	height: 250px;
 	overflow-y: auto;
 }
 div.status p
