@@ -15,19 +15,19 @@ $lastZIP = '';
 ob_start();
 var_dump($_POST);
 $result = ob_get_clean();
-logIt( 'POST ' . $result );
+$log->logInfo( 'POST ' . $result );
 
 ob_start();
 var_dump($_GET);
 $result = ob_get_clean();
-logIt( 'GET ' . $result );
+$log->logInfo( 'GET ' . $result );
 */
 
 /*
 ob_start();
 var_dump($_SESSION);
 $result = ob_get_clean();
-logIt( '_SESSION ' . $result );
+$log->logInfo( '_SESSION ' . $result );
 */
 
 /*
@@ -59,8 +59,7 @@ try
 
 		if( flock($lock, LOCK_EX) )
 		{
-			//logIt( "get_instant_status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
-			logIt( "get_instant_status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
+			$log->logInfo( "get_instant_status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
 
 			//$stat = new Stat( $thermostatRec['ip'], $thermostatRec['tstat_id'] );
 			$stat = new Stat( $thermostatRec['ip'] );
@@ -68,16 +67,12 @@ try
 			$statData = $stat->getStat();
 			$heatStatus = ($stat->tstate == 1) ? 'on' : 'off';
 			$coolStatus = ($stat->tstate == 2) ? 'on' : 'off';
-
-			// If any of the the devices are on ask the DB how long they have been running (in hours:minutes)
+			// (later?) If any of the the devices are on ask the DB how long they have been running (in hours:minutes)
 
 			$fanStatus  = ($stat->fstate == 1) ? 'on' : 'off';
-			// Not sure why, but this just is not working.  The t_heat and t_cool are coming back blank
 			$setPoint   = ' The target is ' . (string)(($stat->tstate == 1) ? $stat->t_heat : $stat->t_cool);
-			//$setPoint = 'Hello World';	// Why isn't this text showing up?????
 
-
-			/** Get environmental info
+			/** Get outside info
 				*
 				*/
 			try
@@ -90,7 +85,7 @@ try
 					$outsideData = $externalWeatherAPI->getOutdoorWeather( $ZIP );
 					$outdoorTemp = $outsideData['temp'];
 					$outdoorHumidity = $outsideData['humidity'];
-					logIt( "get_instant_status: Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
+					$log->logInfo( "get_instant_status: Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
 				}
 
 				//$returnString = $returnString . "<p>Right now at ".date('H:i', time())." the outside temperature for $thermostatRec[name] is $outdoorTemp &deg;$weatherConfig[units]</p>";
@@ -98,17 +93,13 @@ try
 				$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
 
 				$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='heater_$heatStatus' /> The heater is $heatStatus".(($heatStatus == 'on') ? "$setPoint" : '').'.</p>';
-				$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='compressor_$coolStatus' /> The compressor is $coolStatus.";
-				if( $coolStatus == 'on' )
-				{
-					$returnString = $returnString .  "  $setPoint";
-				}
+				$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='compressor_$coolStatus' /> The compressor is $coolStatus.".(($coolStatus == 'on') ? "$setPoint" : '').'.</p>';
 				$returnString = $returnString . '</p>';
 				$returnString = $returnString .  "<p><img src='images/img_trans.gif' width='1' height='1' class='fan_$fanStatus' /> The fan is $fanStatus</p>";
 			}
 			catch( Exception $e )
 			{
-				logIt( 'External weather failed: ' . $e->getMessage() );
+				$log->logError( 'External weather failed: ' . $e->getMessage() );
 				// Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
 				$returnString = $returnString . "<p><img src='images/Alert.png'/>Presently unable to read outside information.</p>";
 				$returnString = $returnString . "<p>$thermostatRec[name] says it is $stat->time</p>";
@@ -119,7 +110,7 @@ try
 }
 catch( Exception $e )
 {
-	logIt( 'Thermostat failed: ' . $e->getMessage() );
+	$log->logError( 'Thermostat failed: ' . $e->getMessage() );
 	// die();
 	$returnString = "<p>No response from unit, please check WiFi connection at unit location.";
 }
