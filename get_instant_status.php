@@ -94,7 +94,6 @@ try
 
 				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='heater_$heatStatus'     alt='heat' title='The heater is $heatStatus' /> The heater is $heatStatus.".(($heatStatus == 'on') ? "$setPoint" : '').'</p>';
 				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='compressor_$coolStatus' alt='cool' title='The compressor is $coolStatus' /> The compressor is $coolStatus.".(($coolStatus == 'on') ? "$setPoint" : '').'</p>';
-				$returnString = $returnString . '</p>';
 				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='fan_$fanStatus' alt='fan' title='The fan is $fanStatus'/> The fan is $fanStatus.</p>";
 			}
 			catch( Exception $e )
