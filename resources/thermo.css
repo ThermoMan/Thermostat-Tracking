@@ -36,7 +36,7 @@ div.status
 }
 div.status p
 {
-	padding: 5px;
+	padding: 0px;
 	top: -24px;
 	vertical-align: middle;
 }
@@ -70,31 +70,31 @@ div.status img
 	*/
 div.status img.fan_on
 {
-	background-position: 192px 0px;
+	background-position: 194px 0px;
 }
 div.status img.fan_off
 {
-	background-position: 192px -48px;
+	background-position: 194px -48px;
 }
 div.status img.compressor_on
 {
-	background-position: 144px 0px;
+	background-position: 146px 0px;
 }
 div.status img.compressor_off
 {
-	background-position: 144px -48px;
+	background-position: 146px -48px;
 }
 div.status img.heater_on
 {
-	background-position: 96px 0px;
+	background-position: 98px 0px;
 }
 div.status img.heater_off
 {
-	background-position: 96px -48px;
+	background-position: 98px -48px;
 }
 div.status img.wheels
 {
-	background-position: 336px 0px;
+	background-position: 338px 0px;
 }
 
 /** Charts and tables

@@ -25,7 +25,7 @@ function backupAllTables()
 {
 	global $dbConfig;
 
-	$tableList = array( 'hvac_cycles', 'hvac_status', 'run_times', 'temperatures', 'thermostats', 'time_index' );
+	$tableList = array( 'hvac_cycles', 'hvac_status', 'run_times', 'setpoints', 'temperatures', 'thermostats', 'time_index' );
 	foreach(  $tableList as $tableName )
 	{
 		backupOneTable(  $dbConfig['table_prefix'] . $tableName );
