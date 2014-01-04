@@ -44,6 +44,13 @@ try
 	$sql = "INSERT INTO {$dbConfig['table_prefix']}hvac_cycles( tstat_uuid, system, start_time, end_time ) VALUES( ?, ?, ?, ? )";
 	$cycleInsert = $pdo->prepare( $sql );
 
+	// Query to retrieve prior setpoint.  Might find nothing if this is the first time.
+	$sql = "SELECT set_point FROM {$dbConfig['table_prefix']}setpoints WHERE id=? ORDER BY switch_time DESC LIMIT 1";
+	$getPriorSetPoint = $pdo->prepare( $sql );
+
+	$sql = "INSERT INTO {$dbConfig['table_prefix']}setpoints( id, set_point, switch_time ) VALUES( ?, ?, ? )";
+	$insertSetPoint = $pdo->prepare( $sql );
+
 }
 catch( Exception $e )
 {
@@ -97,7 +104,7 @@ foreach( $thermostats as $thermostatRec )
 				*/
 			$stat->getSysName();
 
-logIt( "status: I am declining to update the thermostat info for now," );
+//logIt( "status: I am declining to update the thermostat info for now," );
 			//logIt( "status: Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->sysName MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
 			//Update thermostat info in DB
 			//$updateStatInfo->execute(array( $stat->uuid , $stat->sysName, $stat->model, $stat->fw_version, $stat->wlan_fw_version, $thermostatRec['id']));
@@ -110,6 +117,14 @@ logIt( "status: I am declining to update the thermostat info for now," );
 			logIt( 'status: Heat: ' . ($heatStatus ? 'ON' : 'OFF') );
 			logIt( 'status: Cool: ' . ($coolStatus ? 'ON' : 'OFF') );
 			logIt( 'status: Fan: ' . ($fanStatus ? 'ON' : 'OFF') );
+
+			// Get current setPoint from thermost
+			// t_heat or t_cool may not exist if thermostat is running in battery mode
+			$setPoint = ($stat->tmode == 1) ? $stat->t_heat : $stat->t_cool;
+			
+			// Get prior setPoint from database
+			$getPriorSetPoint->execute(array($thermostatRec['id']));
+			$priorSetPoint = $getPriorSetPoint->fetchColumn();
 
 			// Get prior state info from DB
 			$priorStartDateHeat = null;
@@ -129,6 +144,9 @@ logIt( 'status: Something broke and I think I have never seen this stat before.'
 				$startDateFan = ($fanStatus) ? $now : null;
 				logIt( "status: Inserting record for a brand new never before seen thermostat with time = ($now) H $heatStatus C $coolStatus F $fanStatus SDH $startDateHeat SDC $startDateCool SDF $startDateFan for UUID $stat->uuid" );
 				$insertStatInfo->execute( array( $stat->uuid, $now, $startDateHeat, $startDateCool, $startDateFan, $heatStatus, $coolStatus, $fanStatus ) );
+				
+				logIt( "setpoints: Inserting record for a brand new never before seen thermostat with setpoint=$setPoint, time=($now) " );
+				$insertSetPoint->execute( array( $thermostatRec['id'], $setPoint, $now ) );
 			}
 			else
 			{
@@ -171,6 +189,13 @@ logIt( 'status: Something broke and I think I have never seen this stat before.'
 				// update the status table
 				logIt( "status: Updating record with $now SDH $newStartDateHeat SDC $newStartDateCool SDF $newStartDateFan H $heatStatus C $coolStatus F $fanStatus for UUID $stat->uuid" );
 				$updateStatStatus->execute( array( $now, $newStartDateHeat, $newStartDateCool, $newStartDateFan, $heatStatus, $coolStatus, $fanStatus, $stat->uuid ) );
+			
+				//Update the setpoints table
+				if ( $setPoint != $priorSetPoint )
+				{
+					logIt( "setpoints: Inserting record SP=$setPoint, time=($now) " );
+					$insertSetPoint->execute( array( $thermostatRec['id'], $setPoint, $now ) );
+				}
 			}
 		}
 		catch( Exception $e )

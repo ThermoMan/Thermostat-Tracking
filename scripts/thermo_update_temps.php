@@ -11,7 +11,7 @@ $yesterday = date( 'Y-m-d', strtotime( 'yesterday' ));
 
 try
 {
-	$sql = "INSERT INTO {$dbConfig['table_prefix']}temperatures( tstat_uuid, date, indoor_temp, outdoor_temp, indoor_humidity, outdoor_humidity, set_point ) VALUES ( ?, CONCAT( SUBSTR( NOW() , 1, 15 ) , \"0:00\" ), ?, ?, ?, ?, ? )";
+	$sql = "INSERT INTO {$dbConfig['table_prefix']}temperatures( tstat_uuid, date, indoor_temp, outdoor_temp, indoor_humidity, outdoor_humidity ) VALUES ( ?, CONCAT( SUBSTR( NOW() , 1, 15 ) , \"0:00\" ), ?, ?, ?, ? )";
 	$queryTemp = $pdo->prepare($sql);
 
 	$sql = "DELETE FROM {$dbConfig['table_prefix']}run_times WHERE date = ? AND tstat_uuid = ?";
@@ -82,12 +82,9 @@ foreach( $thermostats as $thermostatRec )
 			}
 
 			// Log the indoor and outdoor temperatures for this half-hour increment
-// t_heat or t_cool may not exist if thermostat is running in battery mode
-			$target = ($stat->tmode == 1) ? $stat->t_heat : $stat->t_cool;
 
-			logIt( "temps: Target $target" );
-			logit( "temps: UUID $stat->uuid IT " . $stat->temp . " OT $outdoorTemp IH $stat->humidity OH $outdoorHumidity TARGT $target" );
-			$queryTemp->execute(array( $stat->uuid, $stat->temp, $outdoorTemp, $stat->humidity, $outdoorHumidity, $target ) );
+			logit( "temps: UUID $stat->uuid IT " . $stat->temp . " OT $outdoorTemp IH $stat->humidity OH $outdoorHumidity" );
+			$queryTemp->execute(array( $stat->uuid, $stat->temp, $outdoorTemp, $stat->humidity, $outdoorHumidity ) );
 
 			//$runTimeData = $stat->getDataLog();
 			$stat->getDataLog();

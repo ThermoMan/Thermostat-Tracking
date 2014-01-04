@@ -140,8 +140,7 @@ while( $check_date != $to_date )
 $sqlOne =
 "SELECT CONCAT( ?, ' ', b.time ) AS date,
 				IFNULL(a.indoor_temp, 'VOID') as indoor_temp,
-				IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp,
-				IFNULL(a.set_point, 'VOID') as set_point
+				IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp
  FROM {$dbConfig['table_prefix']}time_index b
  LEFT JOIN {$dbConfig['table_prefix']}temperatures a
  ON a.date = CONCAT( ?, ' ', b.time ) AND a.tstat_uuid = ? ";
@@ -178,10 +177,6 @@ else
 	if( $source == 0 || $source == 2 )
 	{	// Outdoor or both
 		echo '<th>Outdoor Temp</th>';
-	}
-	if( $show_setpoint == 1 )
-	{	// Set point temperature (regardless of heat or cool)
-		echo '<th>Setpoint Temp</th>';
 	}
 }
 
@@ -291,16 +286,8 @@ foreach( $days as $show_date )
 				$MyData->addPoints( ($row['outdoor_temp'] == 'VOID' ? VOID : $row['outdoor_temp']), 'Outdoor' );
 			}
 			if( $show_setpoint == 1 )
-			{
-				if( $row['set_point'] != 0 )
-				{
-					$MyData->addPoints( ($row['set_point'] == 'VOID' ? VOID : $row['set_point']), 'Setpoint' );
-				}
-				else
-				{	// If the set point isn't defined for this data point (for instance, the thermostat was off)
-					//  set it to VOID so we don't graph these points at all
-					$MyData->addPoints(VOID, 'Setpoint');
-				}
+			{	// Add a VOID point so we can get a legend for the Setpoint overlay
+				$MyData->addPoints( VOID, 'Setpoint');
 			}
 		}
 		else
@@ -314,10 +301,6 @@ foreach( $days as $show_date )
 			if( $source == 0 || $source == 2 )
 			{	// Outdoor or both
 				echo '<td>'.($row['outdoor_temp'] == 'VOID' ? '&nbsp;' : $row['outdoor_temp']).'</td>';
-			}
-			if( $show_setpoint == 1 )
-			{	// Show set point temp (regardless of heat or cool)
-				echo '<td>'.($row['set_point'] == 'VOID' ? '&nbsp;' : $row['set_point']).'</td>';
 			}
 			echo '</tr>';
 		}
@@ -338,19 +321,15 @@ foreach( $days as $show_date )
 			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) < $chart_y_min ) $chart_y_min -= 10;
 			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) > $chart_y_max ) $chart_y_max += 10;
 		}
-		if( $show_setpoint == 1 )
-		{	// Show set point temp (regardless of heat or cool)
-			while( ($row['set_point'] == 'VOID' ? 50 : $row['set_point']) < $chart_y_min ) $chart_y_min -= 10;
-			while( ($row['set_point'] == 'VOID' ? 50 : $row['set_point']) > $chart_y_max ) $chart_y_max += 10;
-		}
   }
 }
 
-if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
-{ // For a $show_date of '2012-07-10' get the start and end bounding datetimes
-  $start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));	// "2012-07-10 00:00:00";
-  $end_date = strftime( '%Y-%m-%d 23:59:59', strtotime($to_date));			// "2012-07-10 23:59:59";
+// For a $show_date of '2012-07-10' get the start and end bounding datetimes
+$start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));	// "2012-07-10 00:00:00";
+$end_date = strftime( '%Y-%m-%d 23:59:59', strtotime($to_date));			// "2012-07-10 23:59:59";
 
+if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
+{ 
   /**
 		* This SQL should include cycles that started on the previous night or ended on the
 		*  following morning for any given date.
@@ -402,8 +381,29 @@ echo "<br>uuid is $uuid";
 
   $queryThree = $pdo->prepare($sqlThree);
   $result = $queryThree->execute(array( $from_date, $from_date, $from_date, $from_date, $uuid ) );
+}
 
+if( $show_setpoint == 1 )
+{
+	$sqlFour =
+  "SELECT set_point, switch_time
+  FROM {$dbConfig['table_prefix']}setpoints
+  WHERE id = ? 
+  AND switch_time BETWEEN ? AND ?
+  UNION ALL
+  SELECT set_point, switch_time
+  FROM 
+  (
+  SELECT * 
+  FROM {$dbConfig['table_prefix']}setpoints 
+  WHERE switch_time < ?
+  ORDER BY switch_time DESC
+  LIMIT 1
+  ) AS one_before_start
+  ORDER BY switch_time ASC";
 
+  $queryFour = $pdo->prepare($sqlFour);
+  $result = $queryFour->execute(array( $id, $start_date, $end_date, $start_date ) );
 }
 
 
@@ -431,7 +431,7 @@ $serieSettings = array( 'R' => 150, 'G' => 50, 'B' => 80, 'Alpha' => 100 );
 $MyData->setPalette( 'Outdoor', $serieSettings );
 
 $MyData->setSerieTicks( 'Setpoint', 0 ); // n is length in pixels of dashes in line
-$serieSettings = array( 'R' => 0, 'G' => 0, 'B' => 0, 'Alpha' => 50 );
+$serieSettings = array( 'R' => 100, 'G' => 100, 'B' => 255, 'Alpha' => 60 );
 $MyData->setPalette( 'Setpoint', $serieSettings );
 
 // Set names for Y-axis labels
@@ -481,7 +481,12 @@ $myPicture->drawText( 60, 55, $chartTitle, array( 'FontSize' => 12, 'Align' => T
 // Write the picture timestamp
 $myPicture->drawText( 680, 14, 'Last update ' . date( 'Y-m-d H:i' ), array( 'R' => 255, 'G' => 255, 'B' => 255) );
 
-$myPicture->setGraphArea( 60, 60, 850, 390 );	 // Define the chart area
+// Define the chart area
+$graphAreaStartX = 60;
+$graphAreaEndX = 850;
+$graphAreaStartY = 60;
+$graphAreaEndY = 390;
+$myPicture->setGraphArea( $graphAreaStartX, $graphAreaStartY, $graphAreaEndX, $graphAreaEndY );	 
 
 // Draw the scale
 $myPicture->setFontProperties( array( 'FontName' => 'pf_arma_five.ttf', 'FontSize' => 6 ) );
@@ -502,21 +507,41 @@ $myPicture->drawLineChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DI
 
 
 /**
-	* After the chart is created, overlay the HVAC cycles.  I draw these manually because I can't
-	*  find a horizontal 'stacked' bar chart that allows missing pieces in it in pChart.
-	*
-	* To make the rendering portion faster it would be better to do the SQL operations before the initiation
-	*  of the charting and copy the data into an array to pass in to the drawing code.
-	*
-	* This representation of cycle runtimes has some serious omissions.
-	*
-	* Omission 1:
-	*  is that presently running cycles are not shown since the data is soruced from the completed cycle table.
-	*  to fix that a small query on the per minute table with a start time of the last stop from the first SQL
-	*  should be added.  The display should indicate this is open ended (lighter color perhaps or use static images?)
-	*
-	* Others were fixed....
-	*/
+* After the chart is created, prepare the overlays.  I draw these manually because I can't
+*  find a horizontal 'stacked' bar chart that allows missing pieces in it in pChart.
+*
+* To make the rendering portion faster it would be better to do the SQL operations before the initiation
+*  of the charting and copy the data into an array to pass in to the drawing code.
+*
+* This representation of cycle runtimes has some serious omissions.
+*
+* Omission 1:
+*  is that presently running cycles are not shown since the data is sourced from the completed cycle table.
+*  to fix that a small query on the per minute table with a start time of the last stop from the first SQL
+*  should be added.  The display should indicate this is open ended (lighter color perhaps or use static images?)
+*
+* Others were fixed....
+*/
+
+$PixelsPerMinute = (($graphAreaEndX - $graphAreaStartX) / 1440) / $dayCount;  // = 54861
+/*
+* Assumptions:
+*  1. The chart X-axis represents 24 hours
+*  2. The graph horizontal area (i.e. graph area) is 790 pixels wide (so each pixel represents 1.82 minutes)
+*
+* Why 0.54861?
+*
+* The chart area boundary is defined as 790px wide (850px - 60px start position).
+* 790px / 1440 pixels/day = .54861 pixels per minute
+*
+* The $dayCount factor was added to account for the number of days in the display.  Too many days and the dispaly will be really ugly
+*
+* Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
+*/
+
+// Positions are relative to the charting area rather than graphing area
+// Give 60px for the start of the graphing area and 8/daycount for the 00:00 starting px offset
+$LeftMargin = $graphAreaStartX + (8 / $dayCount);
 
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
 {	// The SQL has already been executed.  Now just draw it.
@@ -529,24 +554,6 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
   $HeatRectRow = 150;
   $CoolRectRow = 175;
   $FanRectRow = 200;
-  $LeftMargin = 69;
-  $PixelsPerMinute = 0.5354 / $dayCount;
-  /**
-		* Assumptions:
-		*  1. The chart X-axis represents 24 hours
-		*  2. The chart horizontal area is 782 pixels wide (so each pixel represents 1.84 minutes)
-		*
-		* Why 0.5354?
-		*
-		* The chart area boundary is defined as 900px wide.
-		* There are 70 pixels left of the 00:00.  There are 59 pixels to the right of 24:00
-		* There are 1440 minutes in a day
-		* (900 - (70 + 59)) / 1440 = .5354
-		*
-		* The $dayCount factor was added to account for the number of days in the display.  Too many days and the dispaly will be really ugly
-		*
-		* Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
-		*/
 
 //echo "<table border='1'>";
   while( $row = $queryTwo->fetch( PDO::FETCH_ASSOC ) )
@@ -601,6 +608,68 @@ echo '</tr>';
       $myPicture->drawGradientArea( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, DIRECTION_HORIZONTAL, $FanGradientSettings );
   	}
 	}
+}
+
+if( $show_setpoint == 1 )
+{
+	
+	// The graph area is 330 vertical pixels.  Set the y scale range against the graph area
+	$setpoint_scale = ($chart_y_max - $chart_y_min) / ($graphAreaEndY - $graphAreaStartY);
+	
+	$first_row = 1;
+	while( $row = $queryFour->fetch( PDO::FETCH_ASSOC ) )
+  {
+		/* The query returns one row prior to the current date range so that
+		 * we can determine the setpoint leading into the first drawn day
+		 *** This falls apart currently if there is not a setpoint for the prior day
+		 *** but there should always be one unless the database table is just starting
+		 *** to become populated with data.
+		 */
+		if ($first_row == 1)
+		{
+			$first_row = 0;
+			$prev_setpoint = $row['set_point'];
+			$prev_switch_time = date_create($from_date);
+			$start_px = $LeftMargin;
+			continue;
+		}
+		
+		// Compute the switch time delta
+		$setpoint = $row['set_point'];
+		$switch_time = date_create($row['switch_time']);
+		$interval = $prev_switch_time->diff($switch_time);
+
+		// Compute the next end pixel based on the switch time difference
+		$end_px = $start_px + ( $interval->format('%h') * 60 + $interval->format('%i') ) * $PixelsPerMinute;
+			
+    // Draw the horizontal setpoint line 
+    $myPicture->drawLine($start_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));
+		// Draw the vertical setpoint change line
+		$myPicture->drawLine($end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));
+		
+		// Reset parameters for next iteration
+		$prev_switch_time = $switch_time;
+		$prev_setpoint = $setpoint;
+		$start_px = $end_px;
+  }
+  
+  /* Draw the last setpoint horizontal line but first determine how far it needs to be drawn
+   * If the last switch_time and the current time are the same day then only draw up to the
+   * current time.  Otherwise, draw to the 23:59:59 marker.
+   */
+	$now = date_create();
+	$interval = $prev_switch_time->diff($now);
+	if ($prev_switch_time->format('Y-m-d') == $now->format('Y-m-d'))
+	{
+		$end_px = $start_px + ( $interval->format('%h') * 60 + $interval->format('%i') ) * $PixelsPerMinute;
+		$myPicture->drawLine($start_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));
+	}
+	else
+	{
+		$end_px = $graphAreaEndX;
+		$myPicture->drawLine($start_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));		
+	}
+
 }
 
 $myPicture->autoOutput( 'images/daily_chart.png' );

@@ -146,7 +146,7 @@ dump_table( 'time_index',   'ORDER BY time', $backup_date );
   */
 
 $sql = "CREATE TABLE IF NOT EXISTS thermostats (
-          id int(2) NOT NULL AUTO_INCREMENT,
+          id tinyint(2) unsigned NOT NULL AUTO_INCREMENT,
           tstat_uuid varchar(15) DEFAULT NULL,
           model varchar(10) DEFAULT NULL,
           fw_version varchar(10) DEFAULT NULL,
@@ -156,7 +156,8 @@ $sql = "CREATE TABLE IF NOT EXISTS thermostats (
           description varchar(254) DEFAULT NULL,
           PRIMARY KEY( id ),
           KEY name( name )
-        ) ENGINE = InnoDB  DEFAULT CHARSET = utf8 AUTO_INCREMENT = 3";
+        ) ENGINE = InnoDB  DEFAULT CHARSET = utf8 AUTO_INCREMENT = 2";
+        
 $query = $pdo->prepare($sql);
 $query->execute(array($id));
 
@@ -198,12 +199,39 @@ $query = $pdo->prepare($sql);
 $query->execute(array($id));
 
 
+$sql = "CREATE TABLE IF NOT EXISTS {$new_prefix}run_times (
+          tstat_uuid varchar(15) NOT NULL,
+          date date NOT NULL,
+          heat_runtime smallint(6) NOT NULL,
+          cool_runtime smallint(6) NOT NULL,
+          PRIMARY KEY( tstat_uuid, date )
+        ) ENGINE = InnoDB DEFAULT CHARSET = utf8";
+$query = $pdo->prepare($sql);
+$query->execute(array($id));
+
+
+$sql = "CREATE TABLE IF NOT EXISTS {$new_prefix}setpoints (
+  				id tinyint(3) unsigned NOT NULL,
+  				set_point decimal(5,2) DEFAULT NULL,
+  				switch_time datetime NOT NULL,
+  				KEY id (id)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+$query = $pdo->prepare($sql);
+$query->execute(array($id));
+
+$sql = "ALTER TABLE {$new_prefix}setpoints
+  				ADD CONSTRAINT {$new_prefix}setpoints_ibfk_1 
+  				FOREIGN KEY (id) 
+  				REFERENCES thermo2__thermostats (id)";
+$query = $pdo->prepare($sql);
+$query->execute(array($id));
+
+
 $sql = "CREATE TABLE IF NOT EXISTS {$new_prefix}temperatures (
           tstat_uuid varchar(15) NOT NULL,
           date datetime NOT NULL,
           indoor_temp decimal(5,2) NOT NULL,
           outdoor_temp decimal(5,2) DEFAULT NULL,
-          set_point decimal(5,2) DEFAULT NULL,
           indoor_humidity decimal(5,2) DEFAULT NULL,
           outdoor_humidity decimal(5,2) DEFAULT NULL,
           PRIMARY KEY( tstat_uuid, date )
@@ -220,7 +248,7 @@ $query->execute(array($id));
 
 
 /**
-  * There are 6 tables that need setup.
+  * There are 7 tables that need setup.
   *
   * Since there are no DB enforced primary/foreign key constraints the order of update is not important.
   *
@@ -256,8 +284,8 @@ $query = $pdo->prepare($sql);
 $query->execute(array($id));
 
 
-$sql = "INSERT INTO {$new_prefix}temperatures( tstat_uuid, date, indoor_temp, outdoor_temp, set_point, indoor_humidity, outdoor_humidity )
-        SELECT '{$tstat_uuid}', date, indoor_temp, outdoor_temp, IFNULL(set_point, 'VOID'), 'VOID', 'VOID'
+$sql = "INSERT INTO {$new_prefix}temperatures( tstat_uuid, date, indoor_temp, outdoor_temp, indoor_humidity, outdoor_humidity )
+        SELECT '{$tstat_uuid}', date, indoor_temp, outdoor_temp, 'VOID', 'VOID'
         FROM {$old_prefix}temperatures
         ORDER BY date";
 $query = $pdo->prepare($sql);
