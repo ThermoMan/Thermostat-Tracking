@@ -329,7 +329,7 @@ $start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));	// "2012-07
 $end_date = strftime( '%Y-%m-%d 23:59:59', strtotime($to_date));			// "2012-07-10 23:59:59";
 
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
-{ 
+{
   /**
 		* This SQL should include cycles that started on the previous night or ended on the
 		*  following morning for any given date.
@@ -388,14 +388,14 @@ if( $show_setpoint == 1 )
 	$sqlFour =
   "SELECT set_point, switch_time
   FROM {$dbConfig['table_prefix']}setpoints
-  WHERE id = ? 
+  WHERE id = ?
   AND switch_time BETWEEN ? AND ?
   UNION ALL
   SELECT set_point, switch_time
-  FROM 
+  FROM
   (
-  SELECT * 
-  FROM {$dbConfig['table_prefix']}setpoints 
+  SELECT *
+  FROM {$dbConfig['table_prefix']}setpoints
   WHERE switch_time < ?
   ORDER BY switch_time DESC
   LIMIT 1
@@ -486,7 +486,7 @@ $graphAreaStartX = 60;
 $graphAreaEndX = 850;
 $graphAreaStartY = 60;
 $graphAreaEndY = 390;
-$myPicture->setGraphArea( $graphAreaStartX, $graphAreaStartY, $graphAreaEndX, $graphAreaEndY );	 
+$myPicture->setGraphArea( $graphAreaStartX, $graphAreaStartY, $graphAreaEndX, $graphAreaEndY );
 
 // Draw the scale
 $myPicture->setFontProperties( array( 'FontName' => 'pf_arma_five.ttf', 'FontSize' => 6 ) );
@@ -547,9 +547,14 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
 {	// The SQL has already been executed.  Now just draw it.
 
   // The rounded corners look so much better, but the run times are so short that the rounds seldom appear.
-  $HeatGradientSettings = array( 'StartR' => 200, 'StartG' => 100, 'StartB' => 100, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
-  $CoolGradientSettings = array( 'StartR' =>  50, 'StartG' =>  50, 'StartB' => 200, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
-  $FanGradientSettings  = array( 'StartR' => 255, 'StartG' => 255, 'StartB' =>   0, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
+  // Old colors
+  //$HeatGradientSettings = array( 'StartR' => 200, 'StartG' => 100, 'StartB' => 100, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
+  //$CoolGradientSettings = array( 'StartR' =>  50, 'StartG' =>  50, 'StartB' => 200, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
+  //$FanGradientSettings  = array( 'StartR' => 255, 'StartG' => 255, 'StartB' =>   0, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
+  // New colors (trying to match the weekly chart color for HVAC run times)
+  $HeatGradientSettings = array( 'StartR' => 150, 'StartG' =>  50, 'StartB' =>  80, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  140, 'BorderG' =>  40, 'BorderB' =>  70 );
+  $CoolGradientSettings = array( 'StartR' =>  50, 'StartG' => 150, 'StartB' => 180, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>   40, 'BorderG' => 140, 'BorderB' => 170 );
+  $FanGradientSettings  = array( 'StartR' => 235, 'StartG' => 235, 'StartB' =>   0, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  255, 'BorderG' => 255, 'BorderB' =>   0 );
   $RectHeight = 20;
   $HeatRectRow = 150;
   $CoolRectRow = 175;
@@ -564,8 +569,8 @@ foreach($row as $cell)echo "<td>$cell</td>";
 echo '</tr>';
 */
     // 'YYYY-MM-DD HH:mm:00'  There are NO seconds in these data points.
-    $cycle_start = $LeftMargin + (($row['start_day'] * 1440) + ($row['start_hour'] * 60) + $row['start_minute'] ) * $PixelsPerMinute;
-    $cycle_end   = $LeftMargin + (($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute;
+    $cycle_start = $LeftMargin + ((($row['start_day'] * 1440) + ($row['start_hour'] * 60) + $row['start_minute'] ) * $PixelsPerMinute);
+    $cycle_end   = $LeftMargin + ((($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute);
 
     if( $row['system'] == 1 && $show_heat_cycles == 1 )
     { // Heat
@@ -612,10 +617,9 @@ echo '</tr>';
 
 if( $show_setpoint == 1 )
 {
-	
 	// The graph area is 330 vertical pixels.  Set the y scale range against the graph area
 	$setpoint_scale = ($chart_y_max - $chart_y_min) / ($graphAreaEndY - $graphAreaStartY);
-	
+
 	$first_row = 1;
 	while( $row = $queryFour->fetch( PDO::FETCH_ASSOC ) )
   {
@@ -633,7 +637,7 @@ if( $show_setpoint == 1 )
 			$start_px = $LeftMargin;
 			continue;
 		}
-		
+
 		// Compute the switch time delta
 		$setpoint = $row['set_point'];
 		$switch_time = date_create($row['switch_time']);
@@ -641,22 +645,22 @@ if( $show_setpoint == 1 )
 
 		// Compute the next end pixel based on the switch time difference
 		$end_px = $start_px + ( $interval->format('%h') * 60 + $interval->format('%i') ) * $PixelsPerMinute;
-			
-    // Draw the horizontal setpoint line 
+
+    // Draw the horizontal setpoint line
     $myPicture->drawLine($start_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));
 		// Draw the vertical setpoint change line
 		$myPicture->drawLine($end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));
-		
+
 		// Reset parameters for next iteration
 		$prev_switch_time = $switch_time;
 		$prev_setpoint = $setpoint;
 		$start_px = $end_px;
   }
-  
-  /* Draw the last setpoint horizontal line but first determine how far it needs to be drawn
-   * If the last switch_time and the current time are the same day then only draw up to the
-   * current time.  Otherwise, draw to the 23:59:59 marker.
-   */
+
+	/** Draw the last setpoint horizontal line but first determine how far it needs to be drawn
+		* If the last switch_time and the current time are the same day then only draw up to the
+		* current time.  Otherwise, draw to the 23:59:59 marker.
+		*/
 	$now = date_create();
 	$interval = $prev_switch_time->diff($now);
 	if ($prev_switch_time->format('Y-m-d') == $now->format('Y-m-d'))
@@ -667,9 +671,8 @@ if( $show_setpoint == 1 )
 	else
 	{
 		$end_px = $graphAreaEndX;
-		$myPicture->drawLine($start_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));		
+		$myPicture->drawLine($start_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));
 	}
-
 }
 
 $myPicture->autoOutput( 'images/daily_chart.png' );
