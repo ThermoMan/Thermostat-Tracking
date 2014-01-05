@@ -83,7 +83,7 @@ foreach( $thermostats as $thermostatRec )
 
 			// Log the indoor and outdoor temperatures for this half-hour increment
 
-			logit( "temps: UUID $stat->uuid IT " . $stat->temp . " OT $outdoorTemp IH $stat->humidity OH $outdoorHumidity" );
+			logIt( "temps: UUID $stat->uuid IT " . $stat->temp . " OT $outdoorTemp IH $stat->humidity OH $outdoorHumidity" );
 			$queryTemp->execute(array( $stat->uuid, $stat->temp, $outdoorTemp, $stat->humidity, $outdoorHumidity ) );
 
 			//$runTimeData = $stat->getDataLog();
