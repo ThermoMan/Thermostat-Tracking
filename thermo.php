@@ -88,11 +88,11 @@ if( $isLoggedIn )
 	</head>
 
 	<body>
-		<!-- Internal variable declarations START -->
-		<input type='hidden' name='id' value='<?php echo urlencode($id) ?>'>
+	<!-- Internal variable declarations START -->
+	<input type='hidden' name='id' value='<?php echo urlencode($id) ?>'>
 	<input type='hidden' name='useWeather' value=<?php echo $weatherConfig['useWeather']?'true':'false' ?>>
 	<input type='hidden' name='useForecast' value=<?php echo $weatherConfig['useForecast']?'true':'false' ?>>
-		<!-- Internal variable declarations END -->
+	<!-- Internal variable declarations END -->
 
 	<div class='header'><?php include( $rootDir . '/header.php' ); ?></div>
 	<br><br><br>
@@ -145,7 +145,7 @@ if( $isLoggedIn )
 						</select>
 						<!-- A checkbox to turn on/off the display of the set point temperature -->
 						<input type='checkbox' id='chart.daily.setpoint' name='chart.daily.setpoint' onChange='javascript: toggle_daily_flag( "chart.daily.setpoint" );'/> Set Point
-						&nbsp&nbsp&nbsp&nbsp&nbsp Timeframe <input type='text' id='chart.daily.interval.length' onChange='javascript: saveDateData("daily");' value='7' size='3'>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Timeframe <input type='text' id='chart.daily.interval.length' onChange='javascript: saveDateData("daily");' value='7' size='3'>
 						<select id='chart.daily.interval.group' onChange='javascript: saveDateData("daily");' style='width: 65px'>
 							<option value='0' selected>days</option>
 							<option value='1'>weeks</option>
@@ -208,7 +208,7 @@ if( $isLoggedIn )
 							{
 								document.getElementById('chart.daily.toDate').value = getCookie('chart.daily.toDate');
 								//document.getElementById('chart.daily.toDate').className = 'remembered_input';
-		}
+							}
 							*/
 							display_chart( 'daily', 'chart' ); // Draw the chart using the applied settings
 						</script>
