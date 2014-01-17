@@ -99,18 +99,6 @@ function save_settings()
 }
 */
 
-$log = KLogger::instance( $logDir );
-
-// Wrapper function so I can update the other procs later....
-function logIt( $msg )
-{
-	global $log;
-
-	$log->logInfo( 'WRAPPER: ' . $msg );
-}
-
-// Common code that should run for EVERY page follows here
-
 global $timezone;
 
 // Set timezone for all PHP functions
@@ -123,6 +111,20 @@ $pdo->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
 // Set timezone for all MySQL functions
 $pdo->exec( "SET time_zone = '$timezone'" );
+
+
+$log = KLogger::instance( $logDir );
+
+// Wrapper function so I can update the other procs later....
+function logIt( $msg )
+{
+	global $log;
+
+	$log->logInfo( 'WRAPPER: ' . $msg );
+}
+
+// Common code that should run for EVERY page follows here
+
 
 // Get list of thermostats
 // Move this to after user login in future and get only stats for the selected user

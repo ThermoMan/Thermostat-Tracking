@@ -12,6 +12,8 @@ class Thermostat_Exception extends Exception
 
 class Stat
 {
+	//global $log;	// Wow, putting this global brings teh entire system to a halt.  Do not like...
+
 	protected $ch,
 						$IP;	// Most likley an URL and port number rather than a strict set of TCP/IP octets.
 
@@ -117,13 +119,21 @@ class Stat
 
 	protected function getStatData( $cmd )
 	{
+		global $log;
 		$commandURL = 'http://' . $this->IP . $cmd;
 
+		// For reference http://www.php.net/curl_setopt
 		curl_setopt( $this->ch, CURLOPT_URL, $commandURL );
+		curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, 3000 );	// Wait up to three full seconds
 		$outputs = curl_exec( $this->ch );
 
+		if( curl_errno( $this->ch ) != 0 )
+		{	// Drat some problem.  Now what?
+			$log->logInfo( 'Error from thermostat curl_errno is (' . curl_errno( $this->ch ) . ') when performing command ' . $cmd );
+		}
+
 		if( $this->debug )
-		{
+		{	// Convert to use log?
 			echo '<br>commandURL: ' . $commandURL . '<br>';
 			echo '<br>Stat says:<br>';
 			echo var_dump( json_decode( $outputs ) );
@@ -319,11 +329,12 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
 
 	public function getStat()
 	{
-		/* Query thermostat for data and check the query for transients.
-			 If there are transients repeat query up to 5 times for collecting good data
-			 Continue when successful
+		/** Query thermostat for data and check the query for transients.
+			* If there are transients repeat query up to 5 times for collecting good data
+			* Continue when successful.
+			*
 		*/
-		for ($i=1; $i<=5; $i++)
+		for( $i = 1; $i <= 5; $i++ )
 		{
 		$outputs = $this->getStatData( '/tstat' );
 		// {"temp":80.50,"tmode":2,"fmode":0,"override":0,"hold":0,"t_cool":80.00,"tstate":2,"fstate":1,"time":{"day":2,"hour":18,"minute":36},"t_type_post":0}

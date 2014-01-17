@@ -143,3 +143,28 @@ body.account
 	margin: 10px;
 }
 
+/* User ID registration stuff that should not be part of a php .class file */
+fieldset.auto-width
+{
+	border: 1px solid #FF0000;
+	/* width: 40em; */
+	width: 75%;
+	display: inline-block;
+	padding: 10px;
+}
+fieldset.auto-width legend
+{
+	/* margin: 0 15px; */
+	padding:  0 10px;
+}
+table.form
+{
+}
+table.form td.label
+{
+	text-align: right;
+}
+table.form td.input, td.hint
+{
+	test-align: left;
+}

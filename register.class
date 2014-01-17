@@ -117,33 +117,6 @@ function validateBeforeSubmit()
 }
 </script>
 
-<style>
-fieldset.auto-width
-{
-	border: 1px solid #FF0000;
-	/* width: 40em; */
-	width: 75%;
-	display: inline-block;
-	padding: 10px;
-}
-fieldset.auto-width legend
-{
-	/* margin: 0 15px; */
-	padding:  0 10px;
-}
-table.form
-{
-}
-table.form td.label
-{
-	text-align: right;
-}
-table.form td.input, td.hint
-{
-	test-align: left;
-}
-</style>
-
 <?php
 /* The point of this is that the $secureConfig may be DIFFERENT than the thermostat DB info.
 require_once( dirname( __FILE__ ) . '/config.php' );
@@ -171,10 +144,10 @@ class register
 // But only if it is secure.  Really need https, otherwise all the security is just pretend.
 //
 
-		$htmlString .= "<form id='register' action='index.php' method='post' accept-charset='UTF-8'>";
+		$htmlString .= "<form id='registerB' action='index.php' method='post' accept-charset='UTF-8'>";
 		$htmlString .= "	<fieldset class='auto-width'>";
 		$htmlString .= "		<legend>Register</legend>";
-		$htmlString .= "		<input type='hidden' name='ac' value='registerB'>";
+		$htmlString .= "		<input type='hidden' name='ac' value='register'>";
 		$htmlString .= "		<table class='form'>";
 		$htmlString .= "		<tr><td class='label'><label for='username' >UserName* </label></td>        <td class='input'><input type='text'     name='username'  id='username'  maxLength='25' size='25' onBlur='javascript: checkAvailability();' /></td><td class='hint'><span id='name_avail'></span></td></tr>";
 		$htmlString .= "		<tr><td class='label'><label for='password' >Password* </label></td>        <td class='input'><input type='password' name='password'  id='password'  maxLength='25' size='25' onKeyUp='javascript: checkComplexity();' /></td><td class='hint'><span id='pass_complex'></span></td></tr>";

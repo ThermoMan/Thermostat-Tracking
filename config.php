@@ -40,6 +40,7 @@ $weatherConfig = array(
 	'type'    => 'weatherunderground',			// weatherunderground, noaa, weatherbug
 	'units'   => 'F',												// F, C
 	'api_key' => '0000000000000000',				// Registered API key
+	// api_loc needs work - it is relied upon by noaa code, but the others pretty much ignore it.
 	'api_loc' => NULL                   		// NULL (but NEVER blank ''), http://w1.weather.gov/xml/current_obs/KUZA.xml
 	// URL - User Specific
 	// See  http://www.wunderground.com/weather/api/d/docs
@@ -77,7 +78,9 @@ $password = 'admin';
 	*  + Store in the DB along with the locations.
 	*  + Keep track of F/C in the database and convert to preference when displaying
 	*  + Always store in degrees F and convert to degrees C for display since each degree F is a smaller
-	*     increment than each degree C
+	*     increment than each degree C.
+	*
+	*                  Jan Feb Mar Apr May  Jun  Jul  Aug Sep Oct Nov Dec
 	*/
 $normalHighs = array( 60, 70, 70, 80, 90, 100, 100, 100, 90, 80, 70, 60 );
 $normalLows  = array( 30, 40, 40, 50, 60,  70,  70,  70, 60, 50, 40, 30 );

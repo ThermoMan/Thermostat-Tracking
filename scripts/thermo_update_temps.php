@@ -1,7 +1,7 @@
 <?php
 require(dirname(__FILE__).'/../common.php');
 
-//touch( '/home/fratell1/freitag.theinscrutable.us/thermo2/scripts/thermo_update_temps.start' );
+//touch( '~/thermo2/scripts/thermo_update_temps.start' );
 $today = date( 'Y-m-d' );
 $yesterday = date( 'Y-m-d', strtotime( 'yesterday' ));
 
@@ -22,7 +22,7 @@ try
 }
 catch( Exception $e )
 {
-	logIt( 'temps: DB Exception while preparing SQL: ' . $e->getMessage() );
+	$log->logInfo( 'temps: DB Exception while preparing SQL: ' . $e->getMessage() );
 	die();
 }
 
@@ -34,11 +34,11 @@ try
 	$outsideData = $externalWeatherAPI->getOutdoorWeather( $ZIP );
 	$outdoorTemp = $outsideData['temp'];
 	$outdoorHumidity = $outsideData['humidity'];
-	logIt( "temps: Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
+	$log->logInfo( "temps: Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
 }
 catch( Exception $e )
 {
-	logIt( 'temps: External weather failed: ' . $e->getMessage() );
+	$log->logInfo( 'temps: External weather failed: ' . $e->getMessage() );
 }
 
 foreach( $thermostats as $thermostatRec )
@@ -47,7 +47,7 @@ foreach( $thermostats as $thermostatRec )
 	$lock = @fopen( $lockFileName, 'w' );
 	if( !$lock )
 	{
-		logIt( "temps: Could not write to lock file $lockFileName" );
+		$log->logInfo( "temps: Could not write to lock file $lockFileName" );
 		continue;
 	}
 
@@ -57,7 +57,7 @@ foreach( $thermostats as $thermostatRec )
 		{
 			// Query thermostat info
 			$indoorHumidity = null;
-			logIt( "temps: Connecting to {$thermostatRec['id']} {$thermostatRec['tstat_uuid']} {$thermostatRec['ip']} {$thermostatRec['name']}" );
+			$log->logInfo( "temps: Connecting to {$thermostatRec['id']} {$thermostatRec['tstat_uuid']} {$thermostatRec['ip']} {$thermostatRec['name']}" );
 			$stat = new Stat( $thermostatRec['ip'] );
 
 			//$sysInfo = $stat->getSysInfo();
@@ -83,7 +83,7 @@ foreach( $thermostats as $thermostatRec )
 
 			// Log the indoor and outdoor temperatures for this half-hour increment
 
-			logIt( "temps: UUID $stat->uuid IT " . $stat->temp . " OT $outdoorTemp IH $stat->humidity OH $outdoorHumidity" );
+			$log->logInfo( "temps: UUID $stat->uuid IT " . $stat->temp . " OT $outdoorTemp IH $stat->humidity OH $outdoorHumidity" );
 			$queryTemp->execute(array( $stat->uuid, $stat->temp, $outdoorTemp, $stat->humidity, $outdoorHumidity ) );
 
 			//$runTimeData = $stat->getDataLog();
@@ -94,27 +94,27 @@ foreach( $thermostats as $thermostatRec )
 
 			// Remove zero or one rows for today and then insert one row for today.
 			$queryRunDelete->execute( array($today, $stat->uuid) );
-			logIt( "temps: Run Time Today - Inserting RTH {$stat->runTimeHeat} RTC {$stat->runTimeCool} U $stat->uuid T $today" );
+			$log->logInfo( "temps: Run Time Today - Inserting RTH {$stat->runTimeHeat} RTC {$stat->runTimeCool} U $stat->uuid T $today" );
 			$queryRunInsert->execute( array($stat->uuid, $today, $stat->runTimeHeat, $stat->runTimeCool) );
 
 			// Remove zero or one rows for yesterday and then insert one row for yesterday.
 			$queryRunDelete->execute( array($yesterday, $stat->uuid) );
-			logIt( "temps: Run Time Yesterday - Inserting RTH {$stat->runTimeHeatYesterday} RTC {$stat->runTimeCoolYesterday} U $stat->uuid T $yesterday" );
+			$log->logInfo( "temps: Run Time Yesterday - Inserting RTH {$stat->runTimeHeatYesterday} RTC {$stat->runTimeCoolYesterday} U $stat->uuid T $yesterday" );
 			$queryRunInsert->execute( array($stat->uuid, $yesterday, $stat->runTimeHeatYesterday, $stat->runTimeCoolYesterday) );
 		}
 		catch( Exception $e )
 		{
-			logIt( 'temps: Thermostat Exception: ' . $e->getMessage() );
+			$log->logInfo( 'temps: Thermostat Exception: ' . $e->getMessage() );
 		}
 		flock( $lock, LOCK_UN );
 	}
 	else
 	{
-		logIt( "temps: Couldn't get file lock for thermostat {$thermostatRec['id']}" );
+		$log->logInfo( "temps: Couldn't get file lock for thermostat {$thermostatRec['id']}" );
 		die();
 	}
 	fclose($lock);
 }
 
-//touch( '/home/fratell1/freitag.theinscrutable.us/thermo2/scripts/thermo_update_temps.end' );
+//touch( '~/thermo2/scripts/thermo_update_temps.end' );
 ?>
