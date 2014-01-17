@@ -12,7 +12,7 @@ class Thermostat_Exception extends Exception
 
 class Stat
 {
-	//global $log;	// Wow, putting this global brings teh entire system to a halt.  Do not like...
+	//global $log;	// Wow, putting this global brings the entire system to a halt.  Do not like...
 
 	protected $ch,
 						$IP;	// Most likley an URL and port number rather than a strict set of TCP/IP octets.
@@ -39,6 +39,10 @@ class Stat
 				 $runTimeHeat = null,
 				 $runTimeCoolYesterday = null,
 				 $runTimeHeatYesterday = null;
+
+	// Set to -1 before each curl_exec call.  A value of 0 means it worked.  Otherwise it gets the last encoutnered curl error number
+	public $connectOK = null;
+
 	//
 	public $errStatus = null;
 	//
@@ -65,6 +69,7 @@ class Stat
 		$this->ch = curl_init();
 		curl_setopt( $this->ch, CURLOPT_USERAGENT, 'A' );
 		curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, 1 );
+		curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, 3000 );	// Wait up to three full seconds
 
 		$this->debug = 0;
 
@@ -121,16 +126,28 @@ class Stat
 	{
 		global $log;
 		$commandURL = 'http://' . $this->IP . $cmd;
+		$this->connectOK = -1;
 
 		// For reference http://www.php.net/curl_setopt
 		curl_setopt( $this->ch, CURLOPT_URL, $commandURL );
-		curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, 3000 );	// Wait up to three full seconds
-		$outputs = curl_exec( $this->ch );
 
+//$log->logInfo( 't_lib: getStatData trying...' );
+		$retry = 0;
+		do
+		{
+//$log->logInfo( 't_lib: getStatData doing...' );
+			$retry++;
+			$outputs = curl_exec( $this->ch );
 		if( curl_errno( $this->ch ) != 0 )
-		{	// Drat some problem.  Now what?
-			$log->logInfo( 'Error from thermostat curl_errno is (' . curl_errno( $this->ch ) . ') when performing command ' . $cmd );
+			{
+				$log->logInfo( 't_lib: getStatData Error from thermostat curl_errno is (' . curl_errno( $this->ch ) . ") when performing command ($cmd) on try #$retry" );
 		}
+		}
+		while( (curl_errno( $this->ch ) == 7) && ($retry < 2) );
+		// curl error #7 CURLE_COULDNT_CONNECT is usually resolved with a simple single retry.
+//$log->logInfo( 't_lib: getStatData completed...' );
+
+		$this->connectOK = curl_errno( $this->ch );
 
 		if( $this->debug )
 		{	// Convert to use log?
@@ -140,16 +157,23 @@ class Stat
 			echo '<br><br>';
 		}
 
-		/** Build in one second sleep after each command
+		if( curl_errno( $this->ch ) == 0 )
+		{	/** Build in one second sleep after each succesful command
 			* based on code from phareous - he had 2 second delay here and there
 			* The thermostat will stop responding for 20 to 30 minutes (until next WiFi reset) if you overload the connection.
 			*
 			* Previously I was not using a delay and had not problems.
 			*
-			* Later on in a many thermostat environment each stat will need to be queries in a thread so that the delays don't
-			*	stack up and slow it to a stop.
+				* Later on, in a many thermostat environment, each stat will need to be queried in a thread so that the delays don't
+				*	stack up and slow the oerall application to a crawl.
 			*/
+//$log->logInfo( 't_lib: getStatData sleeping...' );
 		sleep( 1 );
+		}
+		else
+		{	// Drat some problem.  Now what?
+			$log->logInfo( 't_lib: getStatData Error from thermostat curl_errno is (' . curl_errno( $this->ch ) . ") when performing command ($cmd)" );
+		}
 
 		return $outputs;
 	}
@@ -178,20 +202,25 @@ class Stat
 
 	protected function containsTransient( $obj )
 	{
+		global $log;
 		$retval = false;
 		// Aha!  This might be how to detect the missing connection?
-		// Warning: Invalid argument supplied for foreach() in /home/fratell1/freitag.theinscrutable.us/thermo2/lib/t_lib.php on line 171
+		// Warning: Invalid argument supplied for foreach() in ~/thermo2/lib/t_lib.php on line 171
 		// It was line 171 before I started adding comments!
+//$log->logInfo( 't_lib: containsTransient looking...' );
 		foreach( $obj as $key => &$value )
 		{
+//$log->logInfo( 't_lib: containsTransient key...' );
 			if( is_object($value) )
 			{
 				foreach( $value as $key2 => &$value2 )
 				{
+//$log->logInfo( 't_lib: containsTransient nested key...' );
 					if( $value2 == -1 )
 					{
 						//if( $this->debug )
-						echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n";
+						//echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n";
+						$log->logWarn( 't_lib: WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n" );
 						// NULL the -1 transient
 						//$value2 = NULL;
 						$retval = true;
@@ -201,12 +230,14 @@ class Stat
 			if( $value == -1 )
 			{
 				//:if( $this->debug )
-				echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n";
+				//echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n";
+				$log->logWarn( 't_lib: WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n" );
 				// NULL the -1 transient
 				//$value = NULL;
 				$retval = true;
 			}
 		}
+//$log->logInfo( 't_lib: containsTransient ending...' );
 		return $retval;
 	}
 
@@ -329,6 +360,7 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
 
 	public function getStat()
 	{
+		global $log;
 		/** Query thermostat for data and check the query for transients.
 			* If there are transients repeat query up to 5 times for collecting good data
 			* Continue when successful.
@@ -341,23 +373,26 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
 		$obj = json_decode( $outputs );
 
 			if( !$this->containsTransient( $obj ) )
-			{
+			{	// It worked?  Get out ouf the retry loop.
 				break;
 			}
 			else
 			{
 				if( $i == 5 )
 				{
+					$log->logError( 't_lib: Too many thermostat transient communication failuress.' );
 					throw new Thermostat_Exception( 'Too many thermostat transient failures' );
 				}
 				else
 				{
-					echo "Transient (" . date(DATE_RFC822) . ") failure " . $i . " retrying...\n";
+					//echo "Transient (" . date(DATE_RFC822) . ") failure " . $i . " retrying...\n";
+					$log->logInfo( "t_lib: Transient (" . date(DATE_RFC822) . ") failure " . $i . " retrying...\n" );
 				}
 			}
 
 		if( empty( $obj ) )
 		{
+				$log->logError( 't_lib: No output from thermostat.' );
 			throw new Thermostat_Exception( 'No output from thermostat' );
 		}
 		}

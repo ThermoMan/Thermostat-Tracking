@@ -125,7 +125,6 @@ function logIt( $msg )
 
 // Common code that should run for EVERY page follows here
 
-
 // Get list of thermostats
 // Move this to after user login in future and get only stats for the selected user
 try

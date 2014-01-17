@@ -62,6 +62,7 @@ foreach( $thermostats as $thermostatRec )
 
 			//$sysInfo = $stat->getSysInfo();
 			$stat->getSysInfo();
+$log->logInfo( "Back from low level communication I have the error code as ($stat->connectOK)" );
 			//$uuid = $sysInfo['uuid'];
 			//sleep(2); // allow thermostat to catch up
 			//$model = $stat->getModel();

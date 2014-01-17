@@ -75,7 +75,7 @@ foreach( $thermostats as $thermostatRec )
 		try
 		{
 			// Query thermostat info
-			$log->logInfo( "status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
+			//$log->logInfo( "status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
 			$stat = new Stat( $thermostatRec['ip'] );
 
 			//$uuid = $stat->getUUid(); // This data is gathered by the getSysInfo() function
@@ -113,9 +113,9 @@ foreach( $thermostats as $thermostatRec )
 			$heatStatus = ($stat->tstate == 1) ? true : false;
 			$coolStatus = ($stat->tstate == 2) ? true : false;
 			$fanStatus  = ($stat->fstate == 1) ? true : false;
-			$log->logInfo( 'status: Heat: ' . ($heatStatus ? 'ON' : 'OFF') );
-			$log->logInfo( 'status: Cool: ' . ($coolStatus ? 'ON' : 'OFF') );
-			$log->logInfo( 'status: Fan: ' . ($fanStatus ? 'ON' : 'OFF') );
+			//$log->logInfo( 'status: Heat: ' . ($heatStatus ? 'ON' : 'OFF') );
+			//$log->logInfo( 'status: Cool: ' . ($coolStatus ? 'ON' : 'OFF') );
+			//$log->logInfo( 'status: Fan: ' . ($fanStatus ? 'ON' : 'OFF') );
 
 			// Get current setPoint from thermost
 			// t_heat or t_cool may not exist if thermostat is running in battery mode
@@ -135,7 +135,7 @@ foreach( $thermostats as $thermostatRec )
 
 			$getStatInfo->execute( array( $stat->uuid ) );
 			if( $getStatInfo->rowCount() < 1 )
-			{ // not found - this is the first time conneciton for this thermostat
+			{ // not found - this is the first time connection for this thermostat
 				$log->logInfo( 'status: New thermostat (or communication error with existing)' );
 // Perhaps key in on this logic to drive the deep query for the stat??
 				$startDateHeat = ($heatStatus) ? $now : null;
@@ -205,8 +205,8 @@ foreach( $thermostats as $thermostatRec )
 		catch( Exception $e )
 		{
 			$log->logInfo( 'status: Thermostat Exception ' . $e->getMessage() );
-			flock( $lock, LOCK_UN );	// Should be in a finally block?
-			die();										// Does die() prevent finally?
+			//flock( $lock, LOCK_UN );	// Should be in a finally block?
+			//die();										// Does die() prevent finally?
 		}
 		flock( $lock, LOCK_UN );
 	}
