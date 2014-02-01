@@ -143,7 +143,7 @@ body.account
 	margin: 10px;
 }
 
-/* User ID registration stuff that should not be part of a php .class file */
+/* User ID registration stuff that ?cannot? be part of a php .class file */
 fieldset.auto-width
 {
 	border: 1px solid #FF0000;

@@ -1,7 +1,7 @@
 <?php
 require(dirname(__FILE__).'/../common.php');
 
-//touch( '~/thermo2/scripts/thermo_update_status.start' );
+$log->logInfo( 'status: start' );
 
 /**
 	* (this note may be obsolete)
@@ -56,7 +56,6 @@ catch( Exception $e )
 	$log->logInfo( 'status: DB Exception while preparing SQL: ' . $e->getMessage() );
 	die();
 }
-
 global $lockFile;
 
 $now = date( 'Y-m-d H:i:00' );
@@ -66,7 +65,7 @@ foreach( $thermostats as $thermostatRec )
 	$lock = @fopen( $lockFileName, 'w' );
 	if( !$lock )
 	{
-		error( "status: Could not write to lock file $lockFileName" );
+		$log->logError( "status: Could not write to lock file $lockFileName" );
 		continue;
 	}
 
@@ -134,9 +133,12 @@ foreach( $thermostats as $thermostatRec )
 			$priorFanStatus = false;
 
 			$getStatInfo->execute( array( $stat->uuid ) );
+$log->logInfo( "status: Communication status is ($stat->connectOK)" );
+
 			if( $getStatInfo->rowCount() < 1 )
 			{ // not found - this is the first time connection for this thermostat
-				$log->logInfo( 'status: New thermostat (or communication error with existing)' );
+$log->logWarn( "status: If this number is not zero than I should not be doing this code! ($stat->connectOK)" );
+				$log->logInfo( 'status: I think I found a new/different thermostat at the specified URL' );
 // Perhaps key in on this logic to drive the deep query for the stat??
 				$startDateHeat = ($heatStatus) ? $now : null;
 				$startDateCool = ($coolStatus) ? $now : null;
@@ -155,7 +157,7 @@ foreach( $thermostats as $thermostatRec )
 			else
 			{
 				while( $row = $getStatInfo->fetch( PDO::FETCH_ASSOC ) )
-				{ // This SQL had better pull only one row or else there is a data integrity problem!
+				{ // This SQL had _BETTER_ pull only one row or else there is a data integrity problem!
 					// and without an ORDER BY on the SELECT there is no way to know you're geting the same row from this each time
 					$priorStartDateHeat = $row['start_date_heat'];
 					$priorStartDateCool = $row['start_date_cool'];
@@ -204,7 +206,7 @@ foreach( $thermostats as $thermostatRec )
 		}
 		catch( Exception $e )
 		{
-			$log->logInfo( 'status: Thermostat Exception ' . $e->getMessage() );
+			$log->logError( 'status: Thermostat Exception ' . $e->getMessage() );
 			//flock( $lock, LOCK_UN );	// Should be in a finally block?
 			//die();										// Does die() prevent finally?
 		}
@@ -212,10 +214,11 @@ foreach( $thermostats as $thermostatRec )
 	}
 	else
 	{
-		$log->logInfo( "status: Couldn't get file lock for thermostat {$thermostatRec['id']}" );
+		$log->logError( "status: Couldn't get file lock for thermostat {$thermostatRec['id']}" );
 		die();
 	}
 	fclose( $lock );
 }
-//touch( '~/thermo2/scripts/thermo_update_status.end' );
+$log->logInfo( 'status: end' );
+
 ?>

@@ -150,8 +150,8 @@ class register
 		$htmlString .= "		<input type='hidden' name='ac' value='register'>";
 		$htmlString .= "		<table class='form'>";
 		$htmlString .= "		<tr><td class='label'><label for='username' >UserName* </label></td>        <td class='input'><input type='text'     name='username'  id='username'  maxLength='25' size='25' onBlur='javascript: checkAvailability();' /></td><td class='hint'><span id='name_avail'></span></td></tr>";
-		$htmlString .= "		<tr><td class='label'><label for='password' >Password* </label></td>        <td class='input'><input type='password' name='password'  id='password'  maxLength='25' size='25' onKeyUp='javascript: checkComplexity();' /></td><td class='hint'><span id='pass_complex'></span></td></tr>";
-		$htmlString .= "		<tr><td class='label'><label for='password2' >Re-enter password </label></td><td class='input'><input type='password' name='password2' id='password2' maxLength='25' size='25' onKeyUp='javascript: checkDuplicate();'></td><td class='hint'><span id='pass_duplicate'></span></td></tr>";
+		$htmlString .= "		<tr><td class='label'><label for='password' >Password* </label></td>         <td class='input'><input type='password' name='password'  id='password'  maxLength='25' size='25' onKeyUp='javascript: checkComplexity();' /></td> <td class='hint'><span id='pass_complex'></span></td></tr>";
+		$htmlString .= "		<tr><td class='label'><label for='password2' >Re-enter password </label></td><td class='input'><input type='password' name='password2' id='password2' maxLength='25' size='25' onKeyUp='javascript: checkDuplicate();'></td>    <td class='hint'><span id='pass_duplicate'></span></td></tr>";
 		$htmlString .= "		<tr><td class='label'><label for='email' >Email address* </label></td>      <td class='input'><input type='text'     name='email'     id='email'     maxLength='75' size='25' /></td><td class='hint'></td></tr>";
 		$htmlString .= "		</table>";
 		$htmlString .= "		<span style='float: right;'><input type='submit' value='Submit' />";

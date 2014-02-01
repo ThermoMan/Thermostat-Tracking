@@ -65,6 +65,11 @@ try
 			$stat = new Stat( $thermostatRec['ip'] );
 
 			$statData = $stat->getStat();
+			}
+			catch( Exception $e )
+			{
+				$log->logInfo( 'get_instant_status: $stat->getStat() threw an unpleasant error and could not talk to the stat' );
+			}
 			$heatStatus = ($stat->tstate == 1) ? 'on' : 'off';
 			$coolStatus = ($stat->tstate == 2) ? 'on' : 'off';
 			// (later?) If any of the the devices are on ask the DB how long they have been running (in hours:minutes)

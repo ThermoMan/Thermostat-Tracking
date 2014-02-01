@@ -1,7 +1,7 @@
 <?php
 require(dirname(__FILE__).'/../common.php');
 
-//touch( '~/thermo2/scripts/thermo_update_temps.start' );
+$log->logInfo( 'temps: start' );
 $today = date( 'Y-m-d' );
 $yesterday = date( 'Y-m-d', strtotime( 'yesterday' ));
 
@@ -62,15 +62,12 @@ foreach( $thermostats as $thermostatRec )
 
 			//$sysInfo = $stat->getSysInfo();
 			$stat->getSysInfo();
-$log->logInfo( "Back from low level communication I have the error code as ($stat->connectOK)" );
+$log->logInfo( "temps: Back from low level communication I have the error code as ($stat->connectOK)" );
 			//$uuid = $sysInfo['uuid'];
-			//sleep(2); // allow thermostat to catch up
 			//$model = $stat->getModel();
 			$stat->getModel();
-			//sleep(2); // allow thermostat to catch up
 			//$statData = $stat->getStat();
 			$stat->getStat();
-			//sleep(2); // allow thermostat to catch up
 
 
 // Instead of asking the thermostat what his model is, rely upon the entry in the thermostat table
@@ -84,7 +81,7 @@ $log->logInfo( "Back from low level communication I have the error code as ($sta
 
 			// Log the indoor and outdoor temperatures for this half-hour increment
 
-			$log->logInfo( "temps: UUID $stat->uuid IT " . $stat->temp . " OT $outdoorTemp IH $stat->humidity OH $outdoorHumidity" );
+//			$log->logInfo( "temps: UUID $stat->uuid IT " . $stat->temp . " OT $outdoorTemp IH $stat->humidity OH $outdoorHumidity" );
 			$queryTemp->execute(array( $stat->uuid, $stat->temp, $outdoorTemp, $stat->humidity, $outdoorHumidity ) );
 
 			//$runTimeData = $stat->getDataLog();
@@ -95,12 +92,13 @@ $log->logInfo( "Back from low level communication I have the error code as ($sta
 
 			// Remove zero or one rows for today and then insert one row for today.
 			$queryRunDelete->execute( array($today, $stat->uuid) );
-			$log->logInfo( "temps: Run Time Today - Inserting RTH {$stat->runTimeHeat} RTC {$stat->runTimeCool} U $stat->uuid T $today" );
+//			$log->logInfo( "temps: Run Time Today - Inserting RTH {$stat->runTimeHeat} RTC {$stat->runTimeCool} U $stat->uuid T $today" );
 			$queryRunInsert->execute( array($stat->uuid, $today, $stat->runTimeHeat, $stat->runTimeCool) );
 
 			// Remove zero or one rows for yesterday and then insert one row for yesterday.
+// Ought to keep track of when "yesterday" was last updated and if it was any time "today" then skip this!
 			$queryRunDelete->execute( array($yesterday, $stat->uuid) );
-			$log->logInfo( "temps: Run Time Yesterday - Inserting RTH {$stat->runTimeHeatYesterday} RTC {$stat->runTimeCoolYesterday} U $stat->uuid T $yesterday" );
+//			$log->logInfo( "temps: Run Time Yesterday - Inserting RTH {$stat->runTimeHeatYesterday} RTC {$stat->runTimeCoolYesterday} U $stat->uuid T $yesterday" );
 			$queryRunInsert->execute( array($stat->uuid, $yesterday, $stat->runTimeHeatYesterday, $stat->runTimeCoolYesterday) );
 		}
 		catch( Exception $e )
@@ -116,6 +114,6 @@ $log->logInfo( "Back from low level communication I have the error code as ($sta
 	}
 	fclose($lock);
 }
-
-//touch( '~/thermo2/scripts/thermo_update_temps.end' );
+$log->logInfo( 'temps: end' );
+thermo_update_temps.end' );
 ?>

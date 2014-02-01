@@ -261,6 +261,163 @@ if( $isLoggedIn )
 
 
 
+<style>
+/* This set of styles works in Firefox, but NOT in Chrome
+div.schedule
+{
+	position: relative;
+	width: 600px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+fieldset.schedule
+{
+	border: 1px solid #0000FF;
+	width: 75%;
+	display: inline-block;
+	padding: 10px;
+}
+fieldset.schedule legend
+{
+	padding:  0 10px;
+}
+
+
+div.schedule form table.schedule
+{
+	width: 490px;
+	border: 1px solid black;
+	table-layout: fixed;
+}
+tr.day>td
+{
+	width: 140px;
+	text-align: center;
+}
+div.schedule form table.schedule td.time>input, div.schedule form table.schedule td.temp>input
+{
+	border: 1px solid black;
+	width: 70px;
+	text-align: center;
+}
+div.schedule form table.schedule input[type=number]
+{
+	width: 70px;
+}
+*/
+div.schedule
+{
+	position: relative;
+	width: 770px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+fieldset.schedule
+{
+	border: 1px solid #0000FF;
+	width: 75%;
+	display: inline-block;
+	padding: 10px;	/* This is the spacing around the name of the block */
+}
+
+fieldset.schedule legend
+{
+	padding:  0 10px;
+}
+
+
+/*div.schedule form table.schedule*/
+table.schedule
+{
+	width: 770px;
+	border: 1px solid black;
+	table-layout: fixed;
+}
+
+col.time
+{
+	width: 65px;
+}
+col.temp
+{
+	width: 45px;
+}
+
+table.schedule td
+{
+	font-weight: bold;
+	border: 1px solid #999999;
+	padding: 5px;
+}
+col.even
+{
+	background-color: #888888;
+}
+col.odd
+{
+	background-color: #BBBBBB;
+}
+tr.day>td
+{
+	width: 80px;
+	text-align: center;
+}
+td.time>input
+{
+	/* border: 1px solid green; */
+	border: 1px solid #777777;
+	background-color: #BBBBBB;
+	/*color: green;*/	/* The semi-retarded color scheme is so I can verify that this CSS is being applied */
+	width: 50px;	/* Chrome uses ~25 pixels on the right of a time input field for the magic input controller (so need additional 25px left padding to truly center it!) */
+	text-align: center;
+}
+td.temp>input
+{
+	/* border: 1px solid red; */
+	border: 1px solid #777777;
+	background-color: #BBBBBB;
+	/*color: red;*/
+	width: 30px;	/* Chrome uses ~12 pixels on the right of a number input field for the magic input controller (so need additional 12px left padding to truly center it!) */
+	text-align: center;
+}
+/*
+div.schedule form table.schedule input[type=number]
+{
+	width: 70px;
+}
+*/
+</style>
+
+			<div class='tab' id='schedule'> <a href='#schedule'> Schedule </a>
+				<div class='container'>
+					<div class='tab-toolbar'>
+						<select id='chart.history.thermostat'>
+							<?php foreach( $thermostats as $thermostatRec ): ?>
+								<option <?php if( $id == $thermostatRec['id'] ): echo 'selected '; endif; ?>value='<?php echo $thermostatRec['id'] ?>'><?php echo $thermostatRec['name'] ?></option>
+							<?php endforeach; ?>
+						</select>
+						This is a non-functional alpha level set of code.
+					</div>
+					<div class='content' >
+						<div class='schedule'>
+<?php
+							// This file was getting too large so I'm looking for other ways to make things go
+							require_once( 'schedule_tab.class' );
+							$form = new schedule();
+							$form->displayForm();
+?>
+
+
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class='tab_gap'></div>
+
+
+
 
 <?php
 		// Only show the account administration tab is the user is logged in.  Don't even hint that this tab exists unless they are logged in.

@@ -40,7 +40,7 @@ class Stat
 				 $runTimeCoolYesterday = null,
 				 $runTimeHeatYesterday = null;
 
-	// Set to -1 before each curl_exec call.  A value of 0 means it worked.  Otherwise it gets the last encoutnered curl error number
+	// Set to -1 before each curl_exec call.  A value of 0 means it worked.  Otherwise it gets the last encountered curl error number
 	public $connectOK = null;
 
 	//
@@ -69,7 +69,7 @@ class Stat
 		$this->ch = curl_init();
 		curl_setopt( $this->ch, CURLOPT_USERAGENT, 'A' );
 		curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, 1 );
-		curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, 3000 );	// Wait up to three full seconds
+		curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, 10000 );
 
 		$this->debug = 0;
 
@@ -124,6 +124,7 @@ class Stat
 
 	protected function getStatData( $cmd )
 	{
+		$maxRetries = 3;
 		global $log;
 		$commandURL = 'http://' . $this->IP . $cmd;
 		$this->connectOK = -1;
@@ -140,12 +141,17 @@ class Stat
 			$outputs = curl_exec( $this->ch );
 		if( curl_errno( $this->ch ) != 0 )
 			{
-				$log->logInfo( 't_lib: getStatData Error from thermostat curl_errno is (' . curl_errno( $this->ch ) . ") when performing command ($cmd) on try #$retry" );
+				$log->logInfo( 't_lib: getStatData Error from thermostat curl_errno is (' .  curl_error( $this->ch ) .' -> '. curl_errno( $this->ch ) . ") when performing command ($cmd) on try number $retry" );
 		}
 		}
-		while( (curl_errno( $this->ch ) == 7) && ($retry < 2) );
+		while( ( curl_errno( $this->ch ) != 0 ) && ($retry < $maxRetries) );
+		//while( (curl_errno( $this->ch ) == 7) && ($retry < $maxRetries) );
 		// curl error #7 CURLE_COULDNT_CONNECT is usually resolved with a simple single retry.
 //$log->logInfo( 't_lib: getStatData completed...' );
+	if( $retry > 1 )
+	{
+		$log->logInfo( "t_lib: Made $retry attempts and last curl status was " . curl_errno( $this->ch ) );
+	}
 
 		$this->connectOK = curl_errno( $this->ch );
 
@@ -180,6 +186,8 @@ class Stat
 
 	protected function setStatData( $command, $value )
 	{
+		$this->connectOK = -1;
+
 		$commandURL = 'http://' . $this->IP . $command;
 
 		curl_setopt( $this->ch, CURLOPT_URL, $commandURL );
@@ -195,6 +203,7 @@ class Stat
 		{
 			throw new Thermostat_Exception( 'setStatData: ' . curl_error($this->ch) );
 		}
+		$this->connectOK = curl_errno( $this->ch );
 
 		// Need to wait for a response...	object(stdClass)#4 (1) { ['success']=> int(0) }
 		return;
