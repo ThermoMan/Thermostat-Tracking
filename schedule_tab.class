@@ -89,24 +89,25 @@ class schedule
 		$htmlString .= "	<option value='1' default>Auto</option> <!-- Set default value from DB -->";
 		$htmlString .= '</select>';
 
-		$htmlString .= '</br>';
-		$htmlString .= "<input type='button' title='Fetch latest schedule from thermostat (may be same as already shown)' value='Rescan'>";
+//		$htmlString .= '</br>';
+		$htmlString .= "&nbsp;&nbsp;<input type='button' title='Fetch latest schedule from thermostat (may be same as already shown)' value='Rescan'>";
 		$htmlString .= "<form id='coolSched' action='index.php' method='post' accept-charset='UTF-8'>";
 		$htmlString .= "<fieldset class='schedule'>";
 		$htmlString .= '<legend>Cooling</legend>';
 		$htmlString .= "<input type='hidden' name='ac' value='coolSched'>";
-		// Where on Earth are those //// coming from????  They are NOT in my code!  But then neither is the <tbody> tag
 		$htmlString .= "<table class='schedule'>";
 
-		$htmlString .= '<colgroup>';
-		$htmlString .= "<col class='odd time' /><col class='odd temp' />";
-		$htmlString .= "<col class='even time' /><col class='even temp' />";
-		$htmlString .= "<col class='odd time' /><col class='odd temp' />";
-		$htmlString .= "<col class='even time' /><col class='even temp' />";
-		$htmlString .= "<col class='odd time' /><col class='odd temp' />";
-		$htmlString .= "<col class='even time' /><col class='even temp' />";
-		$htmlString .= "<col class='odd time' /><col class='odd temp' />";
-		$htmlString .= '</colgroup>';
+		$str = '';
+		$str .= '<colgroup>';
+		foreach( array( 'odd', 'even', 'odd', 'even', 'odd', 'even', 'odd' ) as $parity )
+		{
+			foreach( array( 'time', 'temp' ) as $column )
+			{
+				$str .= "<col class='$parity $column' />";
+			}
+		}
+		$str .= '</colgroup>';
+		$htmlString .= $str;
 
 		$htmlString .= "<tr class='day'>";
 		$htmlString .= "<td colspan='2'>Sunday</td><td colspan='2'>Monday</td><td colspan='2'>Tuesday</td><td colspan='2'>Wednesday</td><td colspan='2'>Thursday</td><td colspan='2'>Friday</td><td colspan='2'>Saturday</td>";
@@ -121,7 +122,7 @@ class schedule
 			* Drat, it does seem to be global per web page - manually tabbing from one tab to the next disappears
 			*  into that tabs inputs WITHOUT making that tab visible/uppermost.
 			*
-			* Need also to determine in what place in the order the Copy buttons appear.
+			* Need also to determine what place in the tab key ordering the Copy buttons appear.
 			*/
 		$str = '';
 		$timeTabIndex = 1;
@@ -131,22 +132,32 @@ class schedule
 			$str .= '<tr>';
 			for( $day = 0; $day < 7; $day++ )
 			{
+				// I need some way to validate the string as a time 00:00 through 23:59
 				$str .= "<td class='time'><input type='time' tabindex='{$timeTabIndex}' id='d{$day}p{$period}time0' size='5' maxlength='5'></td>";
-				$str .= "<td class='temp'><input type='number' tabindex='{$tempTabIndex}' id='d{$day}p{$period}temp0' size='2' maxlength='2'></td>";
+
+				// I need some way to validate the string as a temperature within limits of say 50 through 90
+				// OK, the HTML type=number supports limits, but also the server MUST NOT TRUST the data and validate range limits.
+				$str .= "<td class='temp'><input type='number' tabindex='{$tempTabIndex}' id='d{$day}p{$period}temp0' size='2' maxlength='2' min='50' max='90'></td>";
 				$timeTabIndex += 8;
 				$tempTabIndex += 8;
 			}
 			$timeTabIndex -= 55;
 			$tempTabIndex -= 55;
-			$str .= '/<tr>';
+			$str .= '</tr>';
 		}
-		$str .= "<tr class='day'><td colspan='2'>&nbsp;</td><td colspan='2'><input type='button' title='Copy previous day schedule to today' value='Copy' onClick='javascript: copy(0,1);'></td><td colspan='2'><input type='button' title='Copy previous day schedule to today' value='Copy' onClick='javascript: copy(0,2);'></td><td colspan='2'><input type='button' title='Copy previous day schedule to today' value='Copy' onClick='javascript: copy(0,3);'></td><td colspan='2'><input type='button' title='Copy previous day schedule to today' value='Copy' onClick='javascript: copy(0,4);'></td><td colspan='2'><input type='button' title='Copy previous day schedule to today' value='Copy' onClick='javascript: copy(0,5);'></td><td colspan='2'><input type='button' title='Copy previous day schedule to today' value='Copy' onClick='javascript: copy(0,6);'></td></tr>";
+		$str .= "<tr class='day'><td colspan='2'>&nbsp;</td>";
+		for( $day = 1; $day < 7; $day++ )
+		{
+			$str .= "<td colspan='2'><input type='button' title='Copy previous day schedule to today' value='Copy' onClick='javascript: copy(0,$day);'></td>";
+		}
+		$str .= "</tr>";
+
 		$htmlString .= $str;
 		$htmlString .= '</table>';
-		$htmlString .= "<input type='button' title='Use default cool values' value='Defaults' onClick='javascript: setDefaults(0);'>";
-		// Need new table in DB that holds schedule -->';
-		$htmlString .= "<input type='button' title='Reload most recent saved cool schedule' value='Restore'>";	// Ajax call to server to fetch program from DB
-		$htmlString .= "<input type='button' title='Save changes' value='Save'>";	// Ajax call to server to send new schedule to thermostat (and cue server to re-downloadschedule to archive)
+		$htmlString .= "<input type='button' title='Load default cooling schedule' value='Defaults' onClick='javascript: setDefaults(0);'>";
+		// Need new table in DB that holds schedule
+		$htmlString .= "<input type='button' title='Reload most recent saved cooling schedule' value='Restore'>";	// Ajax call to server to fetch program from DB
+		$htmlString .= "<input type='button' title='Send changes to thermostat' value='Save'>";	// Ajax call to server to send new schedule to thermostat (and cue server to re-downloadschedule to archive)
 		// Need new cron task.  Once per day download schedule.  If it is different save it (and email user?)
 		$htmlString .= '</fieldset>';
 		$htmlString .= '</form>';
@@ -158,6 +169,18 @@ class schedule
 		$htmlString .= '<legend>Heating</legend>';
 		$htmlString .= "<input type='hidden' name='ac' value='heatSched'>";
 		$htmlString .= "<table class='schedule'>";
+		$str = '';
+		$str .= '<colgroup>';
+		foreach( array( 'odd', 'even', 'odd', 'even', 'odd', 'even', 'odd' ) as $parity )
+		{
+			foreach( array( 'time', 'temp' ) as $column )
+			{
+				$str .= "<col class='$parity $column' />";
+			}
+		}
+		$str .= '</colgroup>';
+		$htmlString .= $str;
+
 		$htmlString .= "<tr class='day'>";
 		$htmlString .= "<td colspan='2'>Sunday</td><td colspan='2'>Monday</td><td colspan='2'>Tuesday</td><td colspan='2'>Wednesday</td><td colspan='2'>Thursday</td><td colspan='2'>Friday</td><td colspan='2'>Saturday</td>";
 		$htmlString .= '</tr>';
@@ -177,13 +200,19 @@ class schedule
 			}
 			$timeTabIndex -= 55;
 			$tempTabIndex -= 55;
-			$str .= '/<tr>';
+			$str .= '</tr>';
 		}
+		$str .= "<tr class='day'><td colspan='2'>&nbsp;</td>";
+		for( $day = 1; $day < 7; $day++ )
+		{
+			$str .= "<td colspan='2'><input type='button' title='Copy previous day schedule to today' value='Copy' onClick='javascript: copy(1,$day);'></td>";
+		}
+		$str .= "</tr>";
 		$htmlString .= $str;
 		$htmlString .= '</table>';
-		$htmlString .= "<input type='button' title='Use default heat values' value='Defaults' onClick='javascript: setDefaults(1);'>";
-		$htmlString .= "<input type='button' title='Reload most recent saved heat schedule' value='Restore'>";
-		$htmlString .= "<input type='button' title='Save changes' value='Save'>";
+		$htmlString .= "<input type='button' title='Load default heating schedule' value='Defaults' onClick='javascript: setDefaults(1);'>";
+		$htmlString .= "<input type='button' title='Reload most recent saved heating schedule' value='Restore'>";
+		$htmlString .= "<input type='button' title='Send changes to thermostat' value='Save'>";
 		$htmlString .= '</fieldset>';
 		$htmlString .= '</form>';
 
