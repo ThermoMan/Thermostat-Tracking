@@ -115,5 +115,4 @@ $log->logInfo( "temps: Back from low level communication I have the error code a
 	fclose($lock);
 }
 $log->logInfo( 'temps: end' );
-thermo_update_temps.end' );
 ?>
