@@ -1,5 +1,8 @@
 <?php
+$start_time = microtime(true);
 require_once 'common.php';
+
+$log->logInfo( 'get_instant_forecast: start' );
 
 /* Put useful comments here and either merge code with get_instant_status.php or make this a virtual clone of that file */
 
@@ -95,5 +98,6 @@ if( $weatherConfig['useForecast'] )
 	}
 }
 echo $returnString;
+$log->logInfo( 'get_instant_forecast: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>

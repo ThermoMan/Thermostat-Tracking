@@ -27,6 +27,10 @@ else
 		$warningString = '<span style="color: red;">Incorrect username and/or password.</span> ';
 	}
 
+// Add an onBlur action that if the value is blank it puts back the default values
+// Change the onFocus and onBlur functions so they change the css for the text so that default text is also grey but real text is dark
+// "Username <input type='text' name='username' value='Username here' onFocus='this.value=\"\"'/>" .
+// "Password <input type='password' name='password' value='*****' onFocus='this.value=\"\"'/>" .
 $htmlString .= "<form action='thermo.php' method='post'>" .
 							 "<input type='hidden' name='ac' value='log'>" .
 							 $warningString .

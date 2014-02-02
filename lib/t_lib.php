@@ -69,6 +69,8 @@ class Stat
 		$this->ch = curl_init();
 		curl_setopt( $this->ch, CURLOPT_USERAGENT, 'A' );
 		curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, 1 );
+
+		// 10 seconds is a LONG time.  Does it really reduce the number of errors?  If not, then shorten it.
 		curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, 10000 );
 
 		$this->debug = 0;
@@ -141,8 +143,17 @@ class Stat
 			$outputs = curl_exec( $this->ch );
 		if( curl_errno( $this->ch ) != 0 )
 			{
-				$log->logInfo( 't_lib: getStatData Error from thermostat curl_errno is (' .  curl_error( $this->ch ) .' -> '. curl_errno( $this->ch ) . ") when performing command ($cmd) on try number $retry" );
+				$log->logWarn( 't_lib: getStatData curl error (' .  curl_error( $this->ch ) .' -> '. curl_errno( $this->ch ) . ") when performing command ($cmd) on try number $retry" );
 		}
+			/** Build in one second sleep after each communication attempt
+				* based on code from phareous - he had 2 second delay here and there
+				* The thermostat will stop responding for 20 to 30 minutes (until next WiFi reset) if you overload the connection.
+				* Previously I was not using a delay and had not problems, but caution is better.
+				*
+				* Later on, in a many thermostat environment, each stat will need to be queried in a thread so that the delays
+				*	do not stack up and slow the overall application to a crawl.
+				*/
+			sleep( 1 );
 		}
 		while( ( curl_errno( $this->ch ) != 0 ) && ($retry < $maxRetries) );
 		//while( (curl_errno( $this->ch ) == 7) && ($retry < $maxRetries) );
@@ -150,35 +161,29 @@ class Stat
 //$log->logInfo( 't_lib: getStatData completed...' );
 	if( $retry > 1 )
 	{
-		$log->logInfo( "t_lib: Made $retry attempts and last curl status was " . curl_errno( $this->ch ) );
+			$log->logWarn( "t_lib: Made $retry attempts and last curl status was " . curl_errno( $this->ch ) );
 	}
 
-		$this->connectOK = curl_errno( $this->ch );
+		$this->connectOK = curl_errno( $this->ch );	// Only capture the last status because the retries _might_ have worked!
 
 		if( $this->debug )
 		{	// Convert to use log?
 			echo '<br>commandURL: ' . $commandURL . '<br>';
 			echo '<br>Stat says:<br>';
+			if( $this->connectOK != 0 )
+			{
 			echo var_dump( json_decode( $outputs ) );
+			}
+			else
+			{
+				echo '<br>Communication error - the thermostat did not say ANYTHING!';
+			}
 			echo '<br><br>';
 		}
 
-		if( curl_errno( $this->ch ) == 0 )
-		{	/** Build in one second sleep after each succesful command
-			* based on code from phareous - he had 2 second delay here and there
-			* The thermostat will stop responding for 20 to 30 minutes (until next WiFi reset) if you overload the connection.
-			*
-			* Previously I was not using a delay and had not problems.
-			*
-				* Later on, in a many thermostat environment, each stat will need to be queried in a thread so that the delays don't
-				*	stack up and slow the oerall application to a crawl.
-			*/
-//$log->logInfo( 't_lib: getStatData sleeping...' );
-		sleep( 1 );
-		}
-		else
+		if( $this->connectOK != 0 )
 		{	// Drat some problem.  Now what?
-			$log->logInfo( 't_lib: getStatData Error from thermostat curl_errno is (' . curl_errno( $this->ch ) . ") when performing command ($cmd)" );
+			$log->logError( 't_lib: getStatData communication error.' );
 		}
 
 		return $outputs;
@@ -659,14 +664,24 @@ echo var_dump( json_decode( $outputs ) );
 
 	public function getSysInfo()
 	{
-		$outputs = $this->getStatData( '/sys' );	// '/sys/info' No longer works
-		// {"uuid":"xxxxxxxxxxxx","api_version":113,"fw_version":"1.04.84","wlan_fw_version":"v10.105576"}
+		global $log;
+
+		$outputs = $this->getStatData( '/sys' );	// '/sys/info' No longer works as of API version ???
+
+		if( $this->connectOK == 0 )
+		{	// If the connection worked, decode the output
 		$obj = json_decode( $outputs );
+			// {"uuid":"xxxxxxxxxxxx","api_version":113,"fw_version":"1.04.84","wlan_fw_version":"v10.105576"}
 
 		$this->uuid = $obj->{'uuid'};
 		$this->api_version = $obj->{'api_version'};
 		$this->fw_version = $obj->{'fw_version'};
 		$this->wlan_fw_version = $obj->{'wlan_fw_version'};
+		}
+		else
+		{
+			$log->logInfo( "t_lib: getSysInfo connectOK shows an error ($this->connectOK)" );
+		}
 
 		return;
 	}
@@ -674,6 +689,9 @@ echo var_dump( json_decode( $outputs ) );
 	public function getSysNetwork()
 	{
 		$outputs = $this->getStatData( '/sys/network' );
+
+		if( $this->connectOK == 0 )
+		{	// If the connection worked, decode the output
 		$obj = json_decode( $outputs );
 
 		$this->ssid = $obj->{'ssid'};
@@ -685,6 +703,11 @@ echo var_dump( json_decode( $outputs ) );
 		$this->ipmask = $obj->{'ipmask'};
 		$this->ipgw = $obj->{'ipgw'};
 		$this->rssi = $obj->{'rssi'};
+		}
+		else
+		{
+			$log->logInfo( "t_lib: getSysNetwork connectOK shows an error ($this->connectOK)" );
+		}
 
 		return;
 	}

@@ -1,4 +1,5 @@
 <?php
+$start_time = microtime(true);
 require(dirname(__FILE__).'/../common.php');
 
 $log->logInfo( 'status: start' );
@@ -72,53 +73,64 @@ foreach( $thermostats as $thermostatRec )
 	if( flock($lock, LOCK_EX) )
 	{
 		try
-		{
-			// Query thermostat info
+		{	// Query thermostat info
 			//$log->logInfo( "status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
 			$stat = new Stat( $thermostatRec['ip'] );
-
-			//$uuid = $stat->getUUid(); // This data is gathered by the getSysInfo() function
-			//$fwVersion = $stat->getFwVersion(); // This data is gathered by the getSysInfo() function
-			//$wlanFwVersion = $stat->getWlanFwVersion(); // This data is gathered by the getSysInfo() function
-			$stat->getSysInfo();
-// A timeout has been added to the library but nothing done with it yet (other than logging).  Maybe throw an error if no connection?
-
-			/**
-				* On "new" contact the stat and get the "big download" that sets the most variables - instead of using multiple hits.
-				*
-				* To determine "new" or not, if the thermostat DB has ONLY the ip address and ID, then it's new.
-				*/
-			$stat->getModel();
 
 			/**
 				* This catches the uuid which is required for data insert.
 				*
-				* Or can we rely upon the value stored in the thermostats table?
+				* Really should use a surrogate key (thermostat_id) instead of the uuid for data storage.
 				*
 				* What do we do when there is a changed thermostat?  The history is tied to the uuid. That is BAD
 				* Need a system generated surrogate key instead of uuid to join from thermostat table to data table.
 				* Should compare the detected uuid back to the thermostat table record
 				* On match, do nothing.  On 'no match', make sure it matches no other record too and then update existing record (and log it)
 				*/
-			$stat->getSysName();
+			$stat->getSysInfo();
+			if( $stat->connectOK != 0 )
+			{
+				$log->logWarn( "status: connectOK is not zero!  We should not proceed!  connectOK = ($stat->connectOK).  Perhaps for a macro level retry even though the micro level retry already failed?" );
+				// An error here may not need to be fatal, but if it worked, should verify that stat uuid matches expected uuid in DB
+				// If it does not match expected, does it match ANY?  Email admin if the user ID for matched does not match user ID of expected!! (possible hacking?)
+			}
 
-//$log->logInfo( "status: I am declining to update the thermostat info for now," );
+			// Perhaps only check this info one time per day or when the reported uuid is not same as stored uuid
+			$stat->getModel();
+			if( $stat->connectOK != 0 )
+			{	// An error here is non-fatal, simply decline to use this info
+				$log->logError( 'status: Thermostat failed to respond with model number.' );
+			}
+
+			$stat->getSysName();
+			if( $stat->connectOK != 0 )
+			{	// An error here is non-fatal, simply decline to use this info
+				$log->logError( 'status: Thermostat failed to respond with system info.' );
+			}
+
+// Declining to update the thermostat info for now because a 0 or null in the uuid will screw up record collection the next time for this stat
 			//$log->logInfo( "status: Updating thermostat record {$thermostatRec['id']}: UUID $stat->uuid DESC $stat->sysName MDL $stat->model FW $stat->fw_version WLANFW $stat->wlan_fw_version" );
 			//Update thermostat info in DB
 			//$updateStatInfo->execute(array( $stat->uuid , $stat->sysName, $stat->model, $stat->fw_version, $stat->wlan_fw_version, $thermostatRec['id']));
 
-			// Get thermostat state
-			$statData = $stat->getStat();
+			// Get thermostat state (time, temp, mode, hold, override)
+			$stat->getStat();
+			if( $stat->connectOK == 0 )
+			{
 			$heatStatus = ($stat->tstate == 1) ? true : false;
 			$coolStatus = ($stat->tstate == 2) ? true : false;
 			$fanStatus  = ($stat->fstate == 1) ? true : false;
-			//$log->logInfo( 'status: Heat: ' . ($heatStatus ? 'ON' : 'OFF') );
-			//$log->logInfo( 'status: Cool: ' . ($coolStatus ? 'ON' : 'OFF') );
-			//$log->logInfo( 'status: Fan: ' . ($fanStatus ? 'ON' : 'OFF') );
 
-			// Get current setPoint from thermost
-			// t_heat or t_cool may not exist if thermostat is running in battery mode
+				// Get current setPoint from thermostat
+				// t_heat or t_cool may not exist if thermostat is running in battery mode (will it even talk on WiFi if the power is out?)
 			$setPoint = ($stat->tmode == 1) ? $stat->t_heat : $stat->t_cool;
+			}
+			else
+			{
+				$log->logError( 'status: Thermostat failed to respond with present status' );
+				// Instead of continue, I should throw a thermostat exception!
+				continue;	// Cannot continue workting on this thermostat, try the next one in the list.
+			}
 
 			// Get prior setPoint from database
 			$getPriorSetPoint->execute(array($thermostatRec['id']));
@@ -132,27 +144,34 @@ foreach( $thermostats as $thermostatRec )
 			$priorCoolStatus = false;
 			$priorFanStatus = false;
 
+// Possibly controversial code change here.  This assumes the uuid never changes once set.
+			// Look up thermostat previous status based on the uuid (uuid as reported by the thermostat - BAD IDEA)
 			$getStatInfo->execute( array( $stat->uuid ) );
-$log->logInfo( "status: Communication status is ($stat->connectOK)" );
+
+			// Look up thermostat previous status based on the uuid (uuid as expected from DB)
+//			$getStatInfo->execute( array( $thermostatRec['tstat_uuid'] ) );
+// I think looking for a changed uuid can reasonable be done ONCE per day (or per week!) and use the thermostat_id as the key in the temperatures table
+// DRAT.  Have to use the uuid provided by the stat because this might be the FIRST contact for a NEW stat
+
 
 			if( $getStatInfo->rowCount() < 1 )
 			{ // not found - this is the first time connection for this thermostat
-$log->logWarn( "status: If this number is not zero than I should not be doing this code! ($stat->connectOK)" );
 				$log->logInfo( 'status: I think I found a new/different thermostat at the specified URL' );
 // Perhaps key in on this logic to drive the deep query for the stat??
 				$startDateHeat = ($heatStatus) ? $now : null;
 				$startDateCool = ($coolStatus) ? $now : null;
 				$startDateFan = ($fanStatus) ? $now : null;
-				$log->logInfo( "status: Inserting record for a brand new never before seen thermostat with time = ($now) H $heatStatus C $coolStatus F $fanStatus SDH $startDateHeat SDC $startDateCool SDF $startDateFan for UUID $stat->uuid" );
-				$insertStatInfo->execute( array( $stat->uuid, $now, $startDateHeat, $startDateCool, $startDateFan, $heatStatus, $coolStatus, $fanStatus ) );
 
-				$log->logInfo( "setpoints: Inserting record for a brand new never before seen thermostat with setpoint=$setPoint, time=($now) " );
-				$insertSetPoint->execute( array( $thermostatRec['id'], $setPoint, $now ) );
+				$log->logInfo( "status: Inserting record for a brand new never before seen thermostat with time = ($now) H $heatStatus C $coolStatus F $fanStatus SDH $startDateHeat SDC $startDateCool SDF $startDateFan for UUID $stat->uuid" );
 // Have been getting really lucky here.  Communicatiuon errors with the stat leave NULLs in that do not match existing stats.
 // Leading to false idea that the stat we're talking to is new (because existing stats not equal NULL on uuid)
 // So attempt to insert record for new stat, but fail because no NULLs allowed in key columns.  So no new record.  Lucky!
 // Proper fix is to abort when the stat was not able to be reached.
 // Also proper fix includes not trying to insert NULLs and catching SQL errors when something happens like that (and log it)
+				$insertStatInfo->execute( array( $stat->uuid, $now, $startDateHeat, $startDateCool, $startDateFan, $heatStatus, $coolStatus, $fanStatus ) );
+
+				$log->logInfo( "setpoints: Inserting record for a brand new never before seen thermostat with setpoint=$setPoint, time=($now) " );
+				$insertSetPoint->execute( array( $thermostatRec['id'], $setPoint, $now ) );
 			}
 			else
 			{
@@ -199,7 +218,7 @@ $log->logWarn( "status: If this number is not zero than I should not be doing th
 				//Update the setpoints table
 				if( $setPoint != $priorSetPoint )
 				{
-					$log->logInfo( "status: Inserting changed setpoint record SP=$setPoint, time=($now) " );
+					$log->logInfo( "status: Inserting changed setpoint record SP=$setPoint, old=($priorSetPoint), time=($now) " );
 					$insertSetPoint->execute( array( $thermostatRec['id'], $setPoint, $now ) );
 				}
 			}
@@ -207,18 +226,15 @@ $log->logWarn( "status: If this number is not zero than I should not be doing th
 		catch( Exception $e )
 		{
 			$log->logError( 'status: Thermostat Exception ' . $e->getMessage() );
-			//flock( $lock, LOCK_UN );	// Should be in a finally block?
-			//die();										// Does die() prevent finally?
 		}
 		flock( $lock, LOCK_UN );
 	}
 	else
 	{
 		$log->logError( "status: Couldn't get file lock for thermostat {$thermostatRec['id']}" );
-		die();
 	}
 	fclose( $lock );
 }
-$log->logInfo( 'status: end' );
+$log->logInfo( 'status: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>

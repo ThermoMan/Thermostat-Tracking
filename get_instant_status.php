@@ -1,5 +1,8 @@
 <?php
+$start_time = microtime(true);
 require_once 'common.php';
+
+$log->logInfo( 'get_instant_status: start' );
 
 /** When this function is called properly, the $userThermostats will NOT be pre-populated because it's not part of the same session.
 	*
@@ -8,6 +11,8 @@ require_once 'common.php';
 	*/
 
 $returnString = '';
+$greetingMsg = '';
+$greetingMsgWeather = '';
 
 $lastZIP = '';
 
@@ -52,18 +57,20 @@ try
 		$lock = @fopen( $lockFileName, 'w' );
 		if( !$lock )
 		{
-			logIt( "get_instant_status: Could not write to lock file $lockFileName" );
+			$log->logInfo( "get_instant_status: Could not write to lock file $lockFileName" );
 			continue;
 		}
 		$setPoint = '';
 
-		if( flock($lock, LOCK_EX) )
+		if( flock( $lock, LOCK_EX ) )
 		{
 			$log->logInfo( "get_instant_status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
 
 			//$stat = new Stat( $thermostatRec['ip'], $thermostatRec['tstat_id'] );
 			$stat = new Stat( $thermostatRec['ip'] );
 
+			try
+			{
 			$statData = $stat->getStat();
 			}
 			catch( Exception $e )
@@ -76,6 +83,8 @@ try
 
 			$fanStatus  = ($stat->fstate == 1) ? 'on' : 'off';
 			$setPoint   = ' The target is ' . (string)(($stat->tstate == 1) ? $stat->t_heat : $stat->t_cool);
+
+			$greetingMsg = "<p>At $thermostatRec[name] ";
 
 			/** Get outside info
 				*
@@ -91,23 +100,33 @@ try
 					$outdoorTemp = $outsideData['temp'];
 					$outdoorHumidity = $outsideData['humidity'];
 					$log->logInfo( "get_instant_status: Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
+					//$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
+					$greetingMsgWeather = "$outdoorTemp &deg;$weatherConfig[units] outside";
 				}
-
-				//$returnString = $returnString . "<p>Right now at ".date('H:i', time())." the outside temperature for $thermostatRec[name] is $outdoorTemp &deg;$weatherConfig[units]</p>";
-				// Change to display using the thermostats own time.
-				$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
-
-				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='heater_$heatStatus'     alt='heat' title='The heater is $heatStatus' /> The heater is $heatStatus.".(($heatStatus == 'on') ? "$setPoint" : '').'</p>';
-				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='compressor_$coolStatus' alt='cool' title='The compressor is $coolStatus' /> The compressor is $coolStatus.".(($coolStatus == 'on') ? "$setPoint" : '').'</p>';
-				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='fan_$fanStatus' alt='fan' title='The fan is $fanStatus'/> The fan is $fanStatus.</p>";
 			}
 			catch( Exception $e )
 			{
 				$log->logError( 'External weather failed: ' . $e->getMessage() );
 				// Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
 				$returnString = $returnString . "<p><img src='images/Alert.png'/ alt='alert'>Presently unable to read outside information.</p>";
-				$returnString = $returnString . "<p>$thermostatRec[name] says it is $stat->time</p>";
+				$greetingMsgWeather = "<p><img src='images/Alert.png'/ alt='alert'>Presently unable to read outside information.</p>";
+				//$returnString = $returnString . "<p>$thermostatRec[name] says it is $stat->time</p>";
 			}
+
+			if( $stat->connectOK == 0 )
+			{	// If we did talk to the thermostat
+				//$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
+				$returnString = $returnString . $greetingMsg . "it's $stat->time and " . $greetingMsgWeather . " and $stat->temp &deg;$weatherConfig[units] inside.</p>";
+
+				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='heater_$heatStatus'     alt='heat' title='The heater is $heatStatus' /> The heater is $heatStatus.".(($heatStatus == 'on') ? "$setPoint" : '').'</p>';
+				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='compressor_$coolStatus' alt='cool' title='The compressor is $coolStatus' /> The compressor is $coolStatus.".(($coolStatus == 'on') ? "$setPoint" : '').'</p>';
+				$returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='fan_$fanStatus' alt='fan' title='The fan is $fanStatus'/> The fan is $fanStatus.</p>";
+			}
+			else
+			{	// If we could not talk to the thermostat
+				$returnString = $returnString . $greetingMsg . date('H:i', time()) . " and " . $greetingMsgWeather . " and presently unable to communicate with the thermostat.</p>";
+			}
+
 		}
 		fclose( $lock );
 	}
@@ -124,5 +143,6 @@ catch( Exception $e )
 // Need to JSON the text so that there is an object with values passed back?
 
 echo $returnString;
+$log->logInfo( 'get_instant_status: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>

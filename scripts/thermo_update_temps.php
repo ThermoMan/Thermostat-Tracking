@@ -1,4 +1,5 @@
 <?php
+$start_time = microtime(true);
 require(dirname(__FILE__).'/../common.php');
 
 $log->logInfo( 'temps: start' );
@@ -114,5 +115,6 @@ $log->logInfo( "temps: Back from low level communication I have the error code a
 	}
 	fclose($lock);
 }
-$log->logInfo( 'temps: end' );
+$log->logInfo( 'temps: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+
 ?>

@@ -94,7 +94,7 @@ if( $isLoggedIn )
 	<input type='hidden' name='useForecast' value=<?php echo $weatherConfig['useForecast']?'true':'false' ?>>
 	<!-- Internal variable declarations END -->
 
-	<div class='header'><?php include( $rootDir . '/header.php' ); ?></div>
+	<div class='header'><?php require_once( $rootDir . '/header.php' ); ?></div>
 	<br><br><br>
 	<div id='bigbox'>
 
@@ -152,7 +152,7 @@ if( $isLoggedIn )
 							<option value='2'>months</option>
 							<option value='3'>years</option>
 						</select>
-						<!-- Need to change the max value to a date computed by Javascript so it stays current -->
+						<!-- Need to change the max value to a date computed by JavaScript so it stays current when the page is open across midnight -->
 						ending on <input type='date' id='chart.daily.toDate' onChange='javascript: saveDateData("daily");' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' step='1'/>
 						&nbsp; showing Heat<input type='checkbox' id='chart.daily.showHeat' name='chart.daily.showHeat' onChange='javascript: toggle_daily_flag( "chart.daily.showHeat" );'/>
 						&nbsp;Cool<input type='checkbox' id='chart.daily.showCool' name='chart.daily.showCool' onChange='javascript: toggle_daily_flag( "chart.daily.showCool" );'/>
