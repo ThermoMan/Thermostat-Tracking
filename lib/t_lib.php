@@ -35,6 +35,8 @@ class Stat
 				 $t_type_post =	null,
 				 $humidity = null;
 
+public $dummy_time = null, $dummy_temp = null;
+
 	public $runTimeCool = null,
 				 $runTimeHeat = null,
 				 $runTimeCoolYesterday = null,
@@ -141,10 +143,10 @@ class Stat
 //$log->logInfo( 't_lib: getStatData doing...' );
 			$retry++;
 			$outputs = curl_exec( $this->ch );
-		if( curl_errno( $this->ch ) != 0 )
+			if( curl_errno( $this->ch ) != 0 )
 			{
 				$log->logWarn( 't_lib: getStatData curl error (' .  curl_error( $this->ch ) .' -> '. curl_errno( $this->ch ) . ") when performing command ($cmd) on try number $retry" );
-		}
+			}
 			/** Build in one second sleep after each communication attempt
 				* based on code from phareous - he had 2 second delay here and there
 				* The thermostat will stop responding for 20 to 30 minutes (until next WiFi reset) if you overload the connection.
@@ -159,10 +161,10 @@ class Stat
 		//while( (curl_errno( $this->ch ) == 7) && ($retry < $maxRetries) );
 		// curl error #7 CURLE_COULDNT_CONNECT is usually resolved with a simple single retry.
 //$log->logInfo( 't_lib: getStatData completed...' );
-	if( $retry > 1 )
-	{
+		if( $retry > 1 )
+		{
 			$log->logWarn( "t_lib: Made $retry attempts and last curl status was " . curl_errno( $this->ch ) );
-	}
+		}
 
 		$this->connectOK = curl_errno( $this->ch );	// Only capture the last status because the retries _might_ have worked!
 
@@ -172,7 +174,7 @@ class Stat
 			echo '<br>Stat says:<br>';
 			if( $this->connectOK != 0 )
 			{
-			echo var_dump( json_decode( $outputs ) );
+				echo var_dump( json_decode( $outputs ) );
 			}
 			else
 			{
@@ -219,37 +221,48 @@ class Stat
 		global $log;
 		$retval = false;
 		// Aha!  This might be how to detect the missing connection?
+//$log->logInfo( 't_lib: containsTransient looking...' );
+		if( is_object($obj) )
+		{
+			foreach( $obj as $key => &$value )
+			{
+	//$log->logInfo( 't_lib: containsTransient key...' );
 		// Warning: Invalid argument supplied for foreach() in ~/thermo2/lib/t_lib.php on line 171
 		// It was line 171 before I started adding comments!
-//$log->logInfo( 't_lib: containsTransient looking...' );
-		foreach( $obj as $key => &$value )
-		{
-//$log->logInfo( 't_lib: containsTransient key...' );
-			if( is_object($value) )
-			{
-				foreach( $value as $key2 => &$value2 )
+				if( is_object($value) )
 				{
-//$log->logInfo( 't_lib: containsTransient nested key...' );
-					if( $value2 == -1 )
+					foreach( $value as $key2 => &$value2 )
 					{
-						//if( $this->debug )
-						//echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n";
-						$log->logWarn( 't_lib: WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n" );
-						// NULL the -1 transient
-						//$value2 = NULL;
-						$retval = true;
+	//$log->logInfo( 't_lib: containsTransient nested key...' );
+						if( $value2 == -1 )
+						{
+							//if( $this->debug )
+							//echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n";
+							$log->logWarn( 't_lib: WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n" );
+							// NULL the -1 transient
+							//$value2 = NULL;
+							$retval = true;
+						}
 					}
 				}
+				else
+				{
+					$log->logError( 't_lib: containsTransient: value was NOT an object!' );
+				}
+				if( $value == -1 )
+				{
+					//:if( $this->debug )
+					//echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n";
+					$log->logWarn( 't_lib: WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n" );
+					// NULL the -1 transient
+					//$value = NULL;
+					$retval = true;
+				}
 			}
-			if( $value == -1 )
-			{
-				//:if( $this->debug )
-				//echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n";
-				$log->logWarn( 't_lib: WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n" );
-				// NULL the -1 transient
-				//$value = NULL;
-				$retval = true;
-			}
+		}
+		else
+		{
+			$log->logError( 't_lib: containsTransient: argument obj was NOT an object!' );
 		}
 //$log->logInfo( 't_lib: containsTransient ending...' );
 		return $retval;
@@ -379,12 +392,12 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
 			* If there are transients repeat query up to 5 times for collecting good data
 			* Continue when successful.
 			*
-		*/
+			*/
 		for( $i = 1; $i <= 5; $i++ )
 		{
-		$outputs = $this->getStatData( '/tstat' );
-		// {"temp":80.50,"tmode":2,"fmode":0,"override":0,"hold":0,"t_cool":80.00,"tstate":2,"fstate":1,"time":{"day":2,"hour":18,"minute":36},"t_type_post":0}
-		$obj = json_decode( $outputs );
+			$outputs = $this->getStatData( '/tstat' );
+			// {"temp":80.50,"tmode":2,"fmode":0,"override":0,"hold":0,"t_cool":80.00,"tstate":2,"fstate":1,"time":{"day":2,"hour":18,"minute":36},"t_type_post":0}
+			$obj = json_decode( $outputs );
 
 			if( !$this->containsTransient( $obj ) )
 			{	// It worked?  Get out ouf the retry loop.
@@ -404,11 +417,11 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
 				}
 			}
 
-		if( empty( $obj ) )
-		{
+			if( empty( $obj ) )
+			{
 				$log->logError( 't_lib: No output from thermostat.' );
-			throw new Thermostat_Exception( 'No output from thermostat' );
-		}
+				throw new Thermostat_Exception( 'No output from thermostat' );
+			}
 		}
 
 		// Move fetched data to internal data structure
@@ -670,13 +683,13 @@ echo var_dump( json_decode( $outputs ) );
 
 		if( $this->connectOK == 0 )
 		{	// If the connection worked, decode the output
-		$obj = json_decode( $outputs );
+			$obj = json_decode( $outputs );
 			// {"uuid":"xxxxxxxxxxxx","api_version":113,"fw_version":"1.04.84","wlan_fw_version":"v10.105576"}
 
-		$this->uuid = $obj->{'uuid'};
-		$this->api_version = $obj->{'api_version'};
-		$this->fw_version = $obj->{'fw_version'};
-		$this->wlan_fw_version = $obj->{'wlan_fw_version'};
+			$this->uuid = $obj->{'uuid'};
+			$this->api_version = $obj->{'api_version'};
+			$this->fw_version = $obj->{'fw_version'};
+			$this->wlan_fw_version = $obj->{'wlan_fw_version'};
 		}
 		else
 		{
@@ -688,21 +701,22 @@ echo var_dump( json_decode( $outputs ) );
 
 	public function getSysNetwork()
 	{
+		global $log;
 		$outputs = $this->getStatData( '/sys/network' );
 
 		if( $this->connectOK == 0 )
 		{	// If the connection worked, decode the output
-		$obj = json_decode( $outputs );
+			$obj = json_decode( $outputs );
 
-		$this->ssid = $obj->{'ssid'};
-		$this->bssid = $obj->{'bssid'};
-		$this->channel = $obj->{'channel'};
-		$this->security = $obj->{'security'};
-		$this->passphrase = $obj->{'passphrase'};
-		$this->ipaddr = $obj->{'ipaddr'};
-		$this->ipmask = $obj->{'ipmask'};
-		$this->ipgw = $obj->{'ipgw'};
-		$this->rssi = $obj->{'rssi'};
+			$this->ssid = $obj->{'ssid'};
+			$this->bssid = $obj->{'bssid'};
+			$this->channel = $obj->{'channel'};
+			$this->security = $obj->{'security'};
+			$this->passphrase = $obj->{'passphrase'};
+			$this->ipaddr = $obj->{'ipaddr'};
+			$this->ipmask = $obj->{'ipmask'};
+			$this->ipgw = $obj->{'ipgw'};
+			$this->rssi = $obj->{'rssi'};
 		}
 		else
 		{
@@ -712,6 +726,110 @@ echo var_dump( json_decode( $outputs ) );
 		return;
 	}
 
+	/**
+		* Something seriously wrong here.
+		* It is telling me that every day is identical and the schedules are all wonky
+		* I subscribe to that e5 service and perhaps they are doing this to my schedule?
+		* Using the function to grab a single day tells the same story: /tstat/program/heat/wednesday
+
+		/tstat/program/heat
+		{
+			"0":[600,66,1439,58,1439,58,1439,58],
+			"1":[600,66,1439,58,1439,58,1439,58],
+			"2":[600,66,1439,58,1439,58,1439,58],
+			"3":[600,66,1439,58,1439,58,1439,58],
+			"4":[600,66,1439,58,1439,58,1439,58],
+			"5":[600,66,1439,58,1439,58,1439,58],
+			"6":[600,66,1439,58,1439,58,1439,58]
+		}
+
+		/tstat/program/cool
+		{
+			"0":[600,76,1439,78,1439,78,1439,78],
+			"1":[600,78,1439,78,1439,78,1439,78],
+			"2":[600,76,1439,78,1439,78,1439,78],
+			"3":[600,76,1439,78,1439,78,1439,78],
+			"4":[600,76,1439,78,1439,78,1439,78],
+			"5":[600,76,1439,78,1439,78,1439,78],
+			"6":[600,76,1439,78,1439,78,1439,78]
+		}
+		*/
+
+	// When this routine works the first time, it can take up to 15 seconds
+	public function getProgram()
+	{
+		global $log;
+		$d_time = array( array() );
+		$d_temp = array( array() );
+
+		$outputs = $this->getStatData( '/tstat/program/cool' );
+		if( $this->connectOK == 0 )
+		{	// If the connection worked, decode the output
+			$obj = json_decode( $outputs );
+
+			if( is_object( $obj ) )
+			{
+//echo "\nobj is object";
+				foreach( $obj as $day => &$program )
+				{// I think this loop will be for each day
+//echo "\nforeach got key value as $key $value";
+					$period = 0;
+					for( $index = 0; $index < 8; $index++ )
+					{
+//echo "\nwhen key is $key and i $i then value[i] is $value[$i]";
+						$d_time[0][$day][$period] = $program[$index];
+						$index++;
+						$d_temp[0][$day][$period] = $program[$index];
+						$period++;
+					}
+				}
+			}
+
+			$outputs = $this->getStatData( '/tstat/program/heat' );
+			if( $this->connectOK == 0 )
+			{	// If the connection worked, decode the output
+				$obj = json_decode( $outputs );
+
+				if( is_object( $obj ) )
+				{
+					foreach( $obj as $day => &$program )
+					{// I think this loop will be for each day
+						$period = 0;
+						for( $index = 0; $index < 8; $index++ )
+						{
+							$d_time[1][$day][$period] = $program[$index];
+							$index++;
+							$d_temp[1][$day][$period] = $program[$index];
+							$period++;
+						}
+					}
+				}
+
+				// This assignment is conditional - both cool and heat must have worked to use the data
+				$this->dummy_time = $d_time;
+				$this->dummy_temp = $d_temp;
+			}
+			else
+			{
+				$log->logError( 't_lib: getProgram fetch of HEAT program failed.' );
+			}
+		}
+		else
+		{
+			$log->logError( 't_lib: getProgram fetch of COOL program failed.' );
+		}
+
+
+		return;
+	}
+
+	public function setProgram()
+	{
+		// May have to iterate through all days since the set function seems to be for one day
+		// Or perhaps do a get and only send the modified days.
+
+		return;
+	}
 }
 
 ?>
