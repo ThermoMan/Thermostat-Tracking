@@ -1,4 +1,5 @@
 <?php
+$start_time = microtime(true);
 require_once 'common.php';
 require_once 'common_chart.php';
 
@@ -528,16 +529,30 @@ $myPicture->drawLineChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DI
 * Others were fixed....
 */
 
-$PixelsPerMinute = (($graphAreaEndX - $graphAreaStartX) / 1440) / $dayCount;  // = 54861
+//$PixelsPerMinute = (($graphAreaEndX - $graphAreaStartX) / 1440) / $dayCount;  // = 0.54861 (for dayCount = 1)
+//$log->logInfo( "draw_daily.php: computed value for PixelsPerMinute as $PixelsPerMinute." );
+//$log->logInfo( "draw_daily.php: The computation is $PixelsPerMinute = (($graphAreaEndX - $graphAreaStartX) / 1440) / $dayCount");
+// For dayCount = 1:  INFO --> draw_daily.php: computed value for PixelsPerMinute as 0.54861111111111.
+$chartFudgeFactor = 5 / $dayCount;	// Added to fix rioght hand edge opvershoot
+$PixelsPerMinute = ((($graphAreaEndX - $chartFudgeFactor) - $graphAreaStartX) / 1440) / $dayCount;  // = 0.545 (for dayCount = 1)
+//$log->logInfo( "draw_daily.php: Forced value for PixelsPerMinute to $PixelsPerMinute by using chartFudgeFactor of $chartFudgeFactor." );
 /*
 * Assumptions:
 *  1. The chart X-axis represents 24 hours
 *  2. The graph horizontal area (i.e. graph area) is 790 pixels wide (so each pixel represents 1.82 minutes)
 *
-* Why 0.54861?
-*
+* Why 0.54861?  (when dayCount is 1)
 * The chart area boundary is defined as 790px wide (850px - 60px start position).
+* 1440 is the number of minutes in a day.
+* $dayCount is the number of days that will be charted
+* ((850 - 60) / 1440) / 1
 * 790px / 1440 pixels/day = .54861 pixels per minute
+*
+* Why 0.545?  (when dayCount is 1)
+* Because the computed version produced results that looked incorrect.  Events that took place on the last minute of the day were
+* scaled off the right hand edge of the chart area.  Trial and error moved those events to the very last pixel column on the chart.
+* Using 0.546 moves it one pixel OFF the chart and 0.544 shrinks it too much.  Sigh.  But I can't hard code a single nubmer hence
+* the computed $chartFudgeFactor.
 *
 * The $dayCount factor was added to account for the number of days in the display.  Too many days and the dispaly will be really ugly
 *
@@ -634,11 +649,11 @@ if( $show_setpoint == 1 )
 		 *** but there should always be one unless the database table is just starting
 		 *** to become populated with data.
 		 */
-		if ($first_row == 1)
+		if( $first_row == 1 )
 		{
 			$first_row = 0;
 			$prev_setpoint = $row['set_point'];
-			$prev_switch_time = date_create($from_date);
+			$prev_switch_time = date_create( $from_date );
 			$start_px = $LeftMargin;
 			continue;
 		}
@@ -681,4 +696,6 @@ if( $show_setpoint == 1 )
 }
 
 $myPicture->autoOutput( 'images/daily_chart.png' );
+$log->logInfo( 'draw_daily.php: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+
 ?>
