@@ -357,6 +357,8 @@ echo "<br>uuid is $uuid";
   $queryTwo = $pdo->prepare($sqlTwo);
   $result = $queryTwo->execute(array( $start_date, $start_date, $start_date, $start_date, $end_date, $end_date, $start_date, $end_date, $uuid ) );
 
+//$log->logInfo( "draw_daily.php: Executing sqlTwo ($sqlTwo) for values $start_date, $start_date, $start_date, $start_date, $end_date, $end_date, $start_date, $end_date, $uuid" );
+
 	$sqlThree = "SELECT heat_status
 					,DATEDIFF( start_date_heat, ? ) AS start_day_heat
 					,DATE_FORMAT( start_date_heat, '%k' ) AS start_hour_heat
@@ -381,6 +383,9 @@ echo "<br>uuid is $uuid";
 
   $queryThree = $pdo->prepare($sqlThree);
   $result = $queryThree->execute(array( $from_date, $from_date, $from_date, $from_date, $uuid ) );
+
+//$log->logInfo( "draw_daily.php: Executing sqlThree ($sqlThree) for values $from_date, $from_date, $from_date, $from_date, $uuid" );
+
 }
 
 if( $show_setpoint == 1 )
@@ -593,7 +598,7 @@ echo '</tr>';
   {	// Should be only one row!
   	if( $row['heat_status'] == 1 && $show_heat_cycles == 1 )
   	{	// If the AC is on now AND we want to draw it
-			$cycle_start = $LeftMargin + (($row['start_day_cool'] * 1440) + ($row['start_hour_cool'] * 60) + $row['start_minute_cool'] ) * $PixelsPerMinute;
+			$cycle_start = $LeftMargin + (($row['start_day_heat'] * 1440) + ($row['start_hour_heat'] * 60) + $row['start_minute_heat'] ) * $PixelsPerMinute;
 			$cycle_end   = $LeftMargin + (($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute;
 
       $myPicture->drawGradientArea( $cycle_start, $HeatRectRow, $cycle_end, $HeatRectRow + $RectHeight, DIRECTION_HORIZONTAL, $HeatGradientSettings );
@@ -607,7 +612,7 @@ echo '</tr>';
   	}
   	if( $row['fan_status'] == 1 && $show_fan_cycles == 1 )
   	{	// If the AC is on now AND we want to draw it
-			$cycle_start = $LeftMargin + (($row['start_day_cool'] * 1440) + ($row['start_hour_cool'] * 60) + $row['start_minute_cool'] ) * $PixelsPerMinute;
+			$cycle_start = $LeftMargin + (($row['start_day_fan'] * 1440) + ($row['start_hour_fan'] * 60) + $row['start_minute_fan'] ) * $PixelsPerMinute;
 			$cycle_end   = $LeftMargin + (($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute;
 
       $myPicture->drawGradientArea( $cycle_start, $FanRectRow, $cycle_end, $FanRectRow + $RectHeight, DIRECTION_HORIZONTAL, $FanGradientSettings );
