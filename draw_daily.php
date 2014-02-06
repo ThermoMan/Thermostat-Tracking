@@ -79,35 +79,6 @@ while( $check_date != $to_date )
 	$check_date = date( 'Y-m-d', strtotime( '+1 day', strtotime( $check_date ) ) );
 	array_push( $days, $check_date );
 	$dayCount++;
-	if( $dayCount > 31 )
-	{ // Special logic for large data sets
-		/**
-			* A large data set takes a long time to graph.  90 days at one temp per half-hour takes more than
-			* 30 seconds and that is some kind of hard-limit coded into the chart package.  And the chart
-			* package just aborts...
-			*
-			* One fix it to find that limit and change it.  Another is to deal with it (and the actual user
-			* experienced delay) by changing the detail that is graphed.
-			*
-			* So, go ahead and SELECT all the data points, but on display on show every second one (on the hour)
-			* so this will allow the chart to display up to about 180 days.  This will also greatly help on the
-			* X-Axis label problem.
-			*
-			* Version one should just put up the 'on the hour' data.  Version 2 should use an averge of on hour
-			* and on half-hour.  Version 3 should examine the trend and use the max when trend is up and the min
-			* when the trend is down.
-			*/
-
-		/**
-			* But for now, stop at 31 days.
-			*
-			* Alter the $to_date variable so that it all just works AND the user sees the change in the chart text
-			*/
-/*
-		$to_date = $check_date;
-		break;
-*/
-  }
 }
 
 /**
@@ -147,13 +118,26 @@ $sqlOne =
  ON a.date = CONCAT( ?, ' ', b.time ) AND a.tstat_uuid = ? ";
 $minutes = '30';
 
+/** QQQ
+if( $dayCount == 1 )
+{
+	$sqlOne .=
+	"UNION
+	SELECT ? AS date,
+	IFNULL(a.indoor_temp, 'VOID') as indoor_temp,
+	IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp
+	FROM thermo2__time_index b
+	LEFT JOIN thermo2__temperatures a
+	ON a.date = ? AND a.tstat_uuid = ?";
+}
+*/
+
 if( $dayCount >= 70 )
 {	// Reduce data set if there are more than 70 days.
 	$sqlOne .= "WHERE SUBSTR( b.time, 3, 3 ) != ':30' ";
 	$minutes = '60';	// Repeated setting is redundant, but it's better to keep this text change with the SQL change.
 }
 $queryOne = $pdo->prepare( $sqlOne );
-
 
 // Set default boundaries for chart
 $chart_y_min = $normalLows[ date( 'n', strtotime($from_date) )-1 ];
@@ -186,12 +170,26 @@ $very_first = true;
 
 $saved_string = VOID;	// Used to store the current X-axis' label until we tell pChart about it
 
+$log->logInfo( "draw_daily.php: sqlOne is ($sqlOne)" );	// Soooo wierd, this log line writes AFTER the completion log entry.
 foreach( $days as $show_date )
 {
 	$dates .= $show_date . '   ';
 
-	$queryOne->execute( array( $show_date, $show_date, $uuid ) );
-
+/** QQQ
+	if( $dayCount > 1 )
+	{
+*/
+		$queryOne->execute( array( $show_date, $show_date, $uuid ) );
+//$log->logInfo( "draw_daily.php: Executing sqlOne with ($show_date, $show_date, $uuid)" );
+/** QQQ
+	}
+	else
+	{	// I think I may only need the extra data point for one day charting, but I may always need it?
+		$oneMoreRow = strftime( '%Y-%m-%d 00:00:00', strtotime( "$show_date +1 days" ) );
+		$queryOne->execute( array( $show_date, $show_date, $uuid, $oneMoreRow, $oneMoreRow, $uuid ) );
+//$log->logInfo( "draw_daily.php: Executing sqlOne with ($show_date, $show_date, $uuid, , '2014-02-06 00:00:00', '2014-02-06 00:00:00', $uuid) adding $oneMoreRow" );
+	}
+*/
 	$counter = 0;
 	$first_row = true;
 	while( $row = $queryOne->fetch( PDO::FETCH_ASSOC ) )
@@ -222,18 +220,22 @@ foreach( $days as $show_date )
 		else if( $dayCount >  6 ) $labelDivisor =  6;
 		else $labelDivisor = $dayCount;
 
+//$log->logInfo( "draw_daily.php: Here is the data point to prove we got it {$row['date']}");	// So why isn't it showing up in the chart?
+
 		if( ! $table_flag )
 		{	// Only set X-Axis labels if we're displaying a chart
 			if( $very_first )
 			{	// Always show the first one - regardless of settings
 				if( $dayCount < 6 )
 				{	// Show time if we have only a few days.
-					$MyData->addPoints( substr( $row['date'], 11, 5 ), 'Labels' );
+					$saved_string = substr( $row['date'], 11, 5 );
 				}
 				else
 				{	// Show date if we have a lot.
-					$MyData->addPoints( substr( $row[ 'date' ], 5, 5 ), 'Labels' );
+					$saved_string = substr( $row[ 'date' ], 5, 5 );
 				}
+					$MyData->addPoints( $saved_string, 'Labels' );
+$log->logInfo( "draw_daily.php: adding to AAA Label " . substr( $row['date'], 11, 5 ) );
 			}
 			else
 			{	/**
@@ -250,7 +252,7 @@ foreach( $days as $show_date )
 
 				if( $dayCount <= 28 )
 				{	// 13, 3 = minutes with colon (:MM), 11, 2 = two digit hour (HH)
-					if( ( substr( $row['date'], 13, 3 ) == ':00' ) && ( substr( $row['date'], 11, 2 ) % $labelDivisor == 0 ) )
+					if( ( substr( $row['date'], 13, 3 ) == ':00' ) && ( (substr( $row['date'], 11, 2 ) % $labelDivisor) == 0 ) )
 					{	// Only show axis every -interval- hours
 						if( substr( $row['date'], 11, 2 ) == '00' ) // This is '00:mm' (and we already know that 'mm' is '00')
 						{	// At midnight show the new date in MM-DD format
@@ -278,11 +280,13 @@ foreach( $days as $show_date )
 					* -- Lerrissirrel
 					*/
 				$MyData->addPoints( $saved_string, 'Labels' );
+$log->logInfo( "draw_daily.php: adding to CCC Label " . $saved_string );
 			}
 
 			if( $source == 1 || $source == 2 )
 			{	// Indoor or both
 				$MyData->addPoints( ($row['indoor_temp'] == 'VOID' ? VOID : $row['indoor_temp']), 'Indoor' );
+//$log->logInfo( "draw_daily.php: Here is the data point to prove we got it {$row['date']} and {$row['indoor_temp']}");
 			}
 			if( $source == 0 || $source == 2 )
 			{	// Outdoor or both
@@ -400,20 +404,20 @@ echo "<br>uuid is $uuid";
 if( $show_setpoint == 1 )
 {
 	$sqlFour =
-  "SELECT set_point, switch_time
-  FROM {$dbConfig['table_prefix']}setpoints
-  WHERE id = ?
-  AND switch_time BETWEEN ? AND ?
-  UNION ALL
-  SELECT set_point, switch_time
+	"SELECT set_point, switch_time
+	 FROM {$dbConfig['table_prefix']}setpoints
+	 WHERE id = ?
+		AND switch_time BETWEEN ? AND ?
+	 UNION ALL
+	 SELECT set_point, switch_time
 	 FROM (
-  SELECT *
-  FROM {$dbConfig['table_prefix']}setpoints
-  WHERE switch_time < ?
-  ORDER BY switch_time DESC
-  LIMIT 1
-  ) AS one_before_start
-  ORDER BY switch_time ASC";
+		SELECT *
+		FROM {$dbConfig['table_prefix']}setpoints
+		WHERE switch_time < ?
+		ORDER BY switch_time DESC
+		LIMIT 1
+		) AS one_before_start
+	 ORDER BY switch_time ASC";
 
   $queryFour = $pdo->prepare($sqlFour);
   $result = $queryFour->execute(array( $id, $start_date, $end_date, $start_date ) );
@@ -528,24 +532,9 @@ $myPicture->drawLineChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DI
 /**
 	* After the chart is created, prepare the overlays.  I draw these manually because I can't
 	*  find a horizontal 'stacked' bar chart that allows missing pieces in it in pChart.
-	*
-	* To make the rendering portion faster it would be better to do the SQL operations before the initiation
-	*  of the charting and copy the data into an array to pass in to the drawing code.
-	*
-	* This representation of cycle runtimes has some serious omissions.
-	*
-	* Omission 1:
-	*  is that presently running cycles are not shown since the data is sourced from the completed cycle table.
-	*  to fix that a small query on the per minute table with a start time of the last stop from the first SQL
-	*  should be added.  The display should indicate this is open ended (lighter color perhaps or use static images?)
-	*
-	* Others were fixed....
 	*/
 
 $PixelsPerMinute = (($graphAreaEndX - $graphAreaStartX) / 1440) / $dayCount;  // = 0.54861 (for dayCount = 1)
-//$log->logInfo( "draw_daily.php: computed value for PixelsPerMinute as $PixelsPerMinute." );
-//$log->logInfo( "draw_daily.php: The computation is $PixelsPerMinute = (($graphAreaEndX - $graphAreaStartX) / 1440) / $dayCount");
-// For dayCount = 1:  INFO --> draw_daily.php: computed value for PixelsPerMinute as 0.54861111111111.
 /**
 	* Assumptions:
 	*  1. The chart X-axis represents 24 hours
@@ -641,13 +630,13 @@ if( $show_setpoint == 1 )
 	$first_row = 1;
 //	while( $row = $queryFour->fetch( PDO::FETCH_ASSOC ) )
 	foreach( $queryFourData as $row )
-  {
+	{
 		/** The query returns one row prior to the current date range so that
-		 * we can determine the setpoint leading into the first drawn day
-		 *** This falls apart currently if there is not a setpoint for the prior day
-		 *** but there should always be one unless the database table is just starting
-		 *** to become populated with data.
-		 */
+			* we can determine the setpoint leading into the first drawn day
+			*** This falls apart currently if there is not a setpoint for the prior day
+			*** but there should always be one unless the database table is just starting
+			*** to become populated with data.
+			*/
 		if( $first_row == 1 )
 		{
 			$first_row = 0;
