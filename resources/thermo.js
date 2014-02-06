@@ -210,7 +210,7 @@ function deleteCookies( chart )
 		setCookie( 'chart.daily.interval.group', '', -1 );
 		setCookie( 'chart.daily.toDate', '', -1 );
 
-		/* These are left over fro teh failed experiment to set a background color when a value came from a cookie
+		/* These are left over from the failed experiment to set a background color when a value came from a cookie
 		   The experiment failed because browsers do not let you set styles on ALL the imputs.  Several inherit from the OS
 		document.getElementById('chart.daily.setpoint').className = '';
 		document.getElementById('chart.daily.showHeat').className = '';
@@ -228,7 +228,7 @@ function deleteCookies( chart )
 		setCookie( 'chart.history.interval.group', '', -1 );
 		setCookie( 'chart.history.toDate', '', -1 );
 
-		/* These are left over fro teh failed experiment to set a background color when a value came from a cookie
+		/* These are left over from the failed experiment to set a background color when a value came from a cookie
 		   The experiment failed because browsers do not let you set styles on ALL the imputs.  Several inherit from the OS
 		document.getElementById('chart.history.interval.length').className = '';
 		document.getElementById('chart.history.interval.group').className = '';
@@ -240,20 +240,23 @@ function deleteCookies( chart )
 // Expected values are -1 or +1
 function interval( direction )
 {
-	var toDate = new Date( document.getElementById( 'chart.daily.toDate' ).value );
+	var valueString = document.getElementById( 'chart.daily.toDate' ).value;	// Hold in intermediate variable for debugging
+	var stupidDate = new Date( valueString );	// This date is stupid because '2014-02-06' becomes '2014-02-05 18:00'
+	var toDate = new Date( stupidDate.getTime() + (stupidDate.getTimezoneOffset()*60*1000) );	// The time zone offset is presented in minutes
+	
 	var oneDay = 86400000;  // 24*60*60*1000 (milliseconds)
 	var multiplier;
 	switch( document.getElementById( 'chart.daily.interval.group' ).value )
 	{
-		case 1:
+		case '1':
 			// Weeks
 			multiplier = 7;
 		break;
-		case 2:
+		case '2':
 			// Months.  Yes, technically depending on WHICH month it is, this should be a different length.
 			multiplier = 30;
 		break;
-		case 3:
+		case '3':
 			// Years
 			multiplier = 365;
 		break;
@@ -265,34 +268,21 @@ function interval( direction )
 	var intervalLength = document.getElementById( 'chart.daily.interval.length' ).value * (oneDay * multiplier);
 	var nextDate;
 	if( direction == 1 )
-	{	// Show next interval
-		// Date arithmatic
+	{	// Compute next interval ending date
 		nextDate = new Date( toDate.getTime() + intervalLength );
 	}
 	else
-	{	// Show previous interval
-		// Date arithmatic
+	{	// Compute previous interval ending date
 		nextDate = new Date( toDate.getTime() - intervalLength );
 	}
 	var monthString = nextDate.getMonth() + 1; // Because getMonth() is zero based
 	if( monthString < 10 ) monthString = '0' + monthString;
-	var dateString = nextDate.getDate() + 1;	// because getDate() is zero based
+	var dateString = nextDate.getDate();
 	if( dateString < 10 ) dateString = '0' + dateString;
-	document.getElementById( 'chart.daily.toDate' ).value = '' + nextDate.getFullYear() + '-' + monthString + '-' + dateString;
-	alert( 'toDate is ('+toDate+
-				 ') and in milliseconds that is ('+startDate.getTime()+
-				 ') while unix says about (1391555004'+
-				 ') the increment is ('+document.getElementById( 'chart.daily.interval.length' ).value+
-				 ') producing a multiplier of ('+multiplier+
-				 ') and intervalLength is ('+intervalLength+
-				 ') and result is ('+document.getElementById( 'chart.daily.toDate' ).value+
-				 ')' ); 
-/*
-	var daily_interval_length    = 'chart.daily.interval.length=' + document.getElementById( 'chart.daily.interval.length' ).value;
-	var daily_interval_group     = 'chart.daily.interval.group='  + document.getElementById( 'chart.daily.interval.group' ).value;
-	var daily_to_date_string     = 'chart.daily.toDate='          + document.getElementById( 'chart.daily.toDate' ).value;
-*/
-	display_chart( 'daily', 'chart' );
+	valueString = '' + nextDate.getFullYear() + '-' + monthString + '-' + dateString; 	// Hold in intermediate variable for debugging
+	document.getElementById( 'chart.daily.toDate' ).value = valueString;
+	
+	display_chart( 'daily', 'chart' );	// Now go show the new interval
 }
 
 
