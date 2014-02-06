@@ -209,13 +209,13 @@ foreach( $days as $show_date )
 			* 17		24 (date only)
 			* 31		24
 			* 32		each week start date
-			* 70 Change to every hour SELECT instead of every half hour SELECT
-			* The charting software borks if the internal rendering time limit of 30 seconds is hit.  Happens around
+			* 70 Change to every hour SELECT instead of every half hour SELECT (cuts data points in half!)
+			* The charting software borks if the internal rendering time limit of 30 seconds is hit.
+			* On my server, these limit happen around
 			* ~75 days of every half-hour
 			* ~80 days of hours
 			* This crash is VERY is dependant upon server load...
 			*/
-
 		if( $dayCount > 13 ) $labelDivisor = 24;
 		else if( $dayCount > 10 ) $labelDivisor = 12;
 		else if( $dayCount >  8 ) $labelDivisor =  8;
@@ -249,10 +249,10 @@ foreach( $days as $show_date )
 					*/
 
 				if( $dayCount <= 28 )
-				{	// 13,3 = minutes with colon (:MM), 11, 2 = two digit hour (HH)
+				{	// 13, 3 = minutes with colon (:MM), 11, 2 = two digit hour (HH)
 					if( ( substr( $row['date'], 13, 3 ) == ':00' ) && ( substr( $row['date'], 11, 2 ) % $labelDivisor == 0 ) )
 					{	// Only show axis every -interval- hours
-						if( substr( $row['date'], 11, 2 ) == '00' )
+						if( substr( $row['date'], 11, 2 ) == '00' ) // This is '00:mm' (and we already know that 'mm' is '00')
 						{	// At midnight show the new date in MM-DD format
 							// (How to add emphasis to distinguish from time stamps?)
 							$saved_string = substr($row['date'], 5, 5);
@@ -261,6 +261,7 @@ foreach( $days as $show_date )
 						{	// Otherwise show the hour in HH:MM format
 							$saved_string = substr($row['date'], 11, 5);
 						}
+// Something in here is adding too many extra (some extra are OK like the :30 ones in a one day chart) hash marks to the x-axis line.
 					}
 				}
 				else
@@ -271,10 +272,11 @@ foreach( $days as $show_date )
 					}
 				}
 
-				// We may, or may not, have changed $saved_string, but if we didn't change it is is because we didn't
-				// want to show a value for a particular point on the X axis - pChart detects that same value
-				// and doesn't display anything
-
+				/** We may, or may not, have changed $saved_string, but if we didn't change it is is because we didn't
+					* want to show a value for a particular point on the X axis - pChart detects that same value
+					* and doesn't display anything (as opposed to VOID which is different than the previous value).
+					* -- Lerrissirrel
+					*/
 				$MyData->addPoints( $saved_string, 'Labels' );
 			}
 
@@ -314,15 +316,21 @@ foreach( $days as $show_date )
 			*/
 		if( $source == 1 || $source == 2 )
 		{	// Indoor or both
-			while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) < $chart_y_min ) $chart_y_min -= 10;
-			while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) > $chart_y_max ) $chart_y_max += 10;
+			while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) < $chart_y_min + 10 ) $chart_y_min -= 10;
+			while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) > $chart_y_max - 10 ) $chart_y_max += 10;
 		}
 		if( $source == 0 || $source == 2 )
 		{	// Outdoor or both
-			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) < $chart_y_min ) $chart_y_min -= 10;
-			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) > $chart_y_max ) $chart_y_max += 10;
+			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) < $chart_y_min + 10 ) $chart_y_min -= 10;
+			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) > $chart_y_max - 10 ) $chart_y_max += 10;
 		}
   }
+}
+
+if( ! $table_flag )
+{	// Only set X-Axis labels if we're displaying a chart
+	// Cram one more label on the very end to restore that last 30 minutes on the chart x-axis.
+	$MyData->addPoints( $saved_string, 'Labels' );
 }
 
 // For a $show_date of '2012-07-10' get the start and end bounding datetimes
@@ -398,8 +406,7 @@ if( $show_setpoint == 1 )
   AND switch_time BETWEEN ? AND ?
   UNION ALL
   SELECT set_point, switch_time
-  FROM
-  (
+	 FROM (
   SELECT *
   FROM {$dbConfig['table_prefix']}setpoints
   WHERE switch_time < ?
@@ -410,8 +417,14 @@ if( $show_setpoint == 1 )
 
   $queryFour = $pdo->prepare($sqlFour);
   $result = $queryFour->execute(array( $id, $start_date, $end_date, $start_date ) );
+//$log->logInfo( "draw_daily.php: Executing sqlFour ($sqlFour) for values $id, $start_date, $end_date, $start_date" );
+	while( $row = $queryFour->fetch( PDO::FETCH_ASSOC ) )
+	{
+		$queryFourData[] = $row;
+		while( $row['set_point'] < $chart_y_min + 10 ) $chart_y_min -= 10;
+		while( $row['set_point'] > $chart_y_max - 10 ) $chart_y_max += 10;
+	}
 }
-
 
 if( $table_flag )
 {	// If we're showing the data in a chart, we're done now.  Wrap up the table tag and press the eject button.
@@ -496,7 +509,7 @@ $myPicture->setGraphArea( $graphAreaStartX, $graphAreaStartY, $graphAreaEndX, $g
 
 // Draw the scale
 $myPicture->setFontProperties( array( 'FontName' => 'pf_arma_five.ttf', 'FontSize' => 6 ) );
-$scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE );
+$scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE, 'XMargin' => 0,'YMargin' => 0,'Floating' => TRUE );
 $myPicture->drawScale( $scaleSettings );
 
 // Write the chart legend
@@ -513,65 +526,50 @@ $myPicture->drawLineChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DI
 
 
 /**
-* After the chart is created, prepare the overlays.  I draw these manually because I can't
-*  find a horizontal 'stacked' bar chart that allows missing pieces in it in pChart.
-*
-* To make the rendering portion faster it would be better to do the SQL operations before the initiation
-*  of the charting and copy the data into an array to pass in to the drawing code.
-*
-* This representation of cycle runtimes has some serious omissions.
-*
-* Omission 1:
-*  is that presently running cycles are not shown since the data is sourced from the completed cycle table.
-*  to fix that a small query on the per minute table with a start time of the last stop from the first SQL
-*  should be added.  The display should indicate this is open ended (lighter color perhaps or use static images?)
-*
-* Others were fixed....
-*/
+	* After the chart is created, prepare the overlays.  I draw these manually because I can't
+	*  find a horizontal 'stacked' bar chart that allows missing pieces in it in pChart.
+	*
+	* To make the rendering portion faster it would be better to do the SQL operations before the initiation
+	*  of the charting and copy the data into an array to pass in to the drawing code.
+	*
+	* This representation of cycle runtimes has some serious omissions.
+	*
+	* Omission 1:
+	*  is that presently running cycles are not shown since the data is sourced from the completed cycle table.
+	*  to fix that a small query on the per minute table with a start time of the last stop from the first SQL
+	*  should be added.  The display should indicate this is open ended (lighter color perhaps or use static images?)
+	*
+	* Others were fixed....
+	*/
 
-//$PixelsPerMinute = (($graphAreaEndX - $graphAreaStartX) / 1440) / $dayCount;  // = 0.54861 (for dayCount = 1)
+$PixelsPerMinute = (($graphAreaEndX - $graphAreaStartX) / 1440) / $dayCount;  // = 0.54861 (for dayCount = 1)
 //$log->logInfo( "draw_daily.php: computed value for PixelsPerMinute as $PixelsPerMinute." );
 //$log->logInfo( "draw_daily.php: The computation is $PixelsPerMinute = (($graphAreaEndX - $graphAreaStartX) / 1440) / $dayCount");
 // For dayCount = 1:  INFO --> draw_daily.php: computed value for PixelsPerMinute as 0.54861111111111.
-$chartFudgeFactor = 5 / $dayCount;	// Added to fix rioght hand edge opvershoot
-$PixelsPerMinute = ((($graphAreaEndX - $chartFudgeFactor) - $graphAreaStartX) / 1440) / $dayCount;  // = 0.545 (for dayCount = 1)
-//$log->logInfo( "draw_daily.php: Forced value for PixelsPerMinute to $PixelsPerMinute by using chartFudgeFactor of $chartFudgeFactor." );
-/*
-* Assumptions:
-*  1. The chart X-axis represents 24 hours
-*  2. The graph horizontal area (i.e. graph area) is 790 pixels wide (so each pixel represents 1.82 minutes)
-*
-* Why 0.54861?  (when dayCount is 1)
-* The chart area boundary is defined as 790px wide (850px - 60px start position).
-* 1440 is the number of minutes in a day.
-* $dayCount is the number of days that will be charted
-* ((850 - 60) / 1440) / 1
-* 790px / 1440 pixels/day = .54861 pixels per minute
-*
-* Why 0.545?  (when dayCount is 1)
-* Because the computed version produced results that looked incorrect.  Events that took place on the last minute of the day were
-* scaled off the right hand edge of the chart area.  Trial and error moved those events to the very last pixel column on the chart.
-* Using 0.546 moves it one pixel OFF the chart and 0.544 shrinks it too much.  Sigh.  But I can't hard code a single nubmer hence
-* the computed $chartFudgeFactor.
-*
-* The $dayCount factor was added to account for the number of days in the display.  Too many days and the dispaly will be really ugly
-*
-* Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
-*/
+/**
+	* Assumptions:
+	*  1. The chart X-axis represents 24 hours
+	*  2. The graph horizontal area (i.e. graph area) is 790 pixels wide (so each pixel represents 1.82 minutes)
+	*
+	* Why 0.54861?  (when dayCount is 1)
+	* The chart area boundary is defined as 790px wide (850px - 60px start position).
+	* 1440 is the number of minutes in a day.
+	* $dayCount is the number of days that will be charted
+	* ((850 - 60) / 1440) / 1
+	* 790px / 1440 pixels/day = .54861 pixels per minute
+	*
+	* The $dayCount factor was added to account for the number of days in the display.  Too many days and the display will be really ugly
+	*
+	* Cycle data is represented by drawing objects, so it has to be AFTER the creation of $myPicture
+	*/
 
 // Positions are relative to the charting area rather than graphing area
-// Give 60px for the start of the graphing area and 8/daycount for the 00:00 starting px offset
-$LeftMargin = $graphAreaStartX + (8 / $dayCount);
+$LeftMargin = $graphAreaStartX;
 
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 )
 {	// The SQL has already been executed.  Now just draw it.
 
-  // The rounded corners look so much better, but the run times are so short that the rounds seldom appear.
-  // Old colors
-  //$HeatGradientSettings = array( 'StartR' => 200, 'StartG' => 100, 'StartB' => 100, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
-  //$CoolGradientSettings = array( 'StartR' =>  50, 'StartG' =>  50, 'StartB' => 200, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
-  //$FanGradientSettings  = array( 'StartR' => 255, 'StartG' => 255, 'StartB' =>   0, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  0, 'BorderG' =>  0, 'BorderB' => 0  );
-  // New colors (trying to match the weekly chart color for HVAC run times)
+  // The rounded corners look so much better, but the run times are so relatively short that the rounds seldom appear.
   $HeatGradientSettings = array( 'StartR' => 150, 'StartG' =>  50, 'StartB' =>  80, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  140, 'BorderG' =>  40, 'BorderB' =>  70 );
   $CoolGradientSettings = array( 'StartR' =>  50, 'StartG' => 150, 'StartB' => 180, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>   40, 'BorderG' => 140, 'BorderB' => 170 );
   $FanGradientSettings  = array( 'StartR' => 235, 'StartG' => 235, 'StartB' =>   0, 'Alpha' => 65, 'Levels' => 90, 'BorderR' =>  255, 'BorderG' => 255, 'BorderB' =>   0 );
@@ -641,9 +639,10 @@ if( $show_setpoint == 1 )
 	$setpoint_scale = ($chart_y_max - $chart_y_min) / ($graphAreaEndY - $graphAreaStartY);
 
 	$first_row = 1;
-	while( $row = $queryFour->fetch( PDO::FETCH_ASSOC ) )
+//	while( $row = $queryFour->fetch( PDO::FETCH_ASSOC ) )
+	foreach( $queryFourData as $row )
   {
-		/* The query returns one row prior to the current date range so that
+		/** The query returns one row prior to the current date range so that
 		 * we can determine the setpoint leading into the first drawn day
 		 *** This falls apart currently if there is not a setpoint for the prior day
 		 *** but there should always be one unless the database table is just starting
@@ -667,9 +666,9 @@ if( $show_setpoint == 1 )
 		$end_px = $start_px + ( $interval->format('%h') * 60 + $interval->format('%i') ) * $PixelsPerMinute;
 
     // Draw the horizontal setpoint line
-    $myPicture->drawLine($start_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));
+    $myPicture->drawLine( $start_px, $graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale, $end_px, $graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale, array( 'R' => 100, 'G' => 100, 'B' => 255, 'Ticks' => 2, 'Alpha' => 60 ) );
 		// Draw the vertical setpoint change line
-		$myPicture->drawLine($end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));
+		$myPicture->drawLine( $end_px, $graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale, $end_px, $graphAreaEndY-($setpoint-$chart_y_min)/$setpoint_scale, array( 'R' => 100, 'G' => 100, 'B' => 255, 'Ticks' => 2, 'Alpha' => 60 ) );
 
 		// Reset parameters for next iteration
 		$prev_switch_time = $switch_time;
@@ -683,15 +682,15 @@ if( $show_setpoint == 1 )
 		*/
 	$now = date_create();
 	$interval = $prev_switch_time->diff($now);
-	if ($prev_switch_time->format('Y-m-d') == $now->format('Y-m-d'))
+	if( $prev_switch_time->format('Y-m-d') == $now->format('Y-m-d') )
 	{
 		$end_px = $start_px + ( $interval->format('%h') * 60 + $interval->format('%i') ) * $PixelsPerMinute;
-		$myPicture->drawLine($start_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));
+		$myPicture->drawLine( $start_px, $graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale, $end_px, $graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale, array( "R" => 100, "G" => 100, "B" => 255, "Ticks" =>2, "Alpha" => 60 ) );
 	}
 	else
 	{
 		$end_px = $graphAreaEndX;
-		$myPicture->drawLine($start_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,$end_px,$graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale,array("R"=>100,"G"=>100,"B"=>255,"Ticks"=>2, "Alpha"=>60));
+		$myPicture->drawLine( $start_px, $graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale, $end_px, $graphAreaEndY-($prev_setpoint-$chart_y_min)/$setpoint_scale, array( "R" => 100, "G" => 100, "B" => 255, "Ticks" => 2, "Alpha" => 60 ) );
 	}
 }
 

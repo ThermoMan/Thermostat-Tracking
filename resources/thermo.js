@@ -1,6 +1,9 @@
 "use strict";
+/** These are the functions associated with the thermostat viewer web page.
+	*
+	*/
 
-	/**
+/**
 		* chart is one of 'daily' or 'history'
 		* sytle is one of 'chart' or 'table'
 		*
@@ -234,12 +237,64 @@ function deleteCookies( chart )
 	}
 }
 
-/*
-function doLogout()
+// Expected values are -1 or +1
+function interval( direction )
 {
-	alert( 'Not implemented yet.' );
-}
+	var toDate = new Date( document.getElementById( 'chart.daily.toDate' ).value );
+	var oneDay = 86400000;  // 24*60*60*1000 (milliseconds)
+	var multiplier;
+	switch( document.getElementById( 'chart.daily.interval.group' ).value )
+	{
+		case 1:
+			// Weeks
+			multiplier = 7;
+		break;
+		case 2:
+			// Months.  Yes, technically depending on WHICH month it is, this should be a different length.
+			multiplier = 30;
+		break;
+		case 3:
+			// Years
+			multiplier = 365;
+		break;
+		default:
+			// Days and catchall
+			multiplier = 1;
+		
+	}
+	var intervalLength = document.getElementById( 'chart.daily.interval.length' ).value * (oneDay * multiplier);
+	var nextDate;
+	if( direction == 1 )
+	{	// Show next interval
+		// Date arithmatic
+		nextDate = new Date( toDate.getTime() + intervalLength );
+	}
+	else
+	{	// Show previous interval
+		// Date arithmatic
+		nextDate = new Date( toDate.getTime() - intervalLength );
+	}
+	var monthString = nextDate.getMonth() + 1; // Because getMonth() is zero based
+	if( monthString < 10 ) monthString = '0' + monthString;
+	var dateString = nextDate.getDate() + 1;	// because getDate() is zero based
+	if( dateString < 10 ) dateString = '0' + dateString;
+	document.getElementById( 'chart.daily.toDate' ).value = '' + nextDate.getFullYear() + '-' + monthString + '-' + dateString;
+	alert( 'toDate is ('+toDate+
+				 ') and in milliseconds that is ('+startDate.getTime()+
+				 ') while unix says about (1391555004'+
+				 ') the increment is ('+document.getElementById( 'chart.daily.interval.length' ).value+
+				 ') producing a multiplier of ('+multiplier+
+				 ') and intervalLength is ('+intervalLength+
+				 ') and result is ('+document.getElementById( 'chart.daily.toDate' ).value+
+				 ')' ); 
+/*
+	var daily_interval_length    = 'chart.daily.interval.length=' + document.getElementById( 'chart.daily.interval.length' ).value;
+	var daily_interval_group     = 'chart.daily.interval.group='  + document.getElementById( 'chart.daily.interval.group' ).value;
+	var daily_to_date_string     = 'chart.daily.toDate='          + document.getElementById( 'chart.daily.toDate' ).value;
 */
+	display_chart( 'daily', 'chart' );
+}
+
 
 /**
 	* Process return from Ajax call.

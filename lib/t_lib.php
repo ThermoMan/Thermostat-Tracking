@@ -247,7 +247,7 @@ public $dummy_time = null, $dummy_temp = null;
 				}
 				else
 				{
-					$log->logError( 't_lib: containsTransient: value was NOT an object!' );
+					// $log->logError( 't_lib: containsTransient: value was NOT an object!' );
 				}
 				if( $value == -1 )
 				{

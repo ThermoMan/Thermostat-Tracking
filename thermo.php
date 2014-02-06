@@ -145,7 +145,21 @@ if( $isLoggedIn )
 						</select>
 						<!-- A checkbox to turn on/off the display of the set point temperature -->
 						<input type='checkbox' id='chart.daily.setpoint' name='chart.daily.setpoint' onChange='javascript: toggle_daily_flag( "chart.daily.setpoint" );'/> Set Point
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Timeframe <input type='text' id='chart.daily.interval.length' onChange='javascript: saveDateData("daily");' value='7' size='3'>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; showing Heat<input type='checkbox' id='chart.daily.showHeat' name='chart.daily.showHeat' onChange='javascript: toggle_daily_flag( "chart.daily.showHeat" );'/>
+						&nbsp;Cool<input type='checkbox' id='chart.daily.showCool' name='chart.daily.showCool' onChange='javascript: toggle_daily_flag( "chart.daily.showCool" );'/>
+						&nbsp;Fan<input type='checkbox' id='chart.daily.showFan'	name='chart.daily.showFan'	onChange='javascript: toggle_daily_flag( "chart.daily.showFan" );'/> cycles
+						<input type='button' onClick='javascript: deleteCookies(0);' value='Un-save settings' style='float: right;'> <!-- it floats too far to the right -->
+						<br>
+<!--
+Add buttons to view previous and next intervals.  Where an interval length is determines by the numbr of days displayed.
+When disabling the next button only compare that start date has data.
+When disabling the previous button only compare that the end date has data.
+These requirements may necesitate a SQL to find the min and max dates for data in the DB for the specified thermostat.
+Should these dates be in the thermostat table as first_contact and last_contact?  I think so.
+-->
+					<div class='tab-toolbar'>
+						<input type='button' onClick='javascript: interval(-1);' value='Previous' title='Show previous timeframe' >
+						Timeframe <input type='text' id='chart.daily.interval.length' onChange='javascript: saveDateData("daily");' value='7' size='3'>
 						<select id='chart.daily.interval.group' onChange='javascript: saveDateData("daily");' style='width: 65px'>
 							<option value='0' selected>days</option>
 							<option value='1'>weeks</option>
@@ -154,14 +168,12 @@ if( $isLoggedIn )
 						</select>
 						<!-- Need to change the max value to a date computed by JavaScript so it stays current when the page is open across midnight -->
 						ending on <input type='date' id='chart.daily.toDate' onChange='javascript: saveDateData("daily");' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' step='1'/>
-						&nbsp; showing Heat<input type='checkbox' id='chart.daily.showHeat' name='chart.daily.showHeat' onChange='javascript: toggle_daily_flag( "chart.daily.showHeat" );'/>
-						&nbsp;Cool<input type='checkbox' id='chart.daily.showCool' name='chart.daily.showCool' onChange='javascript: toggle_daily_flag( "chart.daily.showCool" );'/>
-						&nbsp;Fan<input type='checkbox' id='chart.daily.showFan'	name='chart.daily.showFan'	onChange='javascript: toggle_daily_flag( "chart.daily.showFan" );'/> cycles
-						<input type='button' onClick='javascript: deleteCookies(0);' value='Un-save settings' style='float: right;'>
+						<input type='button' onClick='javascript: interval(1);' value='Next' title='Show next timeframe' >
 <!-- Not yet working so hide it from user until it does...
 						<input type='checkbox' id='auto_refresh'		 name='auto_refresh'		 onChange='javascript: timedRefresh();'/>Auto refresh
 						<span id='daily_update' style='float: right; vertical-align: middle; visibility: hidden;'>Countdown to refresh: 00:00</span>
 -->
+					</div>
 					</div>
 					<div class='content'>
 						<br>

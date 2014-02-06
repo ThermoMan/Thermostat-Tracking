@@ -300,7 +300,7 @@ $MyData->setSerieDrawable( 'Indoor Max', FALSE );
 	* START of common block - this code should be identical for all charts so that they have a common look and feel
 	*/
 $myPicture = new pImage( 900, 430, $MyData );	// Create the pChart object
-$myPicture->Antialias = TRUE;									// Turn on Antialiasing
+$myPicture->Antialias = FALSE;								// Turn OFF Antialiasing (it draws faster)
 
 // Draw the background
 $Settings = array( 'R' => 170, 'G' => 183, 'B' => 87, 'Dash' => 1, 'DashR' => 190, 'DashG' => 203, 'DashB' => 107, 'Alpha' => 60 );
@@ -325,12 +325,17 @@ $myPicture->drawText( 60, 55, $chartTitle, array( 'FontSize' => 12, 'Align' => T
 // Write the picture timestamp
 $myPicture->drawText( 680, 14, 'Last update ' . date( 'Y-m-d H:i' ), array( 'R' => 255, 'G' => 255, 'B' => 255) );
 
-$myPicture->setGraphArea( 60, 60, 850, 390 );	 // Define the chart area
+// Define the chart area
+$graphAreaStartX = 60;
+$graphAreaEndX = 850;
+$graphAreaStartY = 60;
+$graphAreaEndY = 390;
+$myPicture->setGraphArea( $graphAreaStartX, $graphAreaStartY, $graphAreaEndX, $graphAreaEndY );
 
 // Draw the scale
 $myPicture->setFontProperties( array( 'FontName' => 'pf_arma_five.ttf', 'FontSize' => 6 ) );
-$scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE );
-// Sadly 'CycleBackground' is applied to all scales equally so when you turn on the run times you get an ugly background change.
+$scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE, 'XMargin' => 0,'YMargin' => 0,'Floating' => TRUE );
+// Sadly 'CycleBackground' is applied to all scales equally so when you turn on the run times you get an ugly background change
 $myPicture->drawScale( $scaleSettings );
 
 // Write the chart legend - convert all legends to left aligned because there is no auto right alignment
@@ -338,6 +343,7 @@ $myPicture->setFontProperties( array( 'FontName' => 'pf_arma_five.ttf', 'FontSiz
 $myPicture->setShadow( TRUE, array( 'X' => 1, 'Y' => 1, 'R' => 0, 'G' => 0, 'B' => 0, 'Alpha' => 10 ) );
 $myPicture->drawLegend( 60, 412, array( 'Style' => LEGEND_NOBORDER, 'Mode' => LEGEND_HORIZONTAL ) );
 // END of common block
+
 
 // Draw the chart(s)
 if( $indoor == 0 || $indoor == 2 )
