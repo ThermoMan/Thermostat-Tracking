@@ -45,8 +45,9 @@ if( $id == null )
   }
 }
 if( $id == null )
-{ // If there still is not one chosen then abort (instead of printing text that won't show up, display an error image that will)
-    print 'Thermostat not found.';
+{ // If there still is not one chosen then abort
+	$log->logError( 'common_chart.php: Thermostat ID was NULL!' );
+	// Need to redirect output to some image showing user there was an error and suggesting to read the logs.
     return;
 }
 
@@ -56,12 +57,12 @@ $query = $pdo->prepare( $sql );
 $query->execute( array( $id ) );
 $thermData = $query->fetchAll();
 if( !isset($thermData[0]['tstat_uuid']) || empty($thermData[0]['tstat_uuid']))
-{ // If the chosen thermostat is not known to the system then abort (instead of printing text that won't show up, display an error image that will)
-    print 'Thermostat not found.';
+{ // If the chosen thermostat is not known to the system then abort
+	$log->logError( 'common_chart.php: Requested thermostat ID was not found!' );
+	// Need to redirect output to some image showing user there was an error and suggesting to read the logs.
     return;
 }
 $uuid = $thermData[0]['tstat_uuid'];
 $statName = $thermData[0]['name'];
-
 
 ?>

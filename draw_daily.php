@@ -235,7 +235,7 @@ foreach( $days as $show_date )
 					$saved_string = substr( $row[ 'date' ], 5, 5 );
 				}
 					$MyData->addPoints( $saved_string, 'Labels' );
-$log->logInfo( "draw_daily.php: adding to AAA Label " . substr( $row['date'], 11, 5 ) );
+//$log->logInfo( "draw_daily.php: adding to AAA Label " . substr( $row['date'], 11, 5 ) );
 			}
 			else
 			{	/**
@@ -280,7 +280,7 @@ $log->logInfo( "draw_daily.php: adding to AAA Label " . substr( $row['date'], 11
 					* -- Lerrissirrel
 					*/
 				$MyData->addPoints( $saved_string, 'Labels' );
-$log->logInfo( "draw_daily.php: adding to CCC Label " . $saved_string );
+//$log->logInfo( "draw_daily.php: adding to CCC Label " . $saved_string );
 			}
 
 			if( $source == 1 || $source == 2 )

@@ -69,24 +69,25 @@ class schedule
 	{
 		$htmlString = '';
 
-// All attempts to center the blee box have failed
+// All attempts to center the bloody box have failed
 //		$htmlString .= "<div sytle='margin-left: auto; margin-right: auto;' >";
 
 // Do not use an "action", send the data via Ajax instead.  Want to limit the number of page reloads.
 // But only if it is secure.  Really need https, otherwise all the security is just pretend.
+// I'm using an https server on my site (ThermoMan)
 //
 
 		$htmlString .= '';
 		$htmlString .= '</br>';
 		$htmlString .= "Mode: <select name='mode' id='mode'>";
 		$htmlString .= "	<option value='0'>Cool</option>";
-		$htmlString .= "	<option value='1' default>Heat</option> <!-- Set default value from DB -->";
+		$htmlString .= "	<option value='1' default>Heat</option>";	// Set default value from DB
 		$htmlString .= "	<option value='2'>Auto</option>";
 		$htmlString .= '</select>';
 		$htmlString .= "Away: <input type='number'>";
 		$htmlString .= "Fan: <select name='mode' id='mode'>";
 		$htmlString .= "	<option value='0'>On</option>";
-		$htmlString .= "	<option value='1' default>Auto</option> <!-- Set default value from DB -->";
+		$htmlString .= "	<option value='1' default>Auto</option>";	// Set default value from DB
 		$htmlString .= '</select>';
 
 //		$htmlString .= '</br>';

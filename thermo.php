@@ -127,109 +127,11 @@ if( $isLoggedIn )
 			</script>
 			<div class='tab_gap'></div>
 
-
-
-			<div class='tab' id='daily'> <a href='#daily'> Daily Detail </a>
-				<div class='container'>
-					<div class='tab-toolbar'>
-						<input type='button' onClick='javascript: display_chart( "daily", "chart" );' value='Show'>
-						<select id='chart.daily.thermostat'>
-							<?php foreach( $thermostats as $thermostatRec ): ?>
-								<option <?php if( $id == $thermostatRec['id'] ): echo 'selected '; endif; ?>value='<?php echo $thermostatRec['id'] ?>'><?php echo $thermostatRec['name'] ?></option>
-							<?php endforeach; ?>
-						</select>
-						<select id='chart.daily.source'>
-							<option value='0'>Outoor</option>
-							<option value='1'>Indoor</option>
-							<option value='2' selected>Both</option>
-						</select>
-						<!-- A checkbox to turn on/off the display of the set point temperature -->
-						<input type='checkbox' id='chart.daily.setpoint' name='chart.daily.setpoint' onChange='javascript: toggle_daily_flag( "chart.daily.setpoint" );'/> Set Point
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; showing Heat<input type='checkbox' id='chart.daily.showHeat' name='chart.daily.showHeat' onChange='javascript: toggle_daily_flag( "chart.daily.showHeat" );'/>
-						&nbsp;Cool<input type='checkbox' id='chart.daily.showCool' name='chart.daily.showCool' onChange='javascript: toggle_daily_flag( "chart.daily.showCool" );'/>
-						&nbsp;Fan<input type='checkbox' id='chart.daily.showFan'	name='chart.daily.showFan'	onChange='javascript: toggle_daily_flag( "chart.daily.showFan" );'/> cycles
-						<input type='button' onClick='javascript: deleteCookies(0);' value='Un-save settings' style='float: right;'> <!-- it floats too far to the right -->
-						<br>
-<!--
-Add buttons to view previous and next intervals.  Where an interval length is determines by the numbr of days displayed.
-When disabling the next button only compare that start date has data.
-When disabling the previous button only compare that the end date has data.
-These requirements may necesitate a SQL to find the min and max dates for data in the DB for the specified thermostat.
-Should these dates be in the thermostat table as first_contact and last_contact?  I think so.
--->
-					<div class='tab-toolbar'>
-						<input type='button' onClick='javascript: interval(-1);' value='Previous' title='Show previous timeframe' >
-						Timeframe <input type='text' id='chart.daily.interval.length' onChange='javascript: saveDateData("daily");' value='7' size='3'>
-						<select id='chart.daily.interval.group' onChange='javascript: saveDateData("daily");' style='width: 65px'>
-							<option value='0' selected>days</option>
-							<option value='1'>weeks</option>
-							<option value='2'>months</option>
-							<option value='3'>years</option>
-						</select>
-						<!-- Need to change the max value to a date computed by JavaScript so it stays current when the page is open across midnight -->
-						ending on <input type='date' id='chart.daily.toDate' onChange='javascript: saveDateData("daily");' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' step='1'/>
-						<input type='button' onClick='javascript: interval(1);' value='Next' title='Show next timeframe' >
-<!-- Not yet working so hide it from user until it does...
-						<input type='checkbox' id='auto_refresh'		 name='auto_refresh'		 onChange='javascript: timedRefresh();'/>Auto refresh
-						<span id='daily_update' style='float: right; vertical-align: middle; visibility: hidden;'>Countdown to refresh: 00:00</span>
--->
-					</div>
-					</div>
-					<div class='content'>
-						<br>
-						<div class='thermo_chart'>
-							<img id='daily_temperature_chart' src='images/daily_temperature_placeholder.png' alt='The temperatures'>
-						</div>
-						<input type='button' onClick='javascript: display_chart( "daily", "table" );' value='Chart it' style='float: right;'>
-						<div id='daily_temperature_table' class='daily_temperature_table'>
-							<!-- Gets replaced by chart data -->
-						</div>
-
-
-						<!-- This initialization script must fall AFTER declaration of various inputs -->
-						<script type='text/javascript'>
-							// A literal value of "false" is a string of non zero length and so it tests as logically true uinless you look for the literal string "true"
-							if( getCookie('chart.daily.showCool') == 'true' )
-							{
-								document.getElementById('chart.daily.showCool').checked = true;									// Set flag
-								// Checkbox styles are not obeyed by browsers, they are styled by the OS.
-								document.getElementById('chart.daily.showCool').className = 'remembered_input';	// Set visual cue that cookie retains this value
-							}
-							if( getCookie('chart.daily.setpoint') == 'true' )
-							{
-								document.getElementById('chart.daily.setpoint').checked = true;
-								document.getElementById('chart.daily.setpoint').className = 'remembered_input';
-							}
-
-							if( getCookie('chart.daily.showHeat') == 'true' )
-							{
-								document.getElementById('chart.daily.showHeat').checked = true;
-								document.getElementById('chart.daily.showHeat').className = 'remembered_input';
-							}
-							if( getCookie('chart.daily.showFan') == 'true' )
-							{
-								document.getElementById('chart.daily.showFan').checked = true;
-								document.getElementById('chart.daily.showFan').className = 'remembered_input';
-							}
-
-
-							// Test values before use, don't let null (not set) change the defaults
-							loadDateData( 'daily' );
-							/*
-							if( getCookie('chart.daily.toDate') )
-							{
-								document.getElementById('chart.daily.toDate').value = getCookie('chart.daily.toDate');
-								//document.getElementById('chart.daily.toDate').className = 'remembered_input';
-							}
-							*/
-							display_chart( 'daily', 'chart' ); // Draw the chart using the applied settings
-						</script>
-					</div>
-				</div>
-			</div>
-			<div class='tab_gap'></div>
-
-
+<?php
+			require_once( 'daily_tab.class' );
+			$dailyDetail = new DailyDetail();
+			$dailyDetail->displayTab();
+?>
 
 			<div class='tab' id='history'> <a href='#history'> History </a>
 				<div class='container'>
@@ -274,7 +176,7 @@ Should these dates be in the thermostat table as first_contact and last_contact?
 
 
 <style>
-/* This set of styles works in Firefox, but NOT in Chrome
+/* This set of styles looks proper in Firefox, but NOT in Chrome
 div.schedule
 {
 	position: relative;

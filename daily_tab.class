@@ -1,0 +1,245 @@
+<script type='text/javascript'>
+/**
+	* chart is one of 'daily' or 'history'
+	* sytle is one of 'chart' or 'table'
+	*
+	*/
+function display_chart( chart, style )
+{
+	var chart_target;
+	var table_flag = '';
+
+	if( chart == 'daily' && style == 'chart' )
+	{
+		chart_target = document.getElementById( 'daily_temperature_chart' );
+		chart_target.src = 'images/daily_temperature_placeholder.png';	// Redraw the placekeeper while the chart is rendering
+		// By using setTimeout we can separate the drawing of the placeholder image from the actual chart such that the browser will always draw the placeholder
+		setTimeout(function(){ display_chart_build_and_display(chart, style, 'false', chart_target);}, 500);
+	}
+	else if( chart == 'daily' && style == 'table' )
+	{
+		table_flag = 'table_flag=true';
+		chart_target = document.getElementById( 'daily_temperature_table' );
+		display_chart_build_and_display( chart, style, table_flag, chart_target );
+	}
+	else
+	{
+		alert( 'You asked for '+chart+' and '+style+' and I do not know how to do that (yet).' );
+		return;
+	}
+}
+
+function display_chart_build_and_display( chart, style, table_flag, chart_target )
+{
+
+	var show_thermostat_id       = 'id='                          + document.getElementById( 'chart.daily.thermostat' ).value;
+	var daily_setpoint_selection = 'chart.daily.setpoint='        + document.getElementById( 'chart.daily.setpoint' ).checked;
+	var daily_source_selection   = 'chart.daily.source='          + document.getElementById( 'chart.daily.source' ).value;
+	var daily_interval_length    = 'chart.daily.interval.length=' + document.getElementById( 'chart.daily.interval.length' ).value;
+	var daily_interval_group     = 'chart.daily.interval.group='  + document.getElementById( 'chart.daily.interval.group' ).value;
+	var daily_to_date_string     = 'chart.daily.toDate='          + document.getElementById( 'chart.daily.toDate' ).value;
+	var show_heat_cycle_string   = 'chart.daily.showHeat='        + document.getElementById( 'chart.daily.showHeat' ).checked;
+	var show_cool_cycle_string   = 'chart.daily.showCool='        + document.getElementById( 'chart.daily.showCool' ).checked;
+	var show_fan_cycle_string	   = 'chart.daily.showFan='	        + document.getElementById( 'chart.daily.showFan' ).checked;
+
+	// Browsers are very clever with image caching.	In this case it breaks the web page function.
+	var no_cache_string = 'nocache=' + Math.random();
+
+	var url_string = '';
+	if( chart == 'daily' )
+	{
+		url_string = 'draw_daily.php';
+	}
+	else if( chart == 'history' )
+	{
+		// This space intentionally left blank (actually I don't recall why it was left blank, but everything seems to work)
+	}
+
+	url_string = url_string + '?' + show_thermostat_id + '&' + daily_source_selection + '&' + daily_setpoint_selection + '&' + table_flag + '&' +
+							 daily_interval_length + '&' + daily_interval_group + '&' + daily_to_date_string + '&' +
+							 show_heat_cycle_string	+ '&' + show_cool_cycle_string	+ '&' + show_fan_cycle_string + '&' +
+							 no_cache_string;
+
+	if( style == 'chart' )
+	{
+		chart_target.src = url_string;
+	}
+	else if( style == 'table' )
+	{	// Right now it assumes the DAILY table.  Fix that later
+		// Size should be in the CSS file?
+
+		// Gosh this iframe is a whole load of overkill and I hate it.
+		chart_target.innerHTML = '<iframe src="'+url_string+'" height="100" width="530"></iframe>';
+	}
+}
+
+
+/**
+	*	Save the value of the checkbox for later - and update the chart with the new value
+	*/
+function toggle_daily_flag( flag )
+{
+	setCookie( flag, document.getElementById(flag).checked );
+}
+
+
+</script>
+
+<?php
+class DailyDetail
+{
+	function __construct()
+	{
+		//echo 'hi!';
+	}
+
+	// How about making a generic Tab class and extending that to create specific tabs and setting properties to add things to the toolbar?
+	function displayTab()
+	{
+		$htmlString = '';
+
+		$htmlString .= "<div class='tab' id='daily'> <a href='#daily'> Daily Detail </a>";
+		$htmlString .= "	<div class='container'>";
+		$htmlString .= "		<div class='tab-toolbar'>";
+		$htmlString .= '			<input type="button" onClick="javascript: display_chart( \'daily\', \'chart\' );" value="Show">';
+
+		// Show thermostat chooser
+		$htmlString .= "			<select id='chart.daily.thermostat'>";
+		global $thermostats;
+		foreach( $thermostats as $thermostatRec )
+		{
+			$htmlString .= "<option ";
+			if( $id == $thermostatRec['id'] ) $htmlString .= "'selected' ";
+			$htmlString .= "value='{$thermostatRec['id']}'>{$thermostatRec['name']}</option>";
+		}
+		$htmlString .= "			</select>";
+
+		// Show charting option (which one is selected should be based on user preference/cookie and not hard coded)
+		$htmlString .= "			<select id='chart.daily.source'>";
+		$htmlString .= "				<option value='0'>Outoor</option>";
+		$htmlString .= "				<option value='1'>Indoor</option>";
+		$htmlString .= "				<option value='2' selected>Both</option>";
+		$htmlString .= "			</select>";
+
+		// Show or hide the display of the setpoint temperatures.
+		$htmlString .= "&nbsp;<input type='checkbox' id='chart.daily.setpoint' name='chart.daily.setpoint' onChange='javascript: toggle_daily_flag( \'chart.daily.setpoint\' );'/> Set Point";
+
+		// Show or hide the HVAC run times
+		$htmlString .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; showing Heat<input type='checkbox' id='chart.daily.showHeat' name='chart.daily.showHeat' onChange='javascript: toggle_daily_flag( \'chart.daily.showHeat\' );'/>";
+		$htmlString .= "&nbsp;Cool<input type='checkbox' id='chart.daily.showCool' name='chart.daily.showCool' onChange='javascript: toggle_daily_flag( \'chart.daily.showCool\' );'/>";
+		$htmlString .= "&nbsp;Fan<input type='checkbox' id='chart.daily.showFan'	name='chart.daily.showFan'	onChange='javascript: toggle_daily_flag( \'chart.daily.showFan\' );'/> cycles";
+
+		// Option to clear preferences/cookies
+		$htmlString .= "<input type='button' onClick='javascript: deleteCookies(0);' value='Un-save settings' style='float: right;'>";	// It floats too far to the right!
+
+		$htmlString .= "<br>";
+
+
+		/**
+			* When disabling the NEXT button only compare that start date has data.
+			* When disabling the PREV button only compare that the end date has data.
+			* These requirements may necesitate a SQL to find the min and max dates for data in the DB for the specified thermostat.
+			* Should these dates be in the thermostat table as first_contact and last_contact?  I think so.
+			*/
+
+//		$htmlString .= "			</script>";
+
+		// The second row of toolbar must be nested in the original div or else a nasty space appears between the two
+		$htmlString .= "<div class='tab-toolbar'>";
+		$htmlString .= "	<input type='button' onClick='javascript: interval(-1);' value='Previous' title='Show previous timeframe' >";
+		$htmlString .= "	Timeframe <input type='text' id='chart.daily.interval.length' onChange='javascript: saveDateData(\'daily\');' value='7' size='3'>";
+		$htmlString .= "	<select id='chart.daily.interval.group' onChange='javascript: saveDateData(\'daily\');' style='width: 65px'>";
+		$htmlString .= "		<option value='0' selected>days</option>";
+		$htmlString .= "		<option value='1'>weeks</option>";
+		$htmlString .= "		<option value='2'>months</option>";
+		$htmlString .= "		<option value='3'>years</option>";
+		$htmlString .= "	</select>";
+
+		// Need to change the max value to a date computed by JavaScript so it stays current when the page is open across midnight (without refreshing from server)
+		global $show_date;
+		$htmlString .= "	ending on <input type='date' id='chart.daily.toDate' onChange='javascript: saveDateData(\'daily\');' size='10' value='{$show_date}' max='{$show_date}' step='1'/>";
+		$htmlString .= "	<input type='button' onClick='javascript: interval(1);' value='Next' title='Show next timeframe' >";
+/** Not yet working so hide it from user until it does...
+	<input type='checkbox' id='auto_refresh'		 name='auto_refresh'		 onChange='javascript: timedRefresh();'/>Auto refresh
+	<span id='daily_update' style='float: right; vertical-align: middle; visibility: hidden;'>Countdown to refresh: 00:00</span>
+*/
+		$htmlString .= "		</div>";
+		$htmlString .= "</div>";
+
+		$htmlString .= "<div class='content'>";
+		$htmlString .= "<br>";
+		$htmlString .= "<div class='thermo_chart'>";
+		$htmlString .= "	<img id='daily_temperature_chart' src='images/daily_temperature_placeholder.png' alt='The temperatures'>";
+		$htmlString .= "</div>";
+
+		$htmlString .= "<input type='button' onClick='javascript: display_chart( \'daily\', \'table\' );' value='Chart it' style='float: right;'>";
+		$htmlString .= "<div id='daily_temperature_table' class='daily_temperature_table'>";
+		// This blank spot gets replaced by a chart chart with data
+		$htmlString .= "</div>";
+
+		$htmlString .= "</div>";
+
+
+		// These initializations must fall AFTER the declaration of various HTML DOM variables
+		// All of these preference values should be tested before use, don't let null (or un-set) mess up the values.
+		// Preently preferences are stored in cookies.
+		$htmlString .= "<script type='text/javascript'>";
+
+		// In JavaScript, a literal/string value of "false" is a string of non zero length and so it tests as logically true unless you look for the literal string "true"
+
+		// Restore user preference/cookie for showing/hiding setpoints
+		$htmlString .= "if( getCookie('chart.daily.setpoint') == 'true' )";
+		$htmlString .= "{";
+		$htmlString .= "	document.getElementById('chart.daily.setpoint').checked = true;";
+		// Set visual cue that cookie retains this value (DRAT!  Checkbox styles are not obeyed by browsers, they are styled by the OS.)
+		//$htmlString .= "	document.getElementById('chart.daily.setpoint').className = 'remembered_input';";
+		$htmlString .= "}";
+
+		// Restore user preference/cookie for showing/hiding AC operation
+		$htmlString .= "if( getCookie('chart.daily.showCool') == 'true' )";
+		$htmlString .= "{";
+		$htmlString .= "	document.getElementById('chart.daily.showCool').checked = true;";
+		// Set visual cue that cookie retains this value (DRAT!  Checkbox styles are not obeyed by browsers, they are styled by the OS.)
+		//$htmlString .= "	document.getElementById('chart.daily.showCool').className = 'remembered_input';";
+		$htmlString .= "}";
+
+		// Restore user preference/cookie for showing/hiding heater operation
+		$htmlString .= "if( getCookie('chart.daily.showHeat') == 'true' )";
+		$htmlString .= "{";
+		$htmlString .= "	document.getElementById('chart.daily.showHeat').checked = true;";
+		// Set visual cue that cookie retains this value (DRAT!  Checkbox styles are not obeyed by browsers, they are styled by the OS.)
+		//$htmlString .= "	document.getElementById('chart.daily.showHeat').className = 'remembered_input';";
+		$htmlString .= "}";
+
+		// Restore user preference/cookie for showing/hiding fan operation
+		$htmlString .= "if( getCookie('chart.daily.showFan') == 'true' )";
+		$htmlString .= "{";
+		$htmlString .= "	document.getElementById('chart.daily.showFan').checked = true;";
+		// Set visual cue that cookie retains this value (DRAT!  Checkbox styles are not obeyed by browsers, they are styled by the OS.)
+		//$htmlString .= "	document.getElementById('chart.daily.showFan').className = 'remembered_input';";
+		$htmlString .= "}";
+
+
+		$htmlString .= "	loadDateData( 'daily' );";
+	/*
+		$htmlString .= "	if( getCookie('chart.daily.toDate') )";
+		$htmlString .= "	{";
+		$htmlString .= "		document.getElementById('chart.daily.toDate').value = getCookie('chart.daily.toDate');";
+		// Set visual cue that cookie retains this value (DRAT!  Checkbox styles are not obeyed by browsers, they are styled by the OS.)
+		//$htmlString .= "document.getElementById('chart.daily.toDate').className = 'remembered_input';";
+		$htmlString .= "	}";
+	*/
+
+		// Draw the graph using the applied settings
+		$htmlString .= "display_chart( 'daily', 'chart' );";
+		$htmlString .= "</script>";
+
+		$htmlString .= "	</div>";
+		$htmlString .= "</div>";
+		$htmlString .= "<div class='tab_gap'></div>";
+
+
+		echo $htmlString;
+	}
+}
+?>
