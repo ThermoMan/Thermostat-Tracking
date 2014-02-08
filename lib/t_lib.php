@@ -15,7 +15,12 @@ class Stat
 	//global $log;	// Wow, putting this global brings the entire system to a halt.  Do not like...
 
 	protected $ch,
-						$IP;	// Most likley an URL and port number rather than a strict set of TCP/IP octets.
+						$IP;	// Most likely an URL and port number rather than a strict set of TCP/IP octets.
+
+	// Low level communication adjustments
+	protected static	$initialTimeout = 5000,			// Start with a 5 second timeout
+										$timeoutIncrement = 5000,		// Each time that the curl operation times out, add 5 seconds beore trying again
+										$maxRetries = 4;								// Try at most 4 times before giving up (5 + 10 + 15 + 20 = 50 seconds spent trying!)
 
 	private $debug = false;
 
@@ -72,9 +77,6 @@ public $dummy_time = null, $dummy_temp = null;
 		curl_setopt( $this->ch, CURLOPT_USERAGENT, 'A' );
 		curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, 1 );
 
-		// 10 seconds is a LONG time.  Does it really reduce the number of errors?  If not, then shorten it.
-		curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, 10000 );
-
 		$this->debug = 0;
 
 		// Stat variables initialization
@@ -115,10 +117,7 @@ public $dummy_time = null, $dummy_temp = null;
 		$this->ipgw = 0;
 		$this->rssi = 0;
 
-
 		// Cloud variables
-
-
 	}
 
 	public function __destruct()
@@ -128,10 +127,10 @@ public $dummy_time = null, $dummy_temp = null;
 
 	protected function getStatData( $cmd )
 	{
-		$maxRetries = 3;
 		global $log;
 		$commandURL = 'http://' . $this->IP . $cmd;
 		$this->connectOK = -1;
+		$newTimeout = self::$initialTimeout;
 
 		// For reference http://www.php.net/curl_setopt
 		curl_setopt( $this->ch, CURLOPT_URL, $commandURL );
@@ -141,11 +140,18 @@ public $dummy_time = null, $dummy_temp = null;
 		do
 		{
 //$log->logInfo( 't_lib: getStatData doing...' );
+			$log->logInfo( "t_lib: getStatData: setting timeout to $newTimeout" );
+			curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, $newTimeout );
 			$retry++;
 			$outputs = curl_exec( $this->ch );
 			if( curl_errno( $this->ch ) != 0 )
 			{
 				$log->logWarn( 't_lib: getStatData curl error (' .  curl_error( $this->ch ) .' -> '. curl_errno( $this->ch ) . ") when performing command ($cmd) on try number $retry" );
+				if( curl_errno( $this->ch ) == 28 )
+				{
+				$newTimeout += self::$timeoutIncrement;
+					$log->logInfo( "t_lib: getStatData: changed timeout to $newTimeout because of timeout error in curl command." );
+				}
 			}
 			/** Build in one second sleep after each communication attempt
 				* based on code from phareous - he had 2 second delay here and there
@@ -157,7 +163,7 @@ public $dummy_time = null, $dummy_temp = null;
 				*/
 			sleep( 1 );
 		}
-		while( ( curl_errno( $this->ch ) != 0 ) && ($retry < $maxRetries) );
+		while( ( curl_errno( $this->ch ) != 0 ) && ($retry < self::$maxRetries) );
 		//while( (curl_errno( $this->ch ) == 7) && ($retry < $maxRetries) );
 		// curl error #7 CURLE_COULDNT_CONNECT is usually resolved with a simple single retry.
 //$log->logInfo( 't_lib: getStatData completed...' );
@@ -202,7 +208,7 @@ public $dummy_time = null, $dummy_temp = null;
 
 		if( $this->debug	)
 		{
-// Need to detect if run from commend line or web.  Either way using log() would be better
+			$log->logInfo( "t_lib: setStatData: commandURL was $commandURL" );
 			echo '<br>commandURL: ' . $commandURL . '<br>';
 		}
 
@@ -213,6 +219,8 @@ public $dummy_time = null, $dummy_temp = null;
 		$this->connectOK = curl_errno( $this->ch );
 
 		// Need to wait for a response...	object(stdClass)#4 (1) { ['success']=> int(0) }
+
+		// Once we actually start using teh set function the error detection, timeout, and retry logic will begin to apply here too.
 		return;
 	}
 
