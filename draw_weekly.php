@@ -219,15 +219,10 @@ while( $row = $query->fetch( PDO::FETCH_ASSOC ) )
 		if( $row[ 'heat_runtime' ] != 'VOID' ) $MyData->addPoints( $row[ 'heat_runtime' ], 'Heat' );
 		else $MyData->addPoints( VOID, 'Heat' );
 
-		if( $row[ 'heat_runtime' ] != 'VOID' ) $MyData->addPoints( $row[ 'cool_runtime' ], 'Cool' );
+		if( $row[ 'cool_runtime' ] != 'VOID' ) $MyData->addPoints( $row[ 'cool_runtime' ], 'Cool' );
 		else $MyData->addPoints( VOID, 'Cool' );
 	}
 }
-
-// Add a little padding so the chart doesn't butt into the edges
-//$chart_y_min -= 5;
-//$chart_y_max += 5;
-// Removed when I converted from simple min/max to monthly min/man and added 10 degree bounding logic
 
 // Attach the data series to the axis (by ordinal)
 if( $indoor == 0 || $indoor == 2 )
@@ -334,7 +329,7 @@ $myPicture->setGraphArea( $graphAreaStartX, $graphAreaStartY, $graphAreaEndX, $g
 
 // Draw the scale
 $myPicture->setFontProperties( array( 'FontName' => 'pf_arma_five.ttf', 'FontSize' => 6 ) );
-$scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE, 'XMargin' => 0,'YMargin' => 0,'Floating' => TRUE );
+$scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE, 'YMargin' => 0,'Floating' => TRUE );
 // Sadly 'CycleBackground' is applied to all scales equally so when you turn on the run times you get an ugly background change
 $myPicture->drawScale( $scaleSettings );
 
