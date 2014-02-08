@@ -320,13 +320,13 @@ foreach( $days as $show_date )
 			*/
 		if( $source == 1 || $source == 2 )
 		{	// Indoor or both
-			while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) < $chart_y_min + 10 ) $chart_y_min -= 10;
-			while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) > $chart_y_max - 10 ) $chart_y_max += 10;
+			while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) < $chart_y_min + $chartPaddingLimit ) $chart_y_min -= $chartPaddingSpace;
+			while( ($row['indoor_temp'] == 'VOID' ? 50 : $row['indoor_temp']) > $chart_y_max - $chartPaddingLimit ) $chart_y_max += $chartPaddingSpace;
 		}
 		if( $source == 0 || $source == 2 )
 		{	// Outdoor or both
-			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) < $chart_y_min + 10 ) $chart_y_min -= 10;
-			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) > $chart_y_max - 10 ) $chart_y_max += 10;
+			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) < $chart_y_min + $chartPaddingLimit ) $chart_y_min -= $chartPaddingSpace;
+			while( ($row['outdoor_temp'] == 'VOID' ? 50 : $row['outdoor_temp']) > $chart_y_max - $chartPaddingLimit ) $chart_y_max += $chartPaddingSpace;
 		}
   }
 }
@@ -425,8 +425,8 @@ if( $show_setpoint == 1 )
 	while( $row = $queryFour->fetch( PDO::FETCH_ASSOC ) )
 	{
 		$queryFourData[] = $row;
-		while( $row['set_point'] < $chart_y_min + 10 ) $chart_y_min -= 10;
-		while( $row['set_point'] > $chart_y_max - 10 ) $chart_y_max += 10;
+		while( $row['set_point'] < $chart_y_min + $chartPaddingLimit ) $chart_y_min -= $chartPaddingSpace;
+		while( $row['set_point'] > $chart_y_max - $chartPaddingLimit ) $chart_y_max += $chartPaddingSpace;
 	}
 }
 

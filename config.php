@@ -85,6 +85,9 @@ $password = 'admin';
 $normalHighs = array( 60, 70, 70, 80, 90, 100, 100, 100, 90, 80, 70, 60 );
 $normalLows  = array( 30, 40, 40, 50, 60,  70,  70,  70, 60, 50, 40, 30 );
 
+// Amount of space to add to y scale to keep lines inside the chart
+$chartPaddingLimit = 5;		// When to trigger the addition of space (pixels)
+$chartPaddingSpace = 10;	// Amount of space to add (pixels)
 
 /**
 	* The following ought to be stored in the DB with a config page
