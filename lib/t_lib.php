@@ -140,7 +140,7 @@ public $dummy_time = null, $dummy_temp = null;
 		do
 		{
 //$log->logInfo( 't_lib: getStatData doing...' );
-			$log->logInfo( "t_lib: getStatData: setting timeout to $newTimeout" );
+if( $retry > 0 ) $log->logInfo( "t_lib: getStatData: setting timeout to $newTimeout for try number $retry." );
 			curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, $newTimeout );
 			$retry++;
 			$outputs = curl_exec( $this->ch );
@@ -246,7 +246,7 @@ public $dummy_time = null, $dummy_temp = null;
 						{
 							//if( $this->debug )
 							//echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n";
-							$log->logWarn( 't_lib: WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n" );
+							$log->logWarn( 't_lib: containsTransient WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n" );
 							// NULL the -1 transient
 							//$value2 = NULL;
 							$retval = true;
@@ -254,14 +254,13 @@ public $dummy_time = null, $dummy_temp = null;
 					}
 				}
 				else
-				{
+				{	// Comment out because this message appears even when everything is working!
 					// $log->logError( 't_lib: containsTransient: value was NOT an object!' );
 				}
 				if( $value == -1 )
 				{
-					//:if( $this->debug )
 					//echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n";
-					$log->logWarn( 't_lib: WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n" );
+					$log->logWarn( 't_lib: containsTransient WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n" );
 					// NULL the -1 transient
 					//$value = NULL;
 					$retval = true;
@@ -403,7 +402,7 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
 			*/
 		for( $i = 1; $i <= 5; $i++ )
 		{
-			$outputs = $this->getStatData( '/tstat' );
+			$outputs = $this->getStatData( '/tstat' );	// getStatData() has it's own retry function.
 			// {"temp":80.50,"tmode":2,"fmode":0,"override":0,"hold":0,"t_cool":80.00,"tstate":2,"fstate":1,"time":{"day":2,"hour":18,"minute":36},"t_type_post":0}
 			$obj = json_decode( $outputs );
 

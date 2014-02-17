@@ -2,7 +2,7 @@
 $start_time = microtime(true);
 require(dirname(__FILE__).'/../common.php');
 
-$log->logInfo( 'status: start' );
+$log->logInfo( 'status: Start.' );
 
 /**
 	* (this note may be obsolete)
@@ -235,6 +235,6 @@ foreach( $thermostats as $thermostatRec )
 	}
 	fclose( $lock );
 }
-$log->logInfo( 'status: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+$log->logInfo( 'status: End.  Execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>
