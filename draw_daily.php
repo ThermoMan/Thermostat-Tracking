@@ -69,11 +69,9 @@ $show_fan_cycles  = (isset($_GET['chart_daily_showFan'])  && ($_GET['chart_daily
 // Set default for displaying set point temp to "off"
 $show_setpoint    = (isset($_GET['chart_daily_setpoint']) && ($_GET['chart_daily_setpoint']  == 'false')) ? 0 : 1;
 
-
 // Set default humidity display to none
 $show_indoor_humidity = (isset($_GET['chart_daily_showIndoorHumidity']) && ($_GET['chart_daily_showIndoorHumidity'] == 'false')) ? 0 : 1;
 $show_outdoor_humidity = (isset($_GET['chart_daily_showOutdoorHumidity']) && ($_GET['chart_daily_showOutdoorHumidity'] == 'false')) ? 0 : 1;
-
 
 // OK, now that we have a bounding range of dates, build an array of all the dates in the range
 $check_date = $from_date;
@@ -294,20 +292,20 @@ foreach( $days as $show_date )
 
 			if( $source == 1 || $source == 2 )
 			{	// Indoor or both
-				$MyData->addPoints( ($row['indoor_temp'] == 'VOID' ? VOID : $row['indoor_temp']), 'Indoor' );
+				$MyData->addPoints( ($row['indoor_temp'] == 'VOID' ? VOID : $row['indoor_temp']), 'Indoor Temp' );
 //$log->logInfo( "draw_daily.php: Here is the data point to prove we got it {$row['date']} and {$row['indoor_temp']}");
 			}
 			if( $source == 0 || $source == 2 )
 			{	// Outdoor or both
-				$MyData->addPoints( ($row['outdoor_temp'] == 'VOID' ? VOID : $row['outdoor_temp']), 'Outdoor' );
+				$MyData->addPoints( ($row['outdoor_temp'] == 'VOID' ? VOID : $row['outdoor_temp']), 'Outdoor Temp' );
 			}
 			if( $show_setpoint == 1 )
 			{	// Add a VOID point so we can get a legend for the Setpoint overlay
 				$MyData->addPoints( VOID, 'Setpoint');
 			}
 
-			if( $show_outdoor_humidity == 1 ) $MyData->addPoints( ($row['outdoor_humidity'] == 'VOID' ? VOID : $row['outdoor_humidity']), 'outdoorHumidity' );
-			if( $show_indoor_humidity == 1 ) $MyData->addPoints( ($row['indoor_humidity'] == 'VOID' ? VOID : $row['indoor_humidity']), 'indoorHumidity' );
+			if( $show_outdoor_humidity == 1 ) $MyData->addPoints( ($row['outdoor_humidity'] == 'VOID' ? VOID : $row['outdoor_humidity']), 'Outdoor Humidity' );
+			if( $show_indoor_humidity == 1 ) $MyData->addPoints( ($row['indoor_humidity'] == 'VOID' ? VOID : $row['indoor_humidity']), 'Indoor Humidity' );
 
 		}
 		else
@@ -453,27 +451,29 @@ if( $table_flag )
 }
 
 // Attach the data series to the axis (by ordinal)
-$MyData->setSerieOnAxis( 'Indoor', 0 );
-$MyData->setSerieOnAxis( 'Outdoor', 0 );
+$MyData->setSerieOnAxis( 'Indoor Temp', 0 );
+$MyData->setSerieOnAxis( 'Outdoor Temp', 0 );
 $MyData->setSerieOnAxis( 'Setpoint', 0 );
 if( $show_outdoor_humidity == 1 )
 {
 	$MyData->setSerieOnAxis( 'indoorHumidity', 1 );
+	$MyData->setAxisPosition( 1, AXIS_POSITION_RIGHT );		// Draw runtime axis on right hand side
 }
 if( $show_indoor_humidity == 1 )
 {
 	$MyData->setSerieOnAxis( 'indoorHumidity', 1 );
+	$MyData->setAxisPosition( 1, AXIS_POSITION_RIGHT );		// Draw runtime axis on right hand side
 }
 
 
 // Set line style, color, and alpha blending level
-$MyData->setSerieTicks( 'Indoor', 0 );  // 0 is a solid line
+$MyData->setSerieTicks( 'Indoor Temp', 0 );  // 0 is a solid line
 $serieSettings = array( 'R' => 50, 'G' => 150, 'B' => 80, 'Alpha' => 100 );
-$MyData->setPalette( 'Indoor', $serieSettings );
+$MyData->setPalette( 'Indoor Temp', $serieSettings );
 
-$MyData->setSerieTicks( 'Outdoor', 2 ); // n is length in pixels of dashes in line
+$MyData->setSerieTicks( 'Outdoor Temp', 2 ); // n is length in pixels of dashes in line
 $serieSettings = array( 'R' => 150, 'G' => 50, 'B' => 80, 'Alpha' => 100 );
-$MyData->setPalette( 'Outdoor', $serieSettings );
+$MyData->setPalette( 'Outdoor Temp', $serieSettings );
 
 $MyData->setSerieTicks( 'Setpoint', 0 ); // n is length in pixels of dashes in line
 $serieSettings = array( 'R' => 100, 'G' => 100, 'B' => 255, 'Alpha' => 60 );
@@ -482,12 +482,12 @@ $MyData->setPalette( 'Setpoint', $serieSettings );
 if( $show_outdoor_humidity == 1 )
 {
 	$serieSettings = array( 'R' => 155, 'G' => 255, 'B' => 155, 'Alpha' => 60 );
-	$MyData->setPalette( 'outdoorHumidity', $serieSettings );
+	$MyData->setPalette( 'Outdoor Humidity', $serieSettings );
 }
 if( $show_indoor_humidity == 1 )
 {
 	$serieSettings = array( 'R' => 75, 'G' => 200, 'B' => 75, 'Alpha' => 60 );
-	$MyData->setPalette( 'indoorHumidity', $serieSettings );
+	$MyData->setPalette( 'Indoor Humidity', $serieSettings );
 }
 
 
