@@ -70,6 +70,11 @@ $show_fan_cycles  = (isset($_GET['chart_daily_showFan'])  && ($_GET['chart_daily
 $show_setpoint    = (isset($_GET['chart_daily_setpoint']) && ($_GET['chart_daily_setpoint']  == 'false')) ? 0 : 1;
 
 
+// Set default humidity display to none
+$show_indoor_humidity = (isset($_GET['chart_daily_showIndoorHumidity']) && ($_GET['chart_daily_showIndoorHumidity'] == 'false')) ? 0 : 1;
+$show_outdoor_humidity = (isset($_GET['chart_daily_showOutdoorHumidity']) && ($_GET['chart_daily_showOutdoorHumidity'] == 'false')) ? 0 : 1;
+
+
 // OK, now that we have a bounding range of dates, build an array of all the dates in the range
 $check_date = $from_date;
 $days = array( $check_date );
@@ -112,7 +117,9 @@ while( $check_date != $to_date )
 $sqlOne =
 "SELECT CONCAT( ?, ' ', b.time ) AS date,
 				IFNULL(a.indoor_temp, 'VOID') as indoor_temp,
-				IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp
+				IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp,
+				IFNULL(a.indoor_humidity, 'VOID') as indoor_humidity,
+				IFNULL(a.outdoor_humidity, 'VOID') as outdoor_humidity
  FROM {$dbConfig['table_prefix']}time_index b
  LEFT JOIN {$dbConfig['table_prefix']}temperatures a
  ON a.date = CONCAT( ?, ' ', b.time ) AND a.tstat_uuid = ? ";
@@ -125,7 +132,9 @@ if( $dayCount == 1 )
 	"UNION
 	SELECT ? AS date,
 	IFNULL(a.indoor_temp, 'VOID') as indoor_temp,
-	IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp
+	IFNULL(a.outdoor_temp, 'VOID') as outdoor_temp,
+	IFNULL(a.indoor_humidity, 'VOID') as indoor_humidity,
+	IFNULL(a.outdoor_humidity, 'VOID') as outdoor_humidity
 	FROM thermo2__time_index b
 	LEFT JOIN thermo2__temperatures a
 	ON a.date = ? AND a.tstat_uuid = ?";
@@ -170,7 +179,7 @@ $very_first = true;
 
 $saved_string = VOID;	// Used to store the current X-axis' label until we tell pChart about it
 
-$log->logInfo( "draw_daily.php: sqlOne is ($sqlOne)" );	// Soooo wierd, this log line writes AFTER the completion log entry.
+//$log->logInfo( "draw_daily.php: sqlOne is ($sqlOne)" );	// Soooo wierd, this log line writes AFTER the completion log entry.
 foreach( $days as $show_date )
 {
 	$dates .= $show_date . '   ';
@@ -296,6 +305,10 @@ foreach( $days as $show_date )
 			{	// Add a VOID point so we can get a legend for the Setpoint overlay
 				$MyData->addPoints( VOID, 'Setpoint');
 			}
+
+			if( $show_outdoor_humidity == 1 ) $MyData->addPoints( ($row['outdoor_humidity'] == 'VOID' ? VOID : $row['outdoor_humidity']), 'outdoorHumidity' );
+			if( $show_indoor_humidity == 1 ) $MyData->addPoints( ($row['indoor_humidity'] == 'VOID' ? VOID : $row['indoor_humidity']), 'indoorHumidity' );
+
 		}
 		else
 		{
@@ -443,6 +456,15 @@ if( $table_flag )
 $MyData->setSerieOnAxis( 'Indoor', 0 );
 $MyData->setSerieOnAxis( 'Outdoor', 0 );
 $MyData->setSerieOnAxis( 'Setpoint', 0 );
+if( $show_outdoor_humidity == 1 )
+{
+	$MyData->setSerieOnAxis( 'indoorHumidity', 1 );
+}
+if( $show_indoor_humidity == 1 )
+{
+	$MyData->setSerieOnAxis( 'indoorHumidity', 1 );
+}
+
 
 // Set line style, color, and alpha blending level
 $MyData->setSerieTicks( 'Indoor', 0 );  // 0 is a solid line
@@ -457,8 +479,23 @@ $MyData->setSerieTicks( 'Setpoint', 0 ); // n is length in pixels of dashes in l
 $serieSettings = array( 'R' => 100, 'G' => 100, 'B' => 255, 'Alpha' => 60 );
 $MyData->setPalette( 'Setpoint', $serieSettings );
 
+if( $show_outdoor_humidity == 1 )
+{
+	$serieSettings = array( 'R' => 155, 'G' => 255, 'B' => 155, 'Alpha' => 60 );
+	$MyData->setPalette( 'outdoorHumidity', $serieSettings );
+}
+if( $show_indoor_humidity == 1 )
+{
+	$serieSettings = array( 'R' => 75, 'G' => 200, 'B' => 75, 'Alpha' => 60 );
+	$MyData->setPalette( 'indoorHumidity', $serieSettings );
+}
+
+
+
 // Set names for Y-axis labels
 $MyData->setAxisName( 0, 'Temperatures' );
+if( $show_indoor_humidity + $show_outdoor_humidity > 0) $MyData->setAxisName( 1, 'Humidity' );
+
 
 // Set names for X-axis labels
 $MyData->setSerieDescription( 'Labels', 'The march of the hours' );
@@ -472,7 +509,14 @@ if( $dayCount == 1 ) $picTitle = "Show temperatures for $from_date";
 else $picTitle = "Show temperatures for $from_date - $to_date ($dayCount days)";
 $chartTitle = "Temperature every $minutes minutes across the span of dates";
 // Explicity set a scale for the drawing.
-$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ) );
+if( $show_indoor_humidity + $show_outdoor_humidity == 0)
+{
+	$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ) );
+}
+else
+{
+	$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ), 1 => array( 'Min' => 0, 'Max' => 100 ) );
+}
 
 
 /**
