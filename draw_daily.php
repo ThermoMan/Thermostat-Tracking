@@ -170,6 +170,14 @@ else
 	{	// Outdoor or both
 		echo '<th>Outdoor Temp</th>';
 	}
+	if( $show_indoor_humidity == 1 )
+	{
+		echo '<th>Indoor Humidity</th>';
+	}
+	if( $show_outdoor_humidity == 1 )
+	{
+		echo '<th>Outdoor Humidity</th>';
+	}
 }
 
 $dates = '';
@@ -304,8 +312,8 @@ foreach( $days as $show_date )
 				$MyData->addPoints( VOID, 'Setpoint');
 			}
 
-			if( $show_outdoor_humidity == 1 ) $MyData->addPoints( ($row['outdoor_humidity'] == 'VOID' ? VOID : $row['outdoor_humidity']), 'Outdoor Humidity' );
 			if( $show_indoor_humidity == 1 ) $MyData->addPoints( ($row['indoor_humidity'] == 'VOID' ? VOID : $row['indoor_humidity']), 'Indoor Humidity' );
+			if( $show_outdoor_humidity == 1 ) $MyData->addPoints( ($row['outdoor_humidity'] == 'VOID' ? VOID : $row['outdoor_humidity']), 'Outdoor Humidity' );
 
 		}
 		else
@@ -319,6 +327,14 @@ foreach( $days as $show_date )
 			if( $source == 0 || $source == 2 )
 			{	// Outdoor or both
 				echo '<td>'.($row['outdoor_temp'] == 'VOID' ? '&nbsp;' : $row['outdoor_temp']).'</td>';
+			}
+			if( $show_indoor_humidity == 1 )
+			{
+				echo '<td>'.($row['indoor_humidity'] == 'VOID' ? '&nbsp;' : $row['indoor_humidity']).'</td>';
+			}
+			if( $show_outdoor_humidity == 1 )
+			{
+				echo '<td>'.($row['outdoor_humidity'] == 'VOID' ? '&nbsp;' : $row['outdoor_humidity']).'</td>';
 			}
 			echo '</tr>';
 		}
