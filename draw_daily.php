@@ -160,7 +160,6 @@ else
 	//echo "<br>Normal low for this month is $chart_y_min.";
 	//echo "<br>Normal high for this month is $chart_y_max.";
 	//echo "<br>The SQL<br>$sqlOne";
-	//echo '<table class="thermo_chart"><th class="thermo_chart">Date</th><th class="thermo_chart">Indoor Temp</th><th class="thermo_chart">Outdoor Temp</th>';
 	echo '<table class="thermo_table"><th>Date</th>';
 	if( $source == 1 || $source == 2 )
 	{	// Indoor or both
@@ -312,8 +311,14 @@ foreach( $days as $show_date )
 				$MyData->addPoints( VOID, 'Setpoint');
 			}
 
-			if( $show_indoor_humidity == 1 ) $MyData->addPoints( ($row['indoor_humidity'] == 'VOID' ? VOID : $row['indoor_humidity']), 'Indoor Humidity' );
-			if( $show_outdoor_humidity == 1 ) $MyData->addPoints( ($row['outdoor_humidity'] == 'VOID' ? VOID : $row['outdoor_humidity']), 'Outdoor Humidity' );
+			if( $show_indoor_humidity == 1 )
+			{
+				$MyData->addPoints( ($row['indoor_humidity'] == 'VOID' ? VOID : $row['indoor_humidity']), 'Indoor Humidity' );
+			}
+			if( $show_outdoor_humidity == 1 )
+			{
+				$MyData->addPoints( ($row['outdoor_humidity'] == 'VOID' ? VOID : $row['outdoor_humidity']), 'Outdoor Humidity' );
+			}
 
 		}
 		else
@@ -470,14 +475,14 @@ if( $table_flag )
 $MyData->setSerieOnAxis( 'Indoor Temp', 0 );
 $MyData->setSerieOnAxis( 'Outdoor Temp', 0 );
 $MyData->setSerieOnAxis( 'Setpoint', 0 );
-if( $show_outdoor_humidity == 1 )
-{
-	$MyData->setSerieOnAxis( 'indoorHumidity', 1 );
-	$MyData->setAxisPosition( 1, AXIS_POSITION_RIGHT );		// Draw runtime axis on right hand side
-}
 if( $show_indoor_humidity == 1 )
 {
-	$MyData->setSerieOnAxis( 'indoorHumidity', 1 );
+	$MyData->setSerieOnAxis( 'Indoor Humidity', 1 );
+	$MyData->setAxisPosition( 1, AXIS_POSITION_RIGHT );		// Draw runtime axis on right hand side
+}
+if( $show_outdoor_humidity == 1 )
+{
+	$MyData->setSerieOnAxis( 'Outdoor Humidity', 1 );
 	$MyData->setAxisPosition( 1, AXIS_POSITION_RIGHT );		// Draw runtime axis on right hand side
 }
 
@@ -506,17 +511,16 @@ if( $show_indoor_humidity == 1 )
 	$MyData->setPalette( 'Indoor Humidity', $serieSettings );
 }
 
-
-
 // Set names for Y-axis labels
 $MyData->setAxisName( 0, 'Temperatures' );
-if( $show_indoor_humidity + $show_outdoor_humidity > 0) $MyData->setAxisName( 1, 'Humidity' );
-
+if( $show_indoor_humidity + $show_outdoor_humidity > 0)
+{
+	$MyData->setAxisName( 1, 'Humidity' );
+}
 
 // Set names for X-axis labels
 $MyData->setSerieDescription( 'Labels', 'The march of the hours' );
 $MyData->setAbscissa( 'Labels' );
-
 
 /**
 	* Set variables for going into common block
@@ -525,7 +529,7 @@ if( $dayCount == 1 ) $picTitle = "Show temperatures for $from_date";
 else $picTitle = "Show temperatures for $from_date - $to_date ($dayCount days)";
 $chartTitle = "Temperature every $minutes minutes across the span of dates";
 // Explicity set a scale for the drawing.
-if( $show_indoor_humidity + $show_outdoor_humidity == 0)
+if( ($show_indoor_humidity + $show_outdoor_humidity) == 0 )
 {
 	$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ) );
 }
@@ -533,7 +537,6 @@ else
 {
 	$AxisBoundaries = array( 0 => array ( 'Min' => $chart_y_min, 'Max' => $chart_y_max ), 1 => array( 'Min' => 0, 'Max' => 100 ) );
 }
-
 
 /**
 	* START of common block - this code should be identical for all charts so that they have a common look and feel
