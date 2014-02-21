@@ -38,7 +38,7 @@ catch( Exception $e )
 
 $queryMySQLServer->execute();
 $row = $queryMySQLServer->fetch( PDO::FETCH_ASSOC );
-$log->logInfo( "temps: The MySQL server thinks that the magic formatted time is {$row['magic_time']} where unix (on the webserver) thinks it is $unixTime" );
+//$log->logInfo( "temps: The MySQL server thinks that the magic formatted time is {$row['magic_time']} where unix (on the webserver) thinks it is $unixTime" );
 
 
 $outdoorTemp = null;						// Default outside temp

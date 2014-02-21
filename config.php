@@ -57,9 +57,10 @@ $dbConfig = array(
 	'db'          	=> 'thermo',
 	'port'         	=> '3306',
 	'table_prefix' => 'thermo2__'             // Prefix to attach to all table/procedure names to make unique in unknown environment.
-	// DO make this prefix DIFFERENT than you used for version 1 (if you had the old code installed)
+	// DO make this prefix DIFFERENT than you used for version 2 (if you had the old code installed)
 	// Using a double underscore as the end of the prefix enables some magic in phpMyAdmin
 );
+
 
 // Config edit PW
 $password = 'admin';
@@ -82,8 +83,8 @@ $password = 'admin';
 	*
 	*                  Jan Feb Mar Apr May  Jun  Jul  Aug Sep Oct Nov Dec
 	*/
-$normalHighs = array( 60, 70, 70, 80, 90, 100, 100, 100, 90, 80, 70, 60 );
-$normalLows  = array( 30, 40, 40, 50, 60,  70,  70,  70, 60, 50, 40, 30 );
+$normalHighs = array( 60, 60, 70, 80, 90, 100, 100, 100, 90, 70, 70, 60 );
+$normalLows  = array( 30, 50, 40, 50, 60,  70,  70,  70, 60, 50, 40, 30 );
 
 // Amount of space to add to y scale to keep lines inside the chart
 $chartPaddingLimit = 5;		// When to trigger the addition of space (pixels)
@@ -108,4 +109,83 @@ $send_eod_email_pw = '';
 	*  config file on the theory that the file system is slightly more secure than a DB that is
 	*  already available online.  Make sure to use a non-privilaged account!
 	*/
+
+/** For libraries that are not uniquely part of the application code base, there is a common
+	* location on the webserver so that all projects can use one instance of the library.
+
++-- www
+    +-- common
+    |   +-- css
+    |   +-- html
+    |   +-- js
+    |   +-- php
+    |       +-- pChart -> pChart2.1.4
+    |       +-- pChart2.1.3
+    |       |   +-- cache
+    |       |   +-- class
+    |       |   +-- data
+    |       |   +-- examples
+    |       |   |   +-- delayedLoader
+    |       |   |   +-- imageMap
+    |       |   |   |   +-- scripts
+    |       |   |   |   +-- tmp
+    |       |   |   +-- pictures
+    |       |   |   +-- resources
+    |       |   |   +-- sandbox
+    |       |   |       +-- graphix
+    |       |   |       +-- includes
+    |       |   |       +-- script
+    |       |   +-- fonts
+    |       |   +-- palettes
+    |       +-- pChart2.1.4
+    |           +-- cache
+    |           +-- class
+    |           +-- data
+    |           +-- examples
+    |           |   +-- delayedLoader
+    |           |   +-- imageMap
+    |           |   |   +-- scripts
+    |           |   |   +-- tmp
+    |           |   +-- pictures
+    |           |   +-- resources
+    |           |   +-- sandbox
+    |           |       +-- graphix
+    |           |       +-- includes
+    |           |       +-- script
+    |           +-- fonts
+    |           +-- palettes
+    +-- thermo2
+        +-- backup
+        +-- images
+        +-- lib
+        |   +-- fonts
+        |   +-- tabs
+        +-- logs
+        +-- resources
+        +-- scripts
+
+	* In order to be able to reference those files without hard coded path names, the PHP include path needs to know about the relative location of
+	*  those libraries.
+	*/
+function add_include_path( $path )
+{
+	foreach( func_get_args() AS $path )
+	{
+		if( !file_exists( $path ) OR ( file_exists( $path ) && filetype( $path ) !== 'dir' ) )
+		{
+			trigger_error( "Include path '{$path}' not exists", E_USER_WARNING );
+			continue;
+		}
+
+		$paths = explode( PATH_SEPARATOR, get_include_path() );
+
+		if( array_search( $path, $paths ) === false )
+		{
+			array_push( $paths, $path );
+		}
+
+		set_include_path( implode( PATH_SEPARATOR, $paths ) );
+	}
+}
+add_include_path( $rootDir . '../common/php/' );
 ?>

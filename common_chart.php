@@ -1,8 +1,5 @@
 <?php
-require_once 'common.php';
-
-// Modify includepath so that the new pChart library location works
-add_include_path( '../common/php/' );
+require_once( 'common.php' );
 
 // Modify the font path for the GD library - because graphic renders are lame?
 // Must use absolute and not relative paths.

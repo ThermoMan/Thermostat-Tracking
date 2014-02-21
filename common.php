@@ -4,38 +4,10 @@
 	* Performs database connection and log in based on credentials stored in config.php
 	*/
 
-
-/** For libraries that are not part of my code base, I have a common locaiton on my webserver so that all projects can use one instance of the library.
-	*
-	* In order to be able to reference those files without hard coded path names, the PHP include path needs to know about the relative location of
-	*  those libraries.
-	*/
-function add_include_path( $path )
-{
-	foreach( func_get_args() AS $path )
-    {
-		if( !file_exists( $path ) OR ( file_exists( $path ) && filetype( $path ) !== 'dir' ) )
-        {
-			trigger_error( "Include path '{$path}' not exists", E_USER_WARNING );
-            continue;
-        }
-
-		$paths = explode( PATH_SEPARATOR, get_include_path() );
-
-		if( array_search( $path, $paths ) === false )
-		{
-			array_push( $paths, $path );
-		}
-
-		set_include_path( implode( PATH_SEPARATOR, $paths ) );
-    }
-}
-add_include_path( '../common/php/' );
-
-require_once 'config.php';
-require_once 'lib/t_lib.php';
-require_once 'lib/ExternalWeather.php';
-require_once 'lib/KLogger.php';
+require_once( 'config.php' );
+require_once( 'lib/t_lib.php' );
+require_once( 'lib/ExternalWeather.php' );
+require_once( 'KLogger.php' );							// This is an external library with original location https://github.com/katzgrau/KLogger
 
 global $timezone;
 
