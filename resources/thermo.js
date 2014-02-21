@@ -225,6 +225,10 @@ function processAjaxResponse( doc, action )
 			document.getElementById( 'backup' ).innerHTML = doc.responseText;
 		break;
 		
+		case 'daily_table':
+			document.getElementById( 'daily_temperature_table' ).innerHTML = doc.responseText;
+		break;
+		
 		default:
 			// Do nothing - not even complain!
 		break;
@@ -258,7 +262,11 @@ function update( action )
 		break;
 		
 		case 'backup':
-			document.getElementById( 'backup' ).innerHTML = "Backup started";
+			document.getElementById( 'backup' ).innerHTML = 'Backup started...';
+		break;
+		
+		case 'daily_table':
+			document.getElementById( 'daily_temperature_table' ).innerHTML = "<p class='status'><table><tr><td><img src='images/img_trans.gif' width='1' height='1' class='wheels' /></td><td>Looking up the data. (This may take some time)</td></tr></table></p>";
 		break;
 		
 		default:
@@ -293,6 +301,11 @@ function update( action )
 		
 		case 'backup':
 			xmlDoc.open( 'GET', 'backup.php', true );
+		break;
+
+		case 'daily_table':
+			var urlString = display_chart_build_and_display( 'daily', 'table', 'table_flag=true', document.getElementById( 'daily_temperature_table' ) );
+			xmlDoc.open( 'GET', urlString, true );
 		break;
 		
 		default:

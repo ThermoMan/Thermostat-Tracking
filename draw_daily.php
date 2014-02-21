@@ -1,6 +1,5 @@
 <?php
 $start_time = microtime(true);
-require_once 'common.php';
 require_once 'common_chart.php';
 
 /**

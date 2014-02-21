@@ -5,13 +5,14 @@ require_once 'common.php';
 add_include_path( '../common/php/' );
 
 // Modify the font path for the GD library - because graphic renders are lame?
+// Must use absolute and not relative paths.
 $pChart_fontpath = realpath( '../common/php/pChart/fonts' );	// pCharts default font library
 $my_fontpath = realpath( 'lib/fonts' );														// font path for this application
 putenv( 'GDFONTPATH='.$pChart_fontpath.PATH_SEPARATOR.$my_fontpath );
 
-include( 'pChart/class/pData.class.php' );
-include( 'pChart/class/pDraw.class.php' );
-include( 'pChart/class/pImage.class.php' );
+require_once 'pChart/class/pData.class.php';
+require_once 'pChart/class/pDraw.class.php';
+require_once 'pChart/class/pImage.class.php';
 
 // Replaces chart with anti-hacking graphic (usually when web user has used a mal-formed date string)
 function bobby_tables()

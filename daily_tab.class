@@ -18,9 +18,13 @@ function display_chart( chart, style )
 	}
 	else if( chart == 'daily' && style == 'table' )
 	{
+	/* Change to use ajax model
 		table_flag = 'table_flag=true';
 		chart_target = document.getElementById( 'daily_temperature_table' );
+		chart_target.innerHTML = '';
 		display_chart_build_and_display( chart, style, table_flag, chart_target );
+		*/
+		update( 'daily_table' );
 	}
 	else
 	{
@@ -43,7 +47,6 @@ function display_chart_build_and_display( chart, style, table_flag, chart_target
 	var show_fan_cycle_string	   = 'chart.daily.showFan='	        + document.getElementById( 'chart.daily.showFan' ).checked;
 	var show_outdoor_humid_str   = 'chart.daily.showOutdoorHumidity=' + document.getElementById( 'chart.daily.showOutdoorHumidity' ).checked;
 	var show_indoor_humid_str    = 'chart.daily.showIndoorHumidity='  + document.getElementById( 'chart.daily.showIndoorHumidity' ).checked;
-
 
 	// Browsers are very clever with image caching.	In this case it breaks the web page function.
 	var no_cache_string = 'nocache=' + Math.random();
@@ -72,8 +75,11 @@ function display_chart_build_and_display( chart, style, table_flag, chart_target
 	{	// Right now it assumes the DAILY table.  Fix that later
 		// Size should be in the CSS file?
 
+	/* Change to use ajax model
 		// Gosh this iframe is a whole load of overkill and I hate it.
 		chart_target.innerHTML = '<iframe src="'+url_string+'" height="100" width="530"></iframe>';
+*/
+		return url_string;
 	}
 }
 
@@ -181,7 +187,8 @@ class DailyDetail
 		$htmlString .= "</div>";
 
 		$htmlString .= '<input type="button" onClick="javascript: display_chart( \'daily\', \'table\' );" value="Chart it" style="float: right;">';
-		$htmlString .= "<div id='daily_temperature_table' class='daily_temperature_table'>";
+//$htmlString .= "<div id='daily_temperature_table' class='daily_temperature_table'>";
+$htmlString .= "<div id='daily_temperature_table' class='status daily_temperature_table'>";
 		// This blank spot gets replaced by a chart chart with data
 		$htmlString .= "</div>";
 
@@ -199,32 +206,24 @@ class DailyDetail
 		$htmlString .= "if( getCookie('chart.daily.setpoint') == 'true' )";
 		$htmlString .= "{";
 		$htmlString .= "	document.getElementById('chart.daily.setpoint').checked = true;";
-		// Set visual cue that cookie retains this value (DRAT!  Checkbox styles are not obeyed by browsers, they are styled by the OS.)
-		//$htmlString .= "	document.getElementById('chart.daily.setpoint').className = 'remembered_input';";
 		$htmlString .= "}";
 
 		// Restore user preference/cookie for showing/hiding AC operation
 		$htmlString .= "if( getCookie('chart.daily.showCool') == 'true' )";
 		$htmlString .= "{";
 		$htmlString .= "	document.getElementById('chart.daily.showCool').checked = true;";
-		// Set visual cue that cookie retains this value (DRAT!  Checkbox styles are not obeyed by browsers, they are styled by the OS.)
-		//$htmlString .= "	document.getElementById('chart.daily.showCool').className = 'remembered_input';";
 		$htmlString .= "}";
 
 		// Restore user preference/cookie for showing/hiding heater operation
 		$htmlString .= "if( getCookie('chart.daily.showHeat') == 'true' )";
 		$htmlString .= "{";
 		$htmlString .= "	document.getElementById('chart.daily.showHeat').checked = true;";
-		// Set visual cue that cookie retains this value (DRAT!  Checkbox styles are not obeyed by browsers, they are styled by the OS.)
-		//$htmlString .= "	document.getElementById('chart.daily.showHeat').className = 'remembered_input';";
 		$htmlString .= "}";
 
 		// Restore user preference/cookie for showing/hiding fan operation
 		$htmlString .= "if( getCookie('chart.daily.showFan') == 'true' )";
 		$htmlString .= "{";
 		$htmlString .= "	document.getElementById('chart.daily.showFan').checked = true;";
-		// Set visual cue that cookie retains this value (DRAT!  Checkbox styles are not obeyed by browsers, they are styled by the OS.)
-		//$htmlString .= "	document.getElementById('chart.daily.showFan').className = 'remembered_input';";
 		$htmlString .= "}";
 
 
@@ -233,8 +232,6 @@ class DailyDetail
 		$htmlString .= "	if( getCookie('chart.daily.toDate') )";
 		$htmlString .= "	{";
 		$htmlString .= "		document.getElementById('chart.daily.toDate').value = getCookie('chart.daily.toDate');";
-		// Set visual cue that cookie retains this value (DRAT!  Checkbox styles are not obeyed by browsers, they are styled by the OS.)
-		//$htmlString .= "document.getElementById('chart.daily.toDate').className = 'remembered_input';";
 		$htmlString .= "	}";
 	*/
 
