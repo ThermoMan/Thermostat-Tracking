@@ -22,8 +22,5 @@ cd ${LOC}
 . ../config.ksh
 
 NOW=`date "+%Y-%m-%d %H:%M:%S"`
-NOW_CHANGED=${NOW:0:15}"0:00"
 
 /usr/local/bin/php ${LOC}/thermo_update_status.php
-
-#echo "now is (${NOW}) and now changed is (${NOW_CHANGED})" >> ${LOC}/status.log

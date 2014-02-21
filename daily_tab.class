@@ -243,7 +243,6 @@ $htmlString .= "<div id='daily_temperature_table' class='status daily_temperatur
 		$htmlString .= "</div>";
 		$htmlString .= "<div class='tab_gap'></div>";
 
-
 		echo $htmlString;
 	}
 }

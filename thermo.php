@@ -1,5 +1,5 @@
 <?php
-require_once 'common.php';
+require_once( 'common.php' );
 
 date_default_timezone_set( $timezone );
 $show_date = date( 'Y-m-d', time() );	// Start with today's date
@@ -102,78 +102,19 @@ if( $isLoggedIn )
 			<div class='tab_gap'></div>
 			<div class='tab_gap'></div>
 
-			<div class='tab' id='dashboard'> <a href='#dashboard'> Dashboard </a>
-				<div class='container'>
-					<div class='tab-toolbar'>
-						Present conditions
-					</div>
-					<div class='content'>
-						<br><br>
-						<input type='button' onClick='javascript: update( "conditions" ); update( "forecast" );' value='Refresh'>
-						<br>
-						<div id='status' class='status'></div>
-						<div id='forecast' class='status forecast'></div>
-						<!-- Kick off dashboard refresh timers -->
-						<script type='text/javascript'>
-							update( 'conditions' );
-							update( 'forecast' );
-						</script>
-					</div>
-				</div>
-			</div>
-			<script>
-				// Now that the dashbord tab is loaded, set it to be the target
-				location.href = '#dashboard';
-			</script>
-			<div class='tab_gap'></div>
-
 <?php
+			require_once( 'dashboard_tab.class' );
 			require_once( 'daily_tab.class' );
+			require_once( 'history_tab.class' );
+
+			$dashboard = new Dashboard();
 			$dailyDetail = new DailyDetail();
+			$history = new History();
+
+			$dashboard->displayTab();
 			$dailyDetail->displayTab();
+			$history->displayTab();
 ?>
-
-			<div class='tab' id='history'> <a href='#history'> History </a>
-				<div class='container'>
-					<div class='tab-toolbar'>
-						<input type='button' onClick='javascript: display_historic_chart();' value='Show'>
-						<select id='chart.history.thermostat'>
-							<?php foreach( $thermostats as $thermostatRec ): ?>
-								<option <?php if( $id == $thermostatRec['id'] ): echo 'selected '; endif; ?>value='<?php echo $thermostatRec['id'] ?>'><?php echo $thermostatRec['name'] ?></option>
-							<?php endforeach; ?>
-						</select>
-						<select id='history_selection'>
-							<option value='0' selected>Outoor</option>
-							<option value='1'>Indoor</option>
-							<option value='2'>Both</option>
-						</select>
-						<!-- Show initial range as from 3 weeks ago through today -->
-<!--						From date <input type='date' id='history_from_date' size='10' value='<?php echo date( 'Y-m-d', strtotime( '3 weeks ago' ) ); ?>' max='<?php echo $show_date; ?>' onInput='javascript: display_historic_chart();' step='1'/> -->
-						Timeframe <input type='text' id='interval_length' value='21' size='3'>
-						<select id='interval_measure' style='width: 65px'>
-							<option value='0' selected>days</option>
-							<option value='1'>weeks</option>
-							<option value='2'>months</option>
-						</select>
-						ending on <input type='date' id='chart.history.toDate' size='10' value='<?php echo $show_date; ?>' max='<?php echo $show_date; ?>' step='1'/>
-						&nbsp;&nbsp;Optionally show HVAC runtimes<input type='checkbox' id='show_hvac_runtime' name='show_hvac_runtime'/>
-						<!-- <span style='float: right;'>UN-save settings<input type='button' onClick='javascript: deleteCookies(1);' value='Clear'></span>-->
-						<input type='button' onClick='javascript: deleteCookies(1);' value='Un-save settings' style='float: right;'>
-					</div>
-					<div class='content'>
-						<br>
-						<div class='thermo_chart'>
-							<img id='history_chart' src='need_default.png' alt='All Time History'>
-						</div>
-						<script type='text/javascript'>
-							display_historic_chart(); // Draw the chart
-						</script>
-					</div>
-				</div>
-			</div>
-			<div class='tab_gap'></div>
-
-
 
 <style>
 /* This set of styles looks proper in Firefox, but NOT in Chrome

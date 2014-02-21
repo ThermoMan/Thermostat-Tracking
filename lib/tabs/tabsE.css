@@ -163,7 +163,7 @@ div.all_tabs > div.tab > div.container
 /** 
 	* Set up a toolbar for contents of the tab - this is technically inside the section described immediately above 
 	*/
-div.all_tabs > div.tab > div.container > div.tab-toolbar
+div.all_tabs > div.tab > div.container div.tab-toolbar
 {
 	position: relative;
 	width: inherit; 
@@ -171,7 +171,7 @@ div.all_tabs > div.tab > div.container > div.tab-toolbar
 	display: table-cell;
 	vertical-align: middle;
 	font-family: 'theToolbarFonts';
-	font-size: 0.6em;
+	font-size: 12px;
 	padding-left: 9px;										/* Same as border radius looks nice */
 	overflow: hidden;
 }
@@ -181,12 +181,12 @@ div.all_tabs > div.tab > div.container > div.tab-toolbar
 /**
 	* Set style/appearance of text on controls in the toolbar
 	*/
-div.all_tabs > div.tab > div.container > div.tab-toolbar > select,
-div.all_tabs > div.tab > div.container > div.tab-toolbar > input
+div.all_tabs > div.tab > div.container div.tab-toolbar > select,
+div.all_tabs > div.tab > div.container div.tab-toolbar > input
 {
 	vertical-align: middle;
 	font-family: 'theToolbarFonts';
-	font-size: 1em;
+	font-size: 12px;
 }
 
 /**
@@ -194,7 +194,7 @@ div.all_tabs > div.tab > div.container > div.tab-toolbar > input
 	*
 	* Specifically for checkbox - unchecked look
 	*/
-div.all_tabs > div.tab > div.container > div.tab-toolbar > input[type='checkbox']
+div.all_tabs > div.tab > div.container div.tab-toolbar > input[type='checkbox']
 {
 	/* width: 21px; */
 	/* height: 21px; */
@@ -211,7 +211,7 @@ div.all_tabs > div.tab > div.container > div.tab-toolbar > input[type='checkbox'
 /**
 	* Specifically for checkbox - checked look
 	*/
-div.all_tabs > div.tab > div.container > div.tab-toolbar > input[type='checkbox']:checked
+div.all_tabs > div.tab > div.container div.tab-toolbar > input[type='checkbox']:checked
 {
 	/* background: url( 'images/CheckBox.png' ) 0px 0px; */
 	/* cursor: crosshair;  */

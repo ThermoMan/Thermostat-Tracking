@@ -1,0 +1,50 @@
+<script type='text/javascript'>
+</script>
+
+<?php
+class Dashboard
+{
+	function __construct()
+	{
+		//echo 'hi!';
+	}
+
+	// How about making a generic Tab class and extending that to create specific tabs and setting properties to add things to the toolbar?
+	function displayTab()
+	{
+		$htmlString = '';
+
+		$htmlString .= "<div class='tab' id='dashboard'> <a href='#dashboard'> Dashboard </a>";
+		$htmlString .= "	<div class='container'>";
+		$htmlString .= "		<div class='tab-toolbar'>";
+		$htmlString .= "			Present conditions";
+		$htmlString .= "		</div>";
+		$htmlString .= "		<div class='content'>";
+		$htmlString .= "			<br><br>";
+
+		// Give user a button to refresh whenever they want.
+		$htmlString .= '			<input type="button" onClick="javascript: update( \'conditions\' ); update( \'forecast\' );" value="Refresh">';
+		$htmlString .= "			<br>";
+		$htmlString .= "			<div id='status' class='status'></div>";
+		$htmlString .= "			<div id='forecast' class='status forecast'></div>";
+
+		// Kick off dashboard refresh timers when it loads
+		$htmlString .= "			<script type='text/javascript'>";
+		$htmlString .= "				update( 'conditions' );";
+		$htmlString .= "				update( 'forecast' );";
+		$htmlString .= "			</script>";
+
+		$htmlString .= "		</div>";
+		$htmlString .= "	</div>";
+		$htmlString .= "</div>";
+		$htmlString .= "<div class='tab_gap'></div>";
+
+		// Now that the dashbord tab is loaded, set it to be the target
+		$htmlString .= "<script>";
+		$htmlString .= "	location.href = '#dashboard';";
+		$htmlString .= "</script>";
+
+		echo $htmlString;
+	}
+}
+?>
