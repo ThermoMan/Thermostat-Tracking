@@ -6,10 +6,11 @@ $log->logInfo( 'get_instant_forecast: start' );
 
 /* Put useful comments here and either merge code with get_instant_status.php or make this a virtual clone of that file */
 
+
 $lastZIP = '';
 $returnString = '';
 
-$log->logDebug( 'get_instant_forecast: Execution path start' );
+$log->logDebug( 'get_instant_forecast: Execution path start for region >>>' . $ZIP . '<<<' );
 if( $weatherConfig['useForecast'] )
 {	// Only check forecast if we're asking for it.
 $log->logDebug( 'get_instant_forecast: Execution path inside the IF' );
@@ -59,6 +60,7 @@ $log->logDebug( 'get_instant_forecast: Execution path inside the third IF' );
 							$returnString .= "<p>The forecast for {$ZIP} is</p><br><table><tr>";
 							foreach( $forecastData as $day )
 							{
+$log->logDebug( 'get_instant_forecast: Execution path found a day >>>'.$day->date->weekday.'<<<' );
 								$returnString .= "<td style='text-align: center;'>{$day->date->weekday}</td>";
 							}
 							$returnString .= "</tr><tr>";
@@ -98,7 +100,7 @@ $log->logDebug( 'get_instant_forecast: Execution path inside the third IF' );
 					// Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
 					$returnString = $returnString . "<p><img src='images/Alert.png'/>Presently unable to read forecast.</p>";
 				}
-$log->logDebug( 'get_instant_forecast: Execution path after first EXECPTION' );
+$log->logDebug( 'get_instant_forecast: Execution path after first EXCEPTION' );
 		}
 	}
 	catch( Exception $e )
@@ -106,9 +108,9 @@ $log->logDebug( 'get_instant_forecast: Execution path after first EXECPTION' );
 		$log->logError( 'get_instant_forecast: Some bugs failure or other ' . $e->getMessage() );
 		$returnString = "<p><img src='images/Alert.png'/>Presently unable to read forecast.</p>";
 	}
-$log->logDebug( 'get_instant_forecast: Execution path after second EXECPTION' );
+$log->logDebug( 'get_instant_forecast: Execution path after second EXCEPTION' );
 }
-$log->logDebug( 'get_instant_forecast: Execution path about to ECHO' );
+$log->logDebug( 'get_instant_forecast: Execution path about to ECHO >>>' . $returnString . '<<<' );
 echo $returnString;
 $log->logInfo( 'get_instant_forecast: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
