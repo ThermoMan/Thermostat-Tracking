@@ -57,25 +57,25 @@ try
 		$lock = @fopen( $lockFileName, 'w' );
 		if( !$lock )
 		{
-			$log->logInfo( "get_instant_status: Could not write to lock file $lockFileName" );
+			$log->logError( "get_instant_status: Could not write to lock file $lockFileName" );
 			continue;
 		}
 		$setPoint = '';
 
 		if( flock( $lock, LOCK_EX ) )
 		{
-			$log->logInfo( "get_instant_status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
+			//$log->logInfo( "get_instant_status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
 
 			//$stat = new Stat( $thermostatRec['ip'], $thermostatRec['tstat_id'] );
 			$stat = new Stat( $thermostatRec['ip'] );
 
 			try
 			{
-			$statData = $stat->getStat();
+				$statData = $stat->getStat();
 			}
 			catch( Exception $e )
 			{
-				$log->logInfo( 'get_instant_status: $stat->getStat() threw an unpleasant error and could not talk to the stat' );
+				$log->logError( 'get_instant_status: $stat->getStat() threw an unpleasant error and could not talk to the stat' );
 			}
 			$heatStatus = ($stat->tstate == 1) ? 'on' : 'off';
 			$coolStatus = ($stat->tstate == 2) ? 'on' : 'off';
@@ -99,7 +99,7 @@ try
 					$outsideData = $externalWeatherAPI->getOutdoorWeather( $ZIP );
 					$outdoorTemp = $outsideData['temp'];
 					$outdoorHumidity = $outsideData['humidity'];
-					$log->logInfo( "get_instant_status: Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
+					//$log->logInfo( "get_instant_status: Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
 					//$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
 					$greetingMsgWeather = "$outdoorTemp &deg;$weatherConfig[units] outside";
 				}

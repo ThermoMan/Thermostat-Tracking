@@ -10,31 +10,26 @@ $log->logInfo( 'get_instant_forecast: start' );
 $lastZIP = '';
 $returnString = '';
 
-$log->logDebug( 'get_instant_forecast: Execution path start for region >>>' . $ZIP . '<<<' );
 if( $weatherConfig['useForecast'] )
 {	// Only check forecast if we're asking for it.
-$log->logDebug( 'get_instant_forecast: Execution path inside the IF' );
 	try
 	{
-$log->logDebug( 'get_instant_forecast: Execution path inside the first TRY' );
 		/** Get stat info
 			*
 			*/
 		foreach( $thermostats as $thermostatRec )
-		{
-$log->logDebug( 'get_instant_forecast: Execution path inside the FOREACH' );
-			$returnString = '';
-				//$log->logInfo( 'get_instant_forecast: Fetching forecast' );
+		{	// This loop really ought to be per location, not per thermostat!
+
+// QQQ error here!
+//			$returnString = '';
 
 				//$stat = new Stat( $thermostatRec['ip'], $thermostatRec['tstat_id'] );
-				$stat = new Stat( $thermostatRec['ip'] );
+				//$stat = new Stat( $thermostatRec['ip'] );
 
 				try
 				{
-$log->logDebug( 'get_instant_forecast: Execution path inside the second TRY' );
 					if( $lastZIP != $ZIP )
 					{	// Only get outside info for subsequent locations if the location has changed
-$log->logDebug( 'get_instant_forecast: Execution path inside the second IF' );
 						$lastZIP = $ZIP;
 
 						$externalWeatherAPI = new ExternalWeather( $weatherConfig );
@@ -49,18 +44,14 @@ $log->logDebug( 'get_instant_forecast: Execution path inside the second IF' );
 							*
 							*/
 						$forecastData = $externalWeatherAPI->getOutdoorForcast( $ZIP );
-$log->logDebug( 'get_instant_forecast: Execution path the forecastData is >>>' . $forecastData . '<<<' );
 
-						//$log->logInfo( "get_instant_forecast: I got data" );
 
 						// Format data for screen presentation
 						if( is_array( $forecastData ) )
 						{
-$log->logDebug( 'get_instant_forecast: Execution path inside the third IF' );
 							$returnString .= "<p>The forecast for {$ZIP} is</p><br><table><tr>";
 							foreach( $forecastData as $day )
 							{
-$log->logDebug( 'get_instant_forecast: Execution path found a day >>>'.$day->date->weekday.'<<<' );
 								$returnString .= "<td style='text-align: center;'>{$day->date->weekday}</td>";
 							}
 							$returnString .= "</tr><tr>";
@@ -100,7 +91,6 @@ $log->logDebug( 'get_instant_forecast: Execution path found a day >>>'.$day->dat
 					// Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
 					$returnString = $returnString . "<p><img src='images/Alert.png'/>Presently unable to read forecast.</p>";
 				}
-$log->logDebug( 'get_instant_forecast: Execution path after first EXCEPTION' );
 		}
 	}
 	catch( Exception $e )
@@ -108,9 +98,7 @@ $log->logDebug( 'get_instant_forecast: Execution path after first EXCEPTION' );
 		$log->logError( 'get_instant_forecast: Some bugs failure or other ' . $e->getMessage() );
 		$returnString = "<p><img src='images/Alert.png'/>Presently unable to read forecast.</p>";
 	}
-$log->logDebug( 'get_instant_forecast: Execution path after second EXCEPTION' );
 }
-$log->logDebug( 'get_instant_forecast: Execution path about to ECHO >>>' . $returnString . '<<<' );
 echo $returnString;
 $log->logInfo( 'get_instant_forecast: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
