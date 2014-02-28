@@ -106,14 +106,17 @@ if( $isLoggedIn )
 			require_once( 'dashboard_tab.class' );
 			require_once( 'daily_tab.class' );
 			require_once( 'history_tab.class' );
+			require_once( 'compare_tab.class' );
 
 			$dashboard = new Dashboard();
 			$dailyDetail = new DailyDetail();
 			$history = new History();
+			$compare = new Compare();
 
 			$dashboard->displayTab();
 			$dailyDetail->displayTab();
 			$history->displayTab();
+			$compare->displayTab();
 ?>
 
 <style>

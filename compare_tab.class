@@ -1,0 +1,88 @@
+<script type='text/javascript'>
+
+
+function compare_me()
+{
+	var show_thermostat_id       = 'id='                          + document.getElementById( 'chart.daily.thermostat' ).value;
+
+	// Browsers are very clever with image caching.	In this case it breaks the web page function.
+	var no_cache_string = 'nocache=' + Math.random();
+
+	var url_string = '';
+
+	url_string = 'draw_compare.php';
+
+	url_string = url_string + '?' + show_thermostat_id + '&' + no_cache_string;
+	//console.log( url_string );
+
+	document.getElementById( 'compare_chart' ).src = url_string;
+}
+
+function display_compare_chart()
+{
+	document.getElementById( 'compare_chart' ).src = 'images/daily_temperature_placeholder.png';	// Redraw the placekeeper while the chart is rendering
+	// By using setTimeout we can separate the drawing of the placeholder image from the actual chart such that the browser will always draw the placeholder
+	setTimeout(function(){ compare_me();}, 500);
+
+	var show_thermostat_id       = 'id='                          + document.getElementById( 'chart.daily.thermostat' ).value;
+
+	// Browsers are very clever with image caching.	In this case it breaks the web page function.
+	var no_cache_string = 'nocache=' + Math.random();
+}
+
+</script>
+
+<?php
+class Compare
+{
+	function __construct()
+	{
+		//echo 'hi!';
+	}
+
+	// How about making a generic Tab class and extending that to create specific tabs and setting properties to add things to the toolbar?
+	function displayTab()
+	{
+		global $thermostats;
+		global $show_date;
+		$htmlString = '';
+
+		$htmlString .= "<div class='tab' id='compare'> <a href='#compare'> Compare </a>";
+		$htmlString .= "	<div class='container'>";
+		$htmlString .= "		<div class='tab-toolbar'>";
+		$htmlString .= "			<input type='button' onClick='javascript: display_compare_chart();' value='Show'>";
+		$htmlString .= "			<select id='chart.history.thermostat'>";
+
+		// Let user pick which thermostat to show, but always show ONLY (new feature - show multiple?) one of them!
+		foreach( $thermostats as $thermostatRec )
+		{
+			$htmlString .= "<option ";
+			if( $id == $thermostatRec['id'] )
+			{
+				$htmlString .= "selected ";
+			}
+			$htmlString .= "value='{$thermostatRec['id']}'>{$thermostatRec['name']}</option>";
+		}
+		$htmlString .= "			</select>";
+
+		$htmlString .= "		</div>";
+
+		$htmlString .= "		<div class='content'>";
+		$htmlString .= "			<br>";
+		$htmlString .= "			<div class='thermo_chart'>";
+		$htmlString .= "				<img id='compare_chart' src='img/need_default.png' alt='Year-over-year comparison graph' title='Year-over-year comparison'>";
+		$htmlString .= "			</div>";
+		$htmlString .= "			<script type='text/javascript'>";
+		// Draw the chart
+		$htmlString .= "				display_compare_chart();";
+		$htmlString .= "			</script>";
+		$htmlString .= "		</div>";
+		$htmlString .= "	</div>";
+		$htmlString .= "</div>";
+		$htmlString .= "<div class='tab_gap'></div>";
+
+
+		echo $htmlString;
+	}
+}
+?>
