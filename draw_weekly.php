@@ -1,6 +1,5 @@
 <?php
-require_once 'common.php';
-require_once 'common_chart.php';
+require_once( 'common_chart.php' );
 
 // If they don't ask for indoor, they get outdoor.
 $indoor = 0;

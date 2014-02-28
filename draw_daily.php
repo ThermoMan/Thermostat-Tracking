@@ -1,6 +1,6 @@
 <?php
 $start_time = microtime(true);
-require_once 'common_chart.php';
+require_once( 'common_chart.php' );
 
 /**
 	* If the user requests more than about 90 days it will take more than 30 seconds to render

@@ -60,24 +60,6 @@ function update_daily_value( field )
 	display_daily_temperature();
 }
 
-//Change names of the IDs to match this naming convention 'chart.history.toDate' instead of this convention 'history_to_date'
-function display_historic_chart()
-{
-	var show_thermostat_id = 'id=' + document.getElementById( 'chart.history.thermostat' ).value;
-	var show_indoor = 'Indoor=' + document.getElementById( 'history_selection' ).value;
-	var show_hvac_runtime = 'show_hvac_runtime=' + document.getElementById( 'show_hvac_runtime' ).checked;
-
-	var interval_measure_string = 'interval_measure=' + document.getElementById( 'interval_measure' ).value;
-	var interval_length_string = 'interval_length=' + document.getElementById( 'interval_length' ).value;
-
-	var history_to_date_string = 'history_to_date=' + document.getElementById( 'chart.history.toDate' ).value;
-
-	var no_cache_string = 'nocache=' + Math.random(); // Browsers are very clever with image caching.	That cleverness breaks this web page's function.
-
-	var url_string = 'draw_weekly.php?' + show_thermostat_id + '&' + show_indoor + '&' + show_hvac_runtime + '&' + interval_measure_string + '&' + interval_length_string + '&' + history_to_date_string	+ '&' + no_cache_string;
-	console.log( url_string );
-	document.getElementById( 'history_chart' ).src = url_string;
-}
 
 /**
 	* Default cookies last for ten years.
