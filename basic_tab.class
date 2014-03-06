@@ -1,0 +1,42 @@
+<?php
+?>
+
+<script type='text/javascript'>
+/** Place generic JavaScripts here
+	*
+	* If I have understood the require_once() functionality correctly, the first
+	* instance of it will make sure this file is loaded and these functions are available
+	* to all tabs.
+	*
+	* Other tabs may have thier own specific JavaScripts they need in order to function.
+	*/
+
+
+</script>
+
+<?php
+class BasicTab
+{
+	private $htmlString = '';
+
+	public function __construct()
+	{
+		$this->htmlString = '';
+	}
+
+	public function setTab( $s )
+	{
+		$this->htmlString = $s;
+	}
+
+	public function addToTab( $s )
+	{
+		$this->htmlString .= $s;
+	}
+
+	public function displayTab()
+	{
+		echo $this->htmlString;
+	}
+}
+?>
