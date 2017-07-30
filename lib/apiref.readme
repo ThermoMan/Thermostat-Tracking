@@ -1,4 +1,4 @@
-Here are the funcitons needed to implement
+Here are the functions needed to implement
 
 *    1 /tstat
 *    2 /tstat/datalog
@@ -62,39 +62,72 @@ This is the OLD output of "help"
 /tstat/             get set
 
 ====================================
-According to /tstat/help  2012/7/6
+According to /tstat/help  2017/06/13
+CC = changed feature (since 2012/07/06)
+
+   /tstat/}ir_baffle	     get set
+   /tstat/datalog	     get  x 
+   /tstat/dehumidifier     get set
+   /tstat/ext_dehumidifier get set
+   /tstat/errstatus        get  x 
+   /tstat/eventlog         get  x 
+   /tstat/fmode            get set
+   /tstat/fan_ctime        get set
+   /tstat/help             get  x 
+   /tstat/hold             get set
+   /tstat/humidity         get  x 
+   /tstat/hvac_recovery    get set
+   /tstat/hvac_settings    get  x 
+   /tstat/humidifier       get set
+   /tstat/led               x  set
+   /tstat/lock             get set
+   /tstat/model            get  x 
+   /tstat/night_light      get set
+   /tstat/override         get  x 
+   /tstat/power            get set
+   /tstat/beep              x  set
+   /tstat/uma               x  set
+   /tstat/pma               x  set
+   /tstat/temp             get  x 
+   /tstat/differential     get set
+   /tstat/time/day         get  x 
+   /tstat/time/hour        get  x 
+   /tstat/time
+
+====================================
+According to /tstat/help  2012/07/06
 !! = new feature
 CC = changed feature
 several DELETED?
 
-!! /}ir_baffle        get set
-   /datalog get       x
-!! /dehumidifier      get set
-!! /ext_dehumidifier  get set
-   /errstatus         get  x
-   /eventlog          get  x
-   /fmode             get set
-!! /fan_ctime         get set
-   /help              get  x
-   /hold              get set
-   /humidity          get  x
-!! /hvac_recovery     get set
-!! /hvac_settings     get  x
-CC /humidifier        get set
-   /led               x   set
-!! /lock              get set
-   /model             get  x
-!! /night_light       get set
-   /override          get  x
-   /power             get set
-   /beep              x   set
-   /uma               x   set
-   /pma               x   set
-   /temp              get  x
-!! /differential      get set
-   /time/day          get  x
-   /time/hour         get  x
-   /time
+!! /tstat/}ir_baffle        get set
+   /tstat/datalog           get  x
+!! /tstat/dehumidifier      get set
+!! /tstat/ext_dehumidifier  get set
+   /tstat/errstatus         get  x
+   /tstat/eventlog          get  x
+   /tstat/fmode             get set
+!! /tstat/fan_ctime         get set
+   /tstat/help              get  x
+   /tstat/hold              get set
+   /tstat/humidity          get  x
+!! /tstat/hvac_recovery     get set
+!! /tstat/hvac_settings     get  x
+CC /tstat/humidifier        get set
+   /tstat/led               x   set
+!! /tstat/lock              get set
+   /tstat/model             get  x
+!! /tstat/night_light       get set
+   /tstat/override          get  x
+   /tstat/power             get set
+   /tstat/beep              x   set
+   /tstat/uma               x   set
+   /tstat/pma               x   set
+   /tstat/temp              get  x
+!! /tstat/differential      get set
+   /tstat/time/day          get  x
+   /tstat/time/hour         get  x
+   /tstat/time
 
 
 
@@ -168,3 +201,10 @@ object(stdClass)#4 (1)
   }
 }
 */
+
+
+How to get/set heat program
+get------
+URL: http://127.0.0.1/tstat/program/heat
+RAW: {"0":[360,70,480,70,1080,70,1320,70],"1":[360,70,480,70,1080,70,1320,70],"2":[360,70,480,70,1080,70,1320,70],"3":[360,70,480,70,1080,70,1320,70],"4":[360,70,480,70,1080,70,1320,70],"5":[360,70,495,70,1080,70,1320,70],"6":[360,70,480,70,1080,70,1320,70]}
+

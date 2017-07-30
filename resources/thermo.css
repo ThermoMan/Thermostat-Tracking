@@ -1,170 +1,202 @@
+@charset 'utf-8';
 /* Main app specific css file */
 
-body
-{
-	background-image: url( '../images/grid.png' );
-	background-size: contain;
-	background-repeat: repeat-y;
-	text-align: center;
+a .glyphicon {
+  font-size: 16px;
+  top: 4px;
 }
 
-/** Absolutely everything that appeas on the ENTIRE web page should be in this big box
-	* Except the header - which should completely span the top.
-	*/
-#bigbox
-{
-	width: 1000px;
-	margin: 0px auto;
+a:link {
+  color: red;
+  text-decoration: none;
 }
 
-/** Here are the things that can appear inside the tabs
-	*
-	*/
+a:visited {
+  color: black;
+  text-decoration: none;
+}
 
-/** Dashboard per thermostat/location appearance
-	*
-	*/
-div.status
-{
-	display: inline-block; 
-	margin: 0px;
-	margin-left: 50px;
-	float: left;
-	width: 400px;
-	height: 250px;
-	overflow-y: auto;
+a:hover {
+  color: seagreen;
+  text-decoration: none;
 }
-div.status p
-{
-	padding: 0px;
-	top: -24px;
-	vertical-align: middle;
+
+a:active {
+  color: blue;
+  text-decoration: none;
 }
-div.forecast
-{
-	margin: 0px;
-	margin-right: 50px;
-	float: right;
+
+@font-face {
+  font-family: 'theToolbarFonts';
+  src: local( 'Copperplate Gothic Light' ),
+       url( './lib/fonts/Copperplate_Gothic_Light.ttf' ) format( 'truetype' );
+}
+
+body {
+  background-image: url( '../images/grid.png' );
+  background-position: center; 
+  background-repeat: repeat-y;
+  text-align: center;
+  font-family: 'theToolbarFonts';
+  font-size: 14px;
+}
+
+select {
+  /* This is only supported in Firefox, but make the select and option font match the rest of the app */
+  font-family: theToolbarFonts; 
+  font-size: 12px;
+}
+
+input[type='button'] {
+  font-family: theToolbarFonts; 
+  font-size: 12px;
 }
 
 /** Sprite map to replace individual graphics
-	*
-	* When adding new images to the sprite map do the following steps.
-	*
-	* 1. Determine width of new sprite and make the whole image that many pixels wider.
-	* 2. Add the new sprite to the LEFT side of the sprite map.
-	* 3. Compute the background-position to be offset from top left of new sprite to top right of whole map
-	*
-	*  Define sprite map basics
-	*/
-div.status img
-{
-	vertical-align: middle;
-	height: 48px;
-	width: 48px;
-	background-image: url( '../images/HVAC-Bar.png' );
+  *
+  * When adding new images to the sprite map do the following steps.
+  *
+  * 1. Determine width of new sprite and make the whole image that many pixels wider.
+  * 2. Add the new sprite to the LEFT side of the sprite map.
+  * 3. Compute the background-position to be offset from top left of new sprite to top right of whole map
+  *
+  *  Define sprite map basics
+  */
+.large_sprite {
+  vertical-align: middle;
+  height: 48px;
+  width: 48px;
+  background-image: url( '../images/HVAC-Bar.png' );
 }
 
 /** Locate individual sprites within the map.
-	*
-	*/
-div.status img.fan_on
-{
-	background-position: 194px 0px;
+  *
+  */
+.large_sprite.fan_on {
+  background-position: 194px 0px;
 }
-div.status img.fan_off
-{
-	background-position: 194px -48px;
+.large_sprite.fan_off {
+  background-position: 194px -48px;
 }
-div.status img.compressor_on
-{
-	background-position: 146px 0px;
+.large_sprite.compressor_on {
+  background-position: 146px 0px;
 }
-div.status img.compressor_off
-{
-	background-position: 146px -48px;
+.large_sprite.compressor_off {
+  background-position: 146px -48px;
 }
-div.status img.heater_on
-{
-	background-position: 98px 0px;
+.large_sprite.heater_on {
+  background-position: 98px 0px;
 }
-div.status img.heater_off
-{
-	background-position: 98px -48px;
+.large_sprite.heater_off {
+  background-position: 98px -48px;
 }
-div.status img.wheels
-{
-	background-position: 338px 0px;
+.large_sprite.wheels {
+  background-position: 338px 0px;
 }
+
+.sprite {
+  position: relative; 
+  top: -3px;
+  vertical-align: top;
+  height: 22px;
+  width: 22px;
+  background-image: url( '../images/HVAC-Bar-x22.png' );
+  margin-right: 5px;
+}
+
+.sprite_info {
+  background-position: 133px 0px;
+}
+
+.sprite_lock {
+  background-position: 110px 0px;
+}
+
+.sprite_wheels {
+  background-position: 155px 0px;
+}
+
+
+/** Absolutely everything that appeas on the ENTIRE web page should be in this big box
+  * Except the header - which should completely span the top.
+  */
+#bigbox {
+/*  width: 1000px; */
+/*  margin: 0px auto; */
+  position: relative;
+  top: 100px;
+  margin-top: 50px;
+}
+
+/** Here are the things that can appear inside the tabs
+  *
+  */
+
+
+
+
 
 /** Charts and tables
-	*
-	*/
-div.thermo_chart
-{
-	position: relative;
-	height: 430px; 
-	width: 900px; 
-	margin-left: auto;
-	margin-right: auto;
+  *
+  */
+div.thermo_chart {
+  position: relative;
+  height: 430px;
+  width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-div.daily_temperature_table
-{
-	position: relative;
-	height: 113px;
-	width: 540px;
-	float: right;
-	background-image: none;
-	overflow-y: auto;
-	overflow-x: hidden;
+div.daily_temperature_table {
+  position: relative;
+  height: 113px;
+  width: 540px;
+  float: right;
+  background-image: none;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-table.thermo_table
-{
-	border-collapse: collapse;	/* Show a single line around each cell instead of a double line */
-	white-space: nowrap;				/* Do not allow any text (I'm look at you date string) to wrap */
+table.thermo_table {
+  border-collapse: collapse;  /* Show a single line around each cell instead of a double line */
+  white-space: nowrap;        /* Do not allow any text (I'm look at you date string) to wrap */
 }
 
-table.thermo_table th
-{
-	border: 1px solid black;
-	color: #550F55;
+table.thermo_table th {
+  border: 1px solid black;
+  color: #550F55;
 }
 
-table.thermo_table td
-{
-	border: 1px solid black;
-	color: blue;
+table.thermo_table td {
+  border: 1px solid black;
+  color: blue;
 }
 
-body.account
-{
-	margin: 10px;
+body.account {
+  margin: 10px;
 }
 
 /* User ID registration stuff that ?cannot? be part of a php .class file */
-fieldset.auto-width
-{
-	border: 1px solid #FF0000;
-	/* width: 40em; */
-	width: 75%;
-	display: inline-block;
-	padding: 10px;
+fieldset.auto-width {
+  border: 1px solid #FF0000;
+  /* width: 40em; */
+  width: 75%;
+  display: inline-block;
+  padding: 10px;
 }
-fieldset.auto-width legend
-{
-	/* margin: 0 15px; */
-	padding:  0 10px;
+
+fieldset.auto-width legend {
+  /* margin: 0 15px; */
+  padding:  0 10px;
 }
-table.form
-{
+
+table.form {
 }
-table.form td.label
-{
-	text-align: right;
+
+table.form td.label {
+  text-align: right;
 }
-table.form td.input, td.hint
-{
-	test-align: left;
+
+table.form td.input, td.hint {
+  test-align: left;
 }
