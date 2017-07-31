@@ -115,8 +115,7 @@ class UTIX{
     self::$lockFile = self::$rootDir . 'locks/thermo.lock';   // Ought/Needs to include username in file name
 //    self::$lockDir = self::$rootDir . 'locks/';  // This one requires the app to have a locks sub directory.
 
-//    self::$timezone = 'America/Chicago';
-//    self::$adminUsername = 'test7';
+//    self::$adminUsername = 'test8';
     self::$timezone = TIME_ZONE;
     self::$adminUsername = SITE_ADMIN;          // This establishes a site administrator ID
 
@@ -355,7 +354,6 @@ $lockFile = $util->lockFile;
   *  using it in a 100% local environment then uses SYSTEM.
   * $timezone = 'SYSTEM';
   */
-//$timezone = 'America/Chicago';
 // Set timezone for all PHP functions
 date_default_timezone_set( $util::$timezone );
 
