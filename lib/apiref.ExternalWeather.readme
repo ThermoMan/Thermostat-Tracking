@@ -1,5 +1,5 @@
 
-The following is the result of calling teh forecast from weatherunderground
+The following is a sample of the result of calling the forecast from weatherunderground
 http://api.wunderground.com/api/API/forecast/q/90210.xml
 
 <response>
