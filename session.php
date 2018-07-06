@@ -1,13 +1,15 @@
 <?php
-require_once( 'common.php' ); // To let me log
+require_once( 'common.php' ); // To let me do logging
 
 global $util;
 $util::logDebug( 'session.php: 0' );
 
+// Force to https from http
 if( $_SERVER[ 'HTTPS' ] != 'on'){
   $log->logInfo( 'session.php: forced user to https from http' );
   header( 'Location: https://' . $_SERVER[ 'HTTP_HOST' ] . $_SERVER['REQUEST_URI'] );
-  exit();
+//  exit();
+  exit( '<meta http-equiv="refresh" content="0;url=https://' . $_SERVER[ 'HTTP_HOST' ] . $_SERVER['REQUEST_URI'] . '" />' );
 }
 
 $util::session_start();
@@ -28,7 +30,8 @@ $util::logDebug( "session.php: I think you are on page " . basename( $_SERVER[ '
   if( !$user->isLoggedIn() ){
 $util::logError( 'session.php: Evicting unknown user from secure page' );
     header( 'Location: index' );
-    exit();
+//    exit();
+    exit( '<meta http-equiv="refresh" content="0;url=index" />' );
   }
   else{
     $util::logDebug( "session.php: I think you are logged in, so everything is hunky dory" );
