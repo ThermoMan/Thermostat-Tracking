@@ -1,10 +1,56 @@
-# Updated July 27, 2012
+# Updated August 13, 2016
 
-DirectoryIndex index.html
-
-# This prevents web browsers or spiders from seeing your .htaccess directives:
-<Files .htaccess>
+# This prevents ANYTHING from seeing ANYTHING:
 deny from all
-</Files>
+
+# reference: https://www.addedbytes.com/articles/for-beginners/error-documents-for-beginners/
+# reference: https://www.addedbytes.com/articles/for-beginners/http-status-codes/
+# reference: https://tools.ietf.org/html/rfc7231  [Page 49]
+ErrorDocument 100 <html></html>
+ErrorDocument 101 <html></html>
+
+ErrorDocument 200 <html></html>
+ErrorDocument 201 <html></html>
+ErrorDocument 202 <html></html>
+ErrorDocument 203 <html></html>
+ErrorDocument 204 <html></html>
+ErrorDocument 205 <html></html>
+ErrorDocument 206 <html></html>
+
+ErrorDocument 300 <html></html>
+ErrorDocument 301 <html></html>
+ErrorDocument 302 <html></html>
+ErrorDocument 303 <html></html>
+ErrorDocument 304 <html></html>
+ErrorDocument 305 <html></html>
+ErrorDocument 306 <html></html>
+ErrorDocument 307 <html></html>
+
+ErrorDocument 400 <html></html>
+ErrorDocument 401 <html></html>
+ErrorDocument 402 <html></html>
+ErrorDocument 403 <html></html>
+ErrorDocument 404 <html></html>
+ErrorDocument 405 <html></html>
+ErrorDocument 406 <html></html>
+ErrorDocument 407 <html></html>
+ErrorDocument 408 <html></html>
+ErrorDocument 409 <html></html>
+ErrorDocument 410 <html></html>
+ErrorDocument 411 <html></html>
+ErrorDocument 412 <html></html>
+ErrorDocument 413 <html></html>
+ErrorDocument 414 <html></html>
+ErrorDocument 415 <html></html>
+ErrorDocument 416 <html></html>
+ErrorDocument 417 <html></html>
+ErrorDocument 426 <html></html>
+
+ErrorDocument 500 <html></html>
+ErrorDocument 501 <html></html>
+ErrorDocument 502 <html></html>
+ErrorDocument 503 <html></html>
+ErrorDocument 504 <html></html>
+ErrorDocument 505 <html></html>
 
 # End of file

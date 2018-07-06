@@ -1,3 +1,9 @@
 This directory holds the logs, primarily generated from the Dashboard, but errors can get logged here from other areas.
 
 This directory must be writable by your http server.
+
+For dev/debug convenience you should three sym links (your error log location may vary)
+access.log -> /var/log/apache2/access.log
+error.log -> /var/log/apache2/error.log
+php-errors.log -> /var/log/php-errors.log
+*These files will be read only for you.
