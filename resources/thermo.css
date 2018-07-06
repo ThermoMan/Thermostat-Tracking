@@ -29,12 +29,12 @@ a:active {
 @font-face {
   font-family: 'theToolbarFonts';
   src: local( 'Copperplate Gothic Light' ),
-       url( './lib/fonts/Copperplate_Gothic_Light.ttf' ) format( 'truetype' );
+       url( '../../common/fonts/Copperplate_Gothic_Light.ttf' ) format( 'truetype' );
 }
 
 body {
   background-image: url( '../images/grid.png' );
-  background-position: center; 
+  background-position: center;
   background-repeat: repeat-y;
   text-align: center;
   font-family: 'theToolbarFonts';
@@ -43,12 +43,12 @@ body {
 
 select {
   /* This is only supported in Firefox, but make the select and option font match the rest of the app */
-  font-family: theToolbarFonts; 
+  font-family: theToolbarFonts;
   font-size: 12px;
 }
 
 input[type='button'] {
-  font-family: theToolbarFonts; 
+  font-family: theToolbarFonts;
   font-size: 12px;
 }
 
@@ -95,7 +95,7 @@ input[type='button'] {
 }
 
 .sprite {
-  position: relative; 
+  position: relative;
   top: -3px;
   vertical-align: top;
   height: 22px;
