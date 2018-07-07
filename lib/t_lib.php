@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
   * API Class to connect to Radio Thermostat
@@ -10,32 +10,28 @@ class Thermostat_Exception extends Exception{
 
 
 class Stat{
-  protected $ch,
-            $IP;  // Most likely an URL and port number rather than a strict set of TCP/IP octets.
+  protected $IP;                                // Most likely an URL and port number rather than a strict set of TCP/IP octets.
 
   // Low level communication adjustments
-  protected static  $initialTimeout = 5000,     // Start with a 5 second timeout
-                    $timeoutIncrement = 5000,   // Each time that the curl operation times out, add 5 seconds beore trying again
-                    $maxRetries = 4;            // Try at most 4 times before giving up (5 + 10 + 15 + 20 = 50 seconds spent trying!)
-
-  private $debug = false;
-
+  protected static  $initialTimeout = 3000,     // Start with a 3 second timeout
+                    $timeoutIncrement = 0,      // Do not increase the timeout length on retry
+                    $maxRetries = 2;            // Try at most 2 times before giving up (3 + 3 + 3 = 9 seconds spent waiting max)
 
   // Would prefer these to be private/protected and have get() type functions to return value.
   // But for now, public will do because I am lazy.
-  public $temp =  null
+  public $thermostat_id
+        ,$temp = null
         ,$tmode = null
         ,$fmode = null
-        ,$override =  null
-        ,$hold =  null
-        ,$t_cool =  null
-        ,$tstate =  null
-        ,$fstate =  null
+        ,$override = null
+        ,$hold = null
+        ,$t_cool = null
+        ,$tstate = null
+        ,$fstate = null
         ,$day = null
-        ,$time =  null
+        ,$time = null
         ,$t_type_post = null
-        ,$humidity = null
-        ,$ZIP = null;
+        ,$humidity = null;
 
 public $dummy_time = null, $dummy_temp = null;
 
@@ -68,9 +64,15 @@ public $dummy_time = null, $dummy_temp = null;
          $rssi = null;
 
   public function __construct( $thermostatRec ){
+//global $util;
+//$util::logDebug( 't_lib: contructor 0' );
+    $this->thermostat_id = $thermostatRec['thermostat_id'];
     $this->IP = $thermostatRec['ip'];
-    $this->ZIP = $thermostatRec['zip_code'];
+//$util::logDebug( 't_lib: contructor 1' );
+//    $this->ZIP = $thermostatRec['location_string'];
+//$util::logDebug( 't_lib: contructor 2' );
     $this->ch = curl_init();
+//$util::logDebug( 't_lib: contructor 3' );
     curl_setopt( $this->ch, CURLOPT_USERAGENT, 'A' );
     curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, 1 );
     curl_setopt( $this->ch, CURLOPT_LOCALPORT, 9000 );
@@ -104,7 +106,12 @@ public $dummy_time = null, $dummy_temp = null;
     $this->model = 0;
 
     // System variables
-    $this->uuid = 0;
+//    $this->uuid = 0;
+//$util::logDebug( 't_lib: contructor 4' );
+    $this->uuid = $thermostatRec['tstat_uuid'];
+//$util::logDebug( 't_lib: contructor 5' );
+// Use the default device ID instead of 0
+
     $this->api_version = 0;
     $this->fw_version = 0;
     $this->wlan_fw_version = 0;
@@ -119,6 +126,7 @@ public $dummy_time = null, $dummy_temp = null;
     $this->rssi = 0;
 
     // Cloud variables
+//$util::logDebug( 't_lib: contructor 6' );
   }
 
   public function __destruct(){
@@ -138,37 +146,46 @@ public $dummy_time = null, $dummy_temp = null;
     $retry = 0;
     do{
 //$util::logDebug( 't_lib: getStatData doing...' );
-if( $retry > 0 ) $util::logDebug( "t_lib: getStatData: setting timeout to $newTimeout for try number $retry." );
+      if( $retry > 0 ){
+        $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " t_lib: getStatData: setting timeout to $newTimeout for try number $retry." );
+      }
       curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, $newTimeout );
       $retry++;
       $outputs = curl_exec( $this->ch );
-      if( curl_errno( $this->ch ) != 0 ){
-        $util::logWarn( 't_lib: getStatData curl error (' .  curl_error( $this->ch ) .' -> '. curl_errno( $this->ch ) . ") when performing command ($cmd) on try number $retry" );
-        if( curl_errno( $this->ch ) == 28 ){
+
+      switch( curl_errno( $this->ch )  ){
+        case 0:
+          // It worked!  Get out of the loop
+          continue;
+        break;
+        case 28:
+          // It was a timeout, trying again may work
           $newTimeout += self::$timeoutIncrement;
-          $util::logDebug( "t_lib: getStatData: changed timeout to $newTimeout because of timeout error in curl command." );
-        }
+          $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " t_lib: getStatData: changed timeout to $newTimeout because of timeout error in curl command.  Try number $retry" );
+
+          if( $retry < self::$maxRetries ){
+            /** Build in one second sleep after each communication attempt
+              * based on code from phareous - he had 2 second delay here and there
+              * The thermostat will stop responding for 20 to 30 minutes (until next WiFi reset) if you overload the connection.
+              * Previously I was not using a delay and had not problems, but caution is better.
+              *
+              * Later on, in a many thermostat environment, each stat will need to be queried in a thread so that the delays
+              * do not stack up and slow the overall application to a crawl.
+              *
+              * But don't bother sleeping if this was the final retry allowed.
+              */
+            sleep( 1 );
+          }
+        break;
+        default:
+          // Some other error that I don't know how to fix, so don't even try.
+          $util::logError( basename( $_SERVER["SCRIPT_NAME"], ".php") . ' t_lib: getStatData curl error (' .  curl_error( $this->ch ) .' -> '. curl_errno( $this->ch ) . ") when performing command ($cmd) on try number $retry" );
+          throw new Thermostat_Exception( 'getStatData() - curl died.  check logs.' );
+         break;
       }
-      /** Build in one second sleep after each communication attempt
-        * based on code from phareous - he had 2 second delay here and there
-        * The thermostat will stop responding for 20 to 30 minutes (until next WiFi reset) if you overload the connection.
-        * Previously I was not using a delay and had not problems, but caution is better.
-        *
-        * Later on, in a many thermostat environment, each stat will need to be queried in a thread so that the delays
-        * do not stack up and slow the overall application to a crawl.
-        */
-      sleep( 1 );
-    }
-    while( ( curl_errno( $this->ch ) != 0 ) && ($retry < self::$maxRetries) );
-    //while( (curl_errno( $this->ch ) == 7) && ($retry < $maxRetries) );
-    // curl error #7 CURLE_COULDNT_CONNECT is usually resolved with a simple single retry.
-//$util::logDebug( 't_lib: getStatData completed...' );
-    if( $retry > 1 ){
-      $util::logWarn( "t_lib: Made $retry attempts and last curl status was " . curl_errno( $this->ch ) );
-    }
+    }while( ( curl_errno( $this->ch ) != 0 ) && ($retry < self::$maxRetries) ); // Exit loop if it worked or we ran out of retries
 
-    $this->connectOK = curl_errno( $this->ch ); // Only capture the last status because the retries _might_ have worked!
-
+    $this->connectOK = curl_errno( $this->ch ); // Only capture the final status because the retries _might_ have worked!
     if( $this->debug ){
       // Convert to use log?
       echo '<br>commandURL: ' . $commandURL . '<br>';
@@ -182,9 +199,16 @@ if( $retry > 0 ) $util::logDebug( "t_lib: getStatData: setting timeout to $newTi
       echo '<br><br>';
     }
 
-    if( $this->connectOK != 0 ){
-      // Drat some problem.  Now what?
-      $util::logError( 't_lib: getStatData communication error.' );
+    switch( curl_errno( $this->ch )  ){
+      case 0:
+        if( $retry > 1 ){
+          $util::logWarn( "t_lib: Made $retry attempts and last curl status was " . curl_errno( $this->ch ) );
+        }
+      break;
+      default:
+        $util::logError( 't_lib: getStatData.  Communication just did not work' );
+        throw new Thermostat_Exception( 'getStatData() - Communication failure.  check logs.' );
+      break;
     }
 
     return $outputs;
@@ -227,7 +251,8 @@ if( $retry > 0 ) $util::logDebug( "t_lib: getStatData: setting timeout to $newTi
         if( is_object($value) ){
           foreach( $value as $key2 => &$value2 ){
   //$util::logDebug( 't_lib: containsTransient nested key...' );
-            if( $value2 == -1 ){
+            if( is_int( $value2 ) && $value2 == -1 ){
+// QQQ Should I throw an exception here?
               //if( $this->debug )
               //echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n";
               $util::logWarn( 't_lib: containsTransient WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n" );
@@ -241,12 +266,22 @@ if( $retry > 0 ) $util::logDebug( "t_lib: getStatData: setting timeout to $newTi
           // Comment out because this message appears even when everything is working!
           // $util::logError( 't_lib: containsTransient: value was NOT an object!' );
         }
-        if( $value == -1 ){
+        if( is_int( $value ) && $value == -1 ){
+// QQQ Should I throw an exception here?
           //echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n";
           $util::logWarn( 't_lib: containsTransient WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n" );
           // NULL the -1 transient
           //$value = NULL;
           $retval = true;
+        }
+        else{
+/** This is not an error, this is the thing working perfecetly
+ob_start();                    // start buffer capture
+var_dump( $value );            // dump the values
+$contents = ob_get_contents(); // put the buffer into a variable
+ob_end_clean();                // end capture
+$util::logDebug( "t_lib: data is {{{ $contents }}}" );
+**/
         }
       }
     }
@@ -286,7 +321,8 @@ if( $retry > 0 ) $util::logDebug( "t_lib: getStatData: setting timeout to $newTi
       }
       $key = $pr->getName();
       $val = $this->{$pr->getName()};
-      if( $key == 'ZIP' || $key == 'ssid' ){
+//      if( $key == 'ZIP' || $key == 'ssid' ){
+      if( $key == 'ssid' ){
 // Once we have password protected pages, allow these to be shown?
         $val = 'MASKED';
       }
@@ -384,23 +420,38 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
       * Continue when successful.
       *
       */
-    for( $i = 1; $i <= 5; $i++ ){
+
+// 2018-05-19 Changing retry logic to same code method as getStatData
+//            I mean good gravy, 5 times here and 3 times there means you could go 15 times and still not get data...
+    $retry = 0;
+    do{
+      if( $retry > 0 ){
+        $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " t_lib: getStat:  outout was [[[[$outputs]]]] on try $retry." );
+      }
+
       $outputs = $this->getStatData( '/tstat' );  // getStatData() has it's own retry function.
       // {"temp":80.50,"tmode":2,"fmode":0,"override":0,"hold":0,"t_cool":80.00,"tstate":2,"fstate":1,"time":{"day":2,"hour":18,"minute":36},"t_type_post":0}
       $obj = json_decode( $outputs );
 
+// Trying to find out why I am getting zero's stored as inside temps.
+if( $obj->{'temp'} == 0 ){
+  $util::logError( basename( $_SERVER["SCRIPT_NAME"], ".php") . " t_lib: getStat: I got a ZERO.  Here is original output [[[[$outputs]]]]" );
+}
+
+      $retry++;
+
       if( !$this->containsTransient( $obj ) ){
-        // It worked?  Get out ouf the retry loop.
+        // If there are no transients, then it worked.  If so, get out ouf the retry loop.
         break;
       }
       else{
-        if( $i == 5 ){
-          $util::logError( 't_lib: Too many thermostat transient communication failuress.' );
+        if( $retry == 5 ){
+          $util::logError( basename( $_SERVER["SCRIPT_NAME"], ".php") . ' t_lib: getStat: Too many thermostat transient communication failures.' );
           throw new Thermostat_Exception( 'Too many thermostat transient failures' );
         }
         else{
           //echo "Transient (" . date(DATE_RFC822) . ") failure " . $i . " retrying...\n";
-          $util::logDebug( "t_lib: Transient (" . date(DATE_RFC822) . ") failure " . $i . " retrying...\n" );
+          $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " t_lib: getStat: Transient (" . date(DATE_RFC822) . ") failure " . $retry . " retrying...\n" );
         }
       }
 
@@ -408,7 +459,7 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
         $util::logError( 't_lib: No output from thermostat.' );
         throw new Thermostat_Exception( 'No output from thermostat' );
       }
-    }
+    }while( $retry < self::$maxRetries ); // Exit loop if we ranout of retries
 
     // Move fetched data to internal data structure
     $this->temp = $obj->{'temp'};            // Present temp in deg F (or C depending on thermostat setting)
