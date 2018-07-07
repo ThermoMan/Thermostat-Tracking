@@ -1,37 +1,35 @@
-# Updated August 13, 2016
-
+# Updated 22 May, 2018
+# Minimize 'Server' header information
+#ServerTokens Prod
+# Disable server signature on server generated pages
 ServerSignature Off
 
-<IfModule mod_autoindex.c>
-IndexIgnore *
-</IfModule>
+# GO HERE ---  READ THIS   http://php.net/manual/en/security.hiding.php
 
-# Disable Directory Listings in this Directory and Subdirectories
-Options All -Indexes
+Options -MultiViews
 
-DirectoryIndex index.php
-
-<Files "config.php">
-Order Allow,Deny
-Deny from All
-</Files>
-
-<Files "common.php">
-Order Allow,Deny
-Deny from All
-</Files>
+RewriteEngine on
 
 
-# This prevents web browsers or spiders from seeing your .htaccess directives:
-<Files .htaccess>
-deny from all
-</Files>
+RewriteRule ^([^.?]+)$ %{REQUEST_URI}.php [L]
 
-# Deny access to all . files (may supercede the .htaccess block above, but that is OK)
-RedirectMatch 403 /\..*$
 
-# Custom error file
-ErrorDocument 404 /common/html/404page.html
-ErrorDocument 403 /common/html/403page.html
+RewriteCond %{THE_REQUEST} "^[^ ]* .*?\.php[? ].*$"
+RewriteRule .* - [L,R=404]
+
+
+
+#
+# #Strip the trailing .php from the URL if included
+# RewriteCond %{THE_REQUEST} ^(.*)\.php([#?][^\ ]*)?\ HTTP/
+# RewriteRule ^(.*)\.php$ /$1 [R]
+#
+# #Strip the trailing .php from the URL if included
+# #RewriteRule ^(.+)\.php$ /$1 [R,L]
+# # Do not use because it also eats the directory name!
+#
+# RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteCond %{REQUEST_FILENAME}.php -f
+# RewriteRule ^(.*)$ $1.php [L]
 
 # End of file
