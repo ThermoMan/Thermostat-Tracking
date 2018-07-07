@@ -4,14 +4,14 @@
   */
 
 // Timezone for PHP (and MySQL) to assume as it's own.
-define( 'TIME_ZONE', 'America/Los_Angeles' );
+define( 'TIME_ZONE', 'America/Chicago' );
 
 define( 'DB_HOST', 'localhost' );
 define( 'DB_PORT', '3306' );
 define( 'DB_NAME', 'thermo' );
 define( 'DB_USER', 'user' );
 define( 'DB_PASS', 'password' );
-define( 'DB_PREFIX', 'thermo2__' );   // Can also use NULL or empty string
+define( 'DB_PREFIX', 'thermo3__' );   // Can also use NULL or empty string
 // Prefix to attach to all table/procedure names to make unique in unknown environment.
 // Using a double underscore as the end of the prefix enables some UI magic in phpMyAdmin
 
