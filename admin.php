@@ -5,7 +5,9 @@
   require_once( 'user.php' );
   $login = new USER();
   if( ! $login->isLoggedin() || ! $login->isSiteAdmin() ){
-    $login->redirect( 'index.php' );
+    header( 'Location: index' );
+//    exit();
+    exit( '<meta http-equiv="refresh" content="0;url=index" />' );
   }
 
   require_once( 'standard_page_top.php' );
