@@ -3,7 +3,7 @@
   require_once( 'standard_page_top.php' );
   if( ! $util::checkThermostat( $user ) ) return;
 
-
+$util::logDebug( 'dashboard.php 0' );
 //$util::send_mail( 'theinscrutable@yahoo.com', 'Your message here', 'User ID registration email' );
 
 ?>
@@ -28,7 +28,7 @@ function update( p_section, p_time ){
   var time = typeof p_time !== 'undefined' ? p_time : 3000;
   if( [ 'status', 'forecast', 'electro' ].indexOf( p_section ) >= 0){
     $( '#'+p_section ).html( $( '#'+p_section ).data( 'default' ) );
-    var submitURL = 'get_instant.php?user=<?php echo $user->getName() ?>&session=<?php echo $user->getSession() ?>&type=' + p_section;
+    var submitURL = 'get_instant?user=<?php echo $user->getName() ?>&session=<?php echo $user->getSession() ?>&type=' + p_section;
     $.ajax({
        url:     submitURL
       ,timeout: time
