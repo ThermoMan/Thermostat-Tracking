@@ -3,7 +3,7 @@ $start_time = microtime(true);
 require_once( 'common.php' );
 require_once( 'user.php' );
 
-$log->logInfo( 'get_instant_electro: start' );
+$util::logInfo( 'get_instant_electro: start' );
 
 /* Put useful comments here and either merge code with get_instant_status.php or make this a virtual clone of that file */
 
@@ -26,27 +26,27 @@ try{
       *
       */
     try{
-//$log->logInfo( 'get_instant_electro: Trying to talk to TED 5000 Gateway' );
+//$util::logInfo( 'get_instant_electro: Trying to talk to TED 5000 Gateway' );
 
       $val = $ted5000->getStatus(); // Go get the present data for the gateway in question.
 // Need it to throw exception on fail instead of return value.
 
-//$log->logDebug( "get_instant_electro: TED 5000 Gateway said ($uptime)" );
+//$util::logDebug( "get_instant_electro: TED 5000 Gateway said ($uptime)" );
       $returnString = 'Your TED 5000 thinks that it is ' . $ted5000->getTime() . '<br>';
       $returnString .= 'You are using ' . $ted5000->getPower() . ' kWh right now and are projected to use ' . $ted5000->getPowerProj() . ' kWh this month.';
     }
     catch( Exception $e ){
-      $log->logError( 'get_instant_electro: $mtu->getStatus() threw an unpleasant error and could not talk to the MTU. ' . $e->getMessage() );
+      $util::logError( 'get_instant_electro: $mtu->getStatus() threw an unpleasant error and could not talk to the MTU. ' . $e->getMessage() );
       $returnString = "<p><img src='images/Alert.png'/>Presently unable to read TED 5000.</p>";
     }
   }
 }
 catch( Exception $e ){
-$log->logError( 'get_instant_electro: Some bugs failure or other ' . $e->getMessage() );
+$util::logError( 'get_instant_electro: Some bugs failure or other ' . $e->getMessage() );
   $returnString = "<p><img src='images/Alert.png'/>Presently unable to read TED 5000.</p>";
 }
 
 echo $returnString;
-$log->logInfo( 'get_instant_electro: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+$util::logInfo( 'get_instant_electro: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>

@@ -9,7 +9,7 @@ $start_time = microtime( true );
 require_once( 'common.php' );
 require_once( 'user.php' );
 
-$log->logInfo( 'get_instant_status: start' );
+$util::logDebug( 'get_instant_status: 0' );
 
 $returnString = '';
 $greetingMsg = '';
@@ -17,69 +17,46 @@ $greetingMsgWeather = '';
 
 $lastZIP = '';
 
-/*
-ob_start();
-var_dump($_POST);
-$result = ob_get_clean();
-$log->logInfo( 'POST ' . $result );
-*/
-
-/*
-ob_start();
-var_dump($_GET);
-$result = ob_get_clean();
-$log->logInfo( 'GET ' . $result );
-
-
-2016-07-20 14:29:01 - INFO --> GET array(3) {
-  ["user"]=>
-  string(5) "test7"
-  ["session"]=>
-  string(32) "871216e73543f832a42261f081fa73f3"
-  ["type"]=>
-  string(6) "status"
-*/
-
-/*
-ob_start();
-var_dump($_SESSION);
-$result = ob_get_clean();
-$log->logInfo( '_SESSION ' . $result );
-*/
-
 $uname = (isset($_REQUEST['user'])) ? $_REQUEST['user'] : null;         // Set uname to chosen user name (or null if not chosen)
 $session = (isset($_REQUEST['session'])) ? $_REQUEST['session'] : null; // Set session to chosen session id (or null if not chosen)
 //QQQ Do a test...  Log in, then with phpMyAdmin mess up the session id.  Then hit Refresh button on the dashboard.
 //QQQ The expected result is that you'll be denied access.
 $user = new USER( $uname, $session );
-if( ! $util::checkThermostat( $user ) ) return;
+if( ! $util::checkThermostat( $user ) ){
+  echo 'You have no thermostats added to your account.';
+  return;
+}
 
 /** Get thermostat info
   *
   */
+$util::logDebug( 'get_instant_status: 1' );
 try{
+//$util::logDebug( 'get_instant_status: 2 util root dir is ' . $util::$rootDir );
   foreach( $user->thermostats as $thermostatRec ){
-    $lockFileName = $lockFile . $thermostatRec['id'];
+    $lockFileName = $lockFile . $thermostatRec['thermostat_id'];
     $lock = @fopen( $lockFileName, 'w' );
     if( !$lock ){
-$log->logError( "get_instant_status: Could not write to lock file $lockFileName" );
+      $util::logError( "indoor_temps: Could not write to lock file $lockFileName" );
       continue;
     }
+
     $setPoint = '';
 
     if( flock( $lock, LOCK_EX ) ){
-$log->logInfo( "get_instant_status: Connecting to Thermostat ID = ({$thermostatRec['id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
+$util::logInfo( "get_instant_status: Connecting to Thermostat ID = ({$thermostatRec['thermostat_id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
 
-      //$stat = new Stat( $thermostatRec['ip'], $thermostatRec['tstat_id'] );
+      //$stat = new Stat( $thermostatRec['ip'], $thermostatRec['thermostat_id'] );
       //$stat = new Stat( $thermostatRec['ip'] );
       $stat = new Stat( $thermostatRec );
+$util::logDebug( 'get_instant_status: 5' );
 
       try{
-$log->logInfo( 'get_instant_status: Trying to talk to thermostat' );
+$util::logInfo( 'get_instant_status: Trying to talk to thermostat' );
         $statData = $stat->getStat();
       }
       catch( Exception $e ){
-$log->logError( 'get_instant_status: $stat->getStat() threw an unpleasant error and could not talk to the stat' );
+$util::logError( 'get_instant_status: $stat->getStat() threw an unpleasant error and could not talk to the stat' );
       }
       $heatStatus = ($stat->tstate == 1) ? 'on' : 'off';
       $coolStatus = ($stat->tstate == 2) ? 'on' : 'off';
@@ -102,13 +79,13 @@ $log->logError( 'get_instant_status: $stat->getStat() threw an unpleasant error 
           $outsideData = $externalWeatherAPI->getOutdoorWeather( $ZIP );
           $outdoorTemp = $outsideData['temp'];
           $outdoorHumidity = $outsideData['humidity'];
-$log->logInfo( "get_instant_status: Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
+$util::logInfo( "get_instant_status: Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
           //$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
           $greetingMsgWeather = "$outdoorTemp &deg;$weatherConfig[units] outside";
         }
       }
       catch( Exception $e ){
-$log->logError( 'External weather failed: ' . $e->getMessage() );
+$util::logError( 'External weather failed: ' . $e->getMessage() );
         // Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
         $returnString = $returnString . "<p><img src='images/Alert.png'/ alt='alert'>Presently unable to read outside information.</p>";
         $greetingMsgWeather = "<p><img src='images/Alert.png'/ alt='alert'>Presently unable to read outside information.</p>";
@@ -134,7 +111,7 @@ $log->logError( 'External weather failed: ' . $e->getMessage() );
   }
 }
 catch( Exception $e ){
-$log->logError( 'get_instant_status: Thermostat failed: ' . $e->getMessage() );
+  $util::logError( 'get_instant_status: Thermostat failed: ' . $e->getMessage() );
   $returnString = "<p>No response from unit, please check WiFi connection at unit location.";
 }
 
@@ -143,6 +120,6 @@ $log->logError( 'get_instant_status: Thermostat failed: ' . $e->getMessage() );
 // Need to JSON the text so that there is an object with values passed back?
 
 echo $returnString;
-$log->logInfo( 'get_instant_status: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+$util::logInfo( 'get_instant_status: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>
