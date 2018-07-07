@@ -20,9 +20,7 @@
     |   +-- js
     |   +-- php
     |       +-- pChart -> pChart2.1.4
-    |       +-- pChart2.1.4
-    |       +-- mailer
-    |
+    |       +-- mailer -> mailer.6.0.5
     +-- MY_WEB_APP_HERE
     |
     +-- thermo2
@@ -32,11 +30,9 @@
         +-- lib
         |   +-- fonts
         |   +-- tabs
-        +-- locks
         +-- logs
         +-- resources
         +-- scripts
-        +-- sessions
 
   * In order to be able to reference those files without hard coded path names, the PHP include path needs to know about the relative location of
   *  those libraries.
@@ -57,20 +53,16 @@ function add_include_path( $path ){
     set_include_path( implode( PATH_SEPARATOR, $paths ) );
   }
 }
-// rootDir variable no longer exists!   add_include_path( $rootDir . '../../common/php/' );
 add_include_path( '../common/php/' );
 
 require_once( 'config.php' );
-
-// Do I need a separate common file for the command line utils or just lump it all in this one? (for now this one)
-require_once( 'mailer/class.phpmailer.php' );   // Used for sending emails
 
 require_once( 'lib/t_lib.php' );                // Used for reaading the 3M-50 Thermostats
 require_once( 'lib/e_lib.php' );                // Used for reading the TED 5000
 // Need lib for LIFX smart bulbs
 // Need lib for SolarCity panel reading
 require_once( 'lib/ExternalWeather.php' );      // Used for reading outside temperature data from one of several sources.
-require_once( 'KLogger.php' );                  // Used for writing log file (original location https://github.com/katzgrau/KLogger )
+//require_once( 'KLogger.php' );                  // Used for writing log file (original location https://github.com/katzgrau/KLogger )
 
 
 require_once( 'simple_html_dom.php' );          // Used for ???? ( original location https://sourceforge.net/projects/simplehtmldom/files/ )
@@ -79,7 +71,8 @@ $rootDir = dirname(__FILE__) . '/';
 $logDir =  $rootDir . 'logs/';
 
 // Create a utility class with these "global variables".  Make it a singleton
-define( 'LOG_LEVEL', array( 'DEBUG' => 0, 'INFO' => 1, 'WARN' => 2, 'ERROR' => 3 ) );
+//define( 'LOG_LEVEL', array( 'DEBUG' => 0, 'INFO' => 1, 'WARN' => 2, 'ERROR' => 3 ) );
+$LOG_LEVEL = array( 'DEBUG' => 0, 'INFO' => 1, 'WARN' => 2, 'ERROR' => 3 );
 
 // Create a utility class with these "global variables".  Make it a singleton
 class UTIX{
@@ -115,7 +108,8 @@ class UTIX{
     self::$lockFile = self::$rootDir . 'locks/thermo.lock';   // Ought/Needs to include username in file name
 //    self::$lockDir = self::$rootDir . 'locks/';  // This one requires the app to have a locks sub directory.
 
-//    self::$adminUsername = 'test8';
+//    self::$timezone = 'America/Chicago';
+//    self::$adminUsername = 'test7';
     self::$timezone = TIME_ZONE;
     self::$adminUsername = SITE_ADMIN;          // This establishes a site administrator ID
 
@@ -124,20 +118,25 @@ class UTIX{
     return static::$instance;
   }
 
-/**  These levels are based on what KLogger has
+/**
   * Need to set levels to control verbosity.  Here are the typical levels of verbosity I've seen. Not sure where to
-  * draw the line on what is needed.
+  * draw the line on what is needed.  The list is from minimal to maximal verbosity. ** Marks the ones I have implemented here.
   *
   * FATAL
-  * ERROR
-  * WARN
-  * INFO
-  * DEBUG
+  * ERROR **
+  * WARN  **
+  * INFO  **
+  * DEBUG **
   * TRACE
   *
 **/
   private static function logIt( $message ){
-    $logFile = self::$logDir . 'log_' . date( 'Y-m-d' ) . '.txt';
+    $logFile = self::$logDir . 'log_';
+    if( self::is_cli() ){
+      $logFile = $logFile . 'script_';
+    }
+    $logFile = $logFile . date( 'Y-m-d' ) . '.txt';
+
     $fh = fopen( $logFile, 'a' );
 //    fwrite( $fh, date( 'Y-m-d G:i:s.u' ) . $message . "\n" );
     fwrite( $fh, (new DateTime( 'now' ))->format( 'Y-m-d G:i:s.u' ) . $message . "\n" );
@@ -160,13 +159,24 @@ class UTIX{
     self::logIt( ' - ERROR --> ' . $message );
   }
   public static function setLogLevel( $level ){
-self::logInfo( "setLogLevel with level = $level" );
+self::logInfo( "common: setLogLevel with level = $level" );
 
 //    if( in_array( $level, array( 'DEBUG', 'INFO', 'WARN', 'ERROR' ) ) ){
-    if( in_array( $level, LOG_LEVEL) ){
+    if( in_array( $level, $LOG_LEVEL) ){
 //      self::$logLevel = LOG_LEVEL[ $level ];
       self::$logLevel = 5;
      }
+  }
+
+  // To find out if a web user is calling the script or a command line/cron user ( original location http://www.binarytides.com/php-check-running-cli/ )
+  public static function is_cli(){
+    if( defined( 'STDIN' ) ){
+      return true;
+    }
+    if( empty( $_SERVER['REMOTE_ADDR']) && !isset($_SERVER['HTTP_USER_AGENT']) && count($_SERVER['argv']) > 0 ){
+      return true;
+    }
+    return false;
   }
 
   public static function secondsToDate( $seconds ){
@@ -240,36 +250,49 @@ self::logInfo( "setLogLevel with level = $level" );
     return isset( $_SERVER[ 'REMOTE_ADDR' ] ) ? $_SERVER[ 'REMOTE_ADDR' ] : false;
   }
 
-  // Need to update mailer lib.  I have the 2009 version!
-  // I got the old one from here http://www.codingcage.com/2015/09/login-registration-email-verification-forgot-password-php.html
+  // Now using https://github.com/PHPMailer
   public static function send_mail( $email, $message, $subject ){
-//    require_once( 'lib/mailer/class.phpmailer.php' );   // Is it better to include globally or just in here when it's needed?
-    $mail = new PHPMailer();
-    $mail->IsSMTP();
-    $mail->SMTPDebug  = 0;
-//    $mail->Debugoutput = 'html';
-    $mail->SMTPSecure = 'tls';
-    $mail->SMTPAuth   = true;
+    require_once( 'mailer/src/PHPMailer.php' );   // Used for sending emails
+    require_once( 'mailer/src/SMTP.php' );        // Used for sending emails
 
-    $mail->Host       = EMAIL_HOST;
-    $mail->Port       = EMAIL_PORT;
-    $mail->Username   = EMAIL_USER;
-    $mail->Password   = EMAIL_PASS;
-    $mail->SetFrom( EMAIL_USER, EMAIL_NAME );
-//    $mail->AddReplyTo( 'me@medomain.com', 'My Name' );
-
-    $mail->AddAddress( $email );
-    $mail->Subject = $subject;
-    $mail->MsgHTML( $message );
-
-    $mail->Send();
-/*
-if (!$mail->send()) {
-    echo "Mailer Error: " . $mail->ErrorInfo;
-} else {
-    echo "Message sent!";
+if( self::is_cli() ){
+self::logDebug( "common: send_mail from command line" );
 }
-*/
+else{
+self::logDebug( "common: send_mail from web" );
+}
+
+    try{
+      $mail = new PHPMailer\PHPMailer\PHPMailer();
+      $mail->IsSMTP();
+      $mail->SMTPDebug  = 0;
+  //    $mail->Debugoutput = 'html';
+      $mail->SMTPSecure = 'tls';
+      $mail->SMTPAuth   = true;
+
+      $mail->Host       = EMAIL_HOST;
+      $mail->Port       = EMAIL_PORT;
+      $mail->Username   = EMAIL_USER;
+      $mail->Password   = EMAIL_PASS;
+      $mail->SetFrom( EMAIL_USER, EMAIL_NAME );
+  //    $mail->AddReplyTo( 'me@medomain.com', 'My Name' );
+
+      // These arguments are required
+      $mail->AddAddress( $email );
+      $mail->Subject = $subject;
+      $mail->MsgHTML( $message );
+
+      // These arguments are optional
+//      $attachment =  isset( $optional[ "Attachment" ] ) ? $optional[ "Attachment" ] : null;
+//$util::logDebug( "common: send_mail attachment is $attachment " );
+
+      $mail->Send();
+    }
+    catch( Exception $e ){
+      $util::logError( 'common: send_mail error ' . $e->getMessage() );
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -284,8 +307,13 @@ if (!$mail->send()) {
     */
   public static function session_start( $timeout = null, $probability = 100, $cookie_domain = '' ){
     if( is_null( $timeout ) ){
-      $timeout = (60 * 60 * 24 * SESSION_MAX_LENGTH);
+      $timeout = ( (60 * 60 * 24) * SESSION_MAX_LENGTH);
+self::logInfo( "common: timeout was NULL, now is $timeout ( " . ($timeout / (60 * 60 * 24) ) . " days)." );
     }
+else{
+self::logInfo( "common: timeout is $timeout ( " . ($timeout / (60 * 60 * 24) ) . " days)." );
+}
+
     ini_set( 'session.gc_maxlifetime', $timeout );      // Set the max lifetime
     ini_set( 'session.cookie_lifetime', $timeout );     // Set the session cookie to timout
     ini_set( 'session.gc_probability', $probability );  // Set the chance to trigger the garbage collection.
@@ -332,7 +360,7 @@ if (!$mail->send()) {
 
 }
 $util = UTIX::getInstance();
-$util::logInfo( 'common.php: UTIX class instantiated as util for ' . $util::$timezone );
+//$util::logInfo( 'common: UTIX class instantiated as util for ' . $util::$timezone );
 
 
 /**
@@ -343,7 +371,8 @@ $util::logInfo( 'common.php: UTIX class instantiated as util for ' . $util::$tim
   * until the wifi module resets.
   */
 //$lockFile = '/tmp/thermo.lock'; // Need username in file name
-$lockFile = $util->lockFile;
+//$lockFile = $util->lockFile;
+$lockFile = $util::$lockFile;
 
 /**
   * Really need to have timezone for each location so that all data is stored in the 'local' zone.
@@ -354,6 +383,7 @@ $lockFile = $util->lockFile;
   *  using it in a 100% local environment then uses SYSTEM.
   * $timezone = 'SYSTEM';
   */
+//$timezone = 'America/Chicago';
 // Set timezone for all PHP functions
 date_default_timezone_set( $util::$timezone );
 
@@ -394,51 +424,32 @@ class Database{
   public function dbConnection(){
 //    global $timezone; // Pass the timezone in instead of using this global!
     global $util;
-$util::logInfo( "common.php: dbConnection - 0" );
+//$util::logInfo( "common: dbConnection - 0" );
     $this->conn = null;
     try{
-$util::logInfo( "dbConnection - 1 -->{$this->host}<-- -->{$this->port}<-- -->{$this->db_name}<--" );
+//$util::logInfo( "common: dbConnection - 1 -->{$this->host}<-- -->{$this->port}<-- -->{$this->db_name}<--" );
 //      $this->conn = new PDO( "mysql:host={$this->host};port={$this->port};dbname={$this->db_name}", $this->username, $this->password );
       $this->conn = new PDO( "mysql:host={$this->host};port={$this->port};dbname={$this->db_name};charset=UTF8;", $this->username, $this->password );
 
-$util::logInfo( "dbConnection - 2" );
+//$util::logInfo( "common: dbConnection - 2" );
 
       $this->conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-$util::logInfo( "dbConnection - 3 for " . $util::$timezone );
+//$util::logInfo( "common: dbConnection - 3 for " . $util::$timezone );
       $this->conn->exec( "SET time_zone = '" . $util::$timezone . "'" );  // Set timezone for all MySQL functions
-$util::logInfo( "dbConnection - OK" );
+//$util::logInfo( "common: dbConnection - OK" );
     }
     catch( Exception $e ){
-      $util::logError( 'Database->dbConnection Connection error ' . $e->getMessage() );
+      $util::logError( 'common: Database->dbConnection Connection error ' . $e->getMessage() );
       return null;
     }
     return $this->conn;
   }
+
+  public function disconnect(){
+    $util::logDebug( 'common: Database->disconnect()' );
+    $this->conn = null;
+  }
 }
-
-/*
-http://www.wikihow.com/Create-a-Secure-Session-Management-System-in-PHP-and-MySQL
-CREATE TABLE IF NOT EXISTS thermo2__users(
-   user_id         int(10)    NOT NULL AUTO_INCREMENT
-  ,is_validated    enum('false','true') NOT NULL DEFAULT 'false'
-  ,user_name       varchar(60)   NOT NULL
-  ,email           varchar(60)   NOT NULL
-  ,pass            varchar(255)  NOT NULL
-  ,sessionid       char(128)     NOT NULL DEFAULT ''
-  ,session_expiry  datetime      NULL DEFAULT '0'
-  ,last_login      datetime      NULL
-  ,ip_address      varbinary(16) NOT NULL
-  ,validation_key  varchar(60)   DEFAULT NULL
-  ,created_on      datetime      NOT NULL DEFAULT CURRENT_TIMESTAMP
-  ,last_updated_on datetime      NOT NULL DEFAULT CURRENT_TIMESTAMP
-  ,PRIMARY KEY( user_id )
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
-// Should the session mgmt be in a separate table so the user can have logins on different browsers/platforms?
-
-ALTER TABLE `thermo2__thermostats` ADD `user_id`  TINYINT(3)  NOT NULL AFTER `description`;
-ALTER TABLE `thermo2__thermostats` ADD `zip_code` VARCHAR(9)  NOT NULL AFTER `user_id`;
-ALTER TABLE `thermo2__thermostats` ADD `timezone` VARCHAR(60) NOT NULL AFTER `zip_code`;
-*/
 
 // Display variables
 
@@ -448,11 +459,9 @@ ALTER TABLE `thermo2__thermostats` ADD `timezone` VARCHAR(60) NOT NULL AFTER `zi
   * But before it can be remotely configurable there has to be an ID/PW system for some tabs
   * I guess a tab would have to contain an iframe and the iframe has a page that checks permissions.
   */
-$send_end_of_day_email = 'Y';     // 'Y' or 'N'
-$send_eod_email_time = '0800';    // format is HHMM (24-hour) as text string
+//$send_end_of_day_email = 'Y';     // 'Y' or 'N'
+//$send_eod_email_time = '0800';    // format is HHMM (24-hour) as text string
 $send_eod_email_address = 'thestalwart1-tstat@yahoo.com';
-$send_eod_email_smtp = '';
-$send_eod_email_pw = '';
 /**
   * Add a check at the end of the one per minute task to see if time now == $send_eod_email_time
   * The better way would be to use Windows Scheduler to create a task to run at the named time
@@ -465,5 +474,5 @@ $send_eod_email_pw = '';
 
 
 // Establish connection to log file
-$log = KLogger::instance( $logDir );
+//$log = KLogger::instance( $logDir );
 ?>
