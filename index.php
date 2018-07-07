@@ -1,7 +1,6 @@
 <?php
-$section = 'xyzzy'; // This is the magic word tha allows a non-logged-in user to see this content.
+$section = 'xyzzy'; // This is the magic word that allows a non-logged-in user to see this content.
 require_once( 'session.php' );
-//require_once( 'common.php' );
 require_once( 'user.php' );
 $util::logDebug( 'index.php 0' );
 
@@ -10,11 +9,11 @@ $util::logDebug( 'index.php 1' );
 if( $user->isLoggedIn() ){
 $util::logDebug( 'index.php 2' );
   // Do NOT let already logged in user stay here
-  header( 'Location: dashboard.php' );
-  exit();
+  header( 'Location: dashboard' );
+//  exit();
+  exit( '<meta http-equiv="refresh" content="0;url=dashboard" />' );
 }
 $util::logDebug( 'index.php 3' );
-
 
 // Standard page top owns the form whose action sends user to this code.
 if( isset( $_POST[ 'btn-login' ] ) ){
@@ -26,8 +25,9 @@ $util::logDebug( 'index.php 4' );
   if( $user->doLogin( $uname, $upass, $expiration_date ) ){
 $util::logDebug( 'index.php 5' );
 $util::logDebug( "index.php: user $uname succesfully logged in.  Cookie set to expire in " . $util::secondsToTime( ini_get( 'session.cookie_lifetime' ) ) );
-    header( 'dashboard.php' );
-    exit();
+    header( 'Location: dashboard' );
+//    exit();
+    exit( '<meta http-equiv="refresh" content="0;url=dashboard" />' );
   }
   else{
 $util::logDebug( 'index.php 6' );

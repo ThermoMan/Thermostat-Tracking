@@ -1,18 +1,23 @@
 <?php
+
+class Config_Exception extends Exception{
+}
+
 require_once( 'common.php' );
 require_once( 'user.php' );
 
 // Modify the font path for the GD library - because graphic renders are lame?
 // Must use absolute and not relative paths.
-$pChart_fontpath = realpath( '../common/php/pChart/fonts' );  // pCharts default font library
-$my_fontpath = realpath( 'lib/fonts' );                       // font path for this application
-putenv( 'GDFONTPATH='.$pChart_fontpath.PATH_SEPARATOR.$my_fontpath );
+//$pChart_fontpath = realpath( '../common/php/pChart/fonts' );  // pCharts default font library
+//$my_fontpath = realpath( '../common/fonts' );                 // font path for this application
+//putenv( 'GDFONTPATH='.$pChart_fontpath.PATH_SEPARATOR.$my_fontpath );
 
-require_once( 'pChart/class/pData.class.php' );
-require_once( 'pChart/class/pDraw.class.php' );
-require_once( 'pChart/class/pImage.class.php' );
+//require_once( 'pChart/class/pData.class.php' );
+//require_once( 'pChart/class/pDraw.class.php' );
+//require_once( 'pChart/class/pImage.class.php' );
 
 
+// QQQ Move these to the view side of the code - do not need it here in the model side.
 /**
   * Set normal temperature range so the charts always scale the same way
   *
@@ -32,10 +37,11 @@ require_once( 'pChart/class/pImage.class.php' );
 $normalHighs = array( 60, 60, 70, 80, 90, 100, 100, 100, 90, 70, 70, 60 );
 $normalLows  = array( 30, 50, 40, 50, 60,  70,  70,  70, 60, 50, 40, 30 );
 
+/*
 // Amount of space to add to y scale to keep lines inside the chart
 $chartPaddingLimit = 5;   // When to trigger the addition of space (pixels)
 $chartPaddingSpace = 10;  // Amount of space to add (pixels)
-
+*/
 
 // Replaces chart with anti-hacking graphic (usually when web user has used a mal-formed date string)
 function bobby_tables(){
@@ -46,6 +52,8 @@ function bobby_tables(){
   echo $contents;
 }
 
+// QQQ This should be a UTIL function
+// QQQ The call to bobby_tables is not relevant in teh model code any more.
 function validate_date( $some_date ){
   $date_pattern = "/[2]{1}[0]{1}[0-9]{2}-[0-9]{2}-[0-9]{2}/";
   if( !preg_match( $date_pattern, $some_date ) || strlen( $some_date ) != 10 ){
@@ -61,40 +69,48 @@ $session = (isset($_REQUEST['session'])) ? $_REQUEST['session'] : null; // Set s
 $user = new USER( $uname, $session );
 
 if( $user == null || ! $user->hasSession( $uname, $session ) ){
-  $log->logError( 'common_chart.php: Back end call with bad user details ' );
+  $util::logError( 'common_chart: Back end call with bad user details ' );
   bobby_tables();
   return false;
 }
 
 // Common code that should run for EVERY CHART page follows here
-$id = (isset($_REQUEST['id'])) ? $_REQUEST['id'] : null;    // Set id to chosen thermostat (or null if not chosen)
-if( $id == null ){
+$thermostat_id = (isset($_REQUEST['thermostat_id'])) ? $_REQUEST['thermostat_id'] : null;    // Set id to chosen thermostat (or null if not chosen)
+if( $thermostat_id == null ){
   // If the thermostat to display was not chosen, choose one
   $thermostat = array_pop( $thermostats );
-  if( is_array( $thermostat ) && isset( $thermostat['id'] ) ){
-    $id = $thermostat['id'];
+  if( is_array( $thermostat ) && isset( $thermostat['thermostat_id'] ) ){
+    $thermostat_id = $thermostat['thermostat_id'];
+//    if( $thermostat_id != $thermostat['thermostat_id'] ){
+//      $util::logError( 'common_chart: Requested thermostat_id does not match user thermostat_id - I smell a hacker!' );
+//      throw new Config_Exception( 'common_chart: error 1.  check logs.' );
+//    }
   }
 }
-if( $id == null ){
+
+if( $thermostat_id == null ){
   // If there still is not one chosen then abort
-  $log->logError( 'common_chart.php: Thermostat ID was NULL!' );
+  $util::logError( 'common_chart: Thermostat ID was NULL!' );
   // Need to redirect output to some image showing user there was an error and suggesting to read the logs.
-  return;
+  throw new Config_Exception( 'common_chart: error 3.  check logs.' );
 }
 
 foreach( $user->thermostats as $thermostatRec ){
-  if( $thermostatRec['id'] == $id ){
+  if( $thermostatRec['thermostat_id'] == $thermostat_id ){
     // Having now chosen a thermostat to display, gather information about it.
     // This is true only if the requested thermostat ID is one of the thermostats owned by the present user.
-    $uuid = $thermostatRec['tstat_uuid'];
+//    $uuid = $thermostatRec['tstat_uuid'];
     $statName = $thermostatRec['name'];
   }
 }
-if( $uuid == null || $statName == null ){
+
+// QQQ This only owkrs if every thermostat has a name.  Must require the user to give it a name.
+// QQQ Names per user ought to be unique
+if( $statName == null ){
   // If the chosen thermostat is not known to the system then abort
-  $log->logError( 'common_chart.php: Requested thermostat ID was not found!' );
+  $util::logError( 'common_chart: Requested thermostat ID was not found! (by ID)' );
   // Need to redirect output to some image showing user there was an error and suggesting to read the logs.
-  return;
+  throw new Config_Exception( 'common_chart: error 5.  check logs.' );
 }
 
 ?>

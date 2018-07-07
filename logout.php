@@ -1,28 +1,34 @@
 <?php
-  require_once( 'session.php' );
+require_once( 'session.php' );
+require_once( 'common.php' );
+require_once( 'user.php' );
 
-  require_once( 'user.php' );
-  $user = new USER();
-  $user->doLogout();
+if( is_null( $user ) ){
+  // $user already null, no user to remove.
+  header( 'Location: index' );
+//  exit();
+  exit( '<meta http-equiv="refresh" content="0;url=index" />' );
+// the next line never executes!
+//  $user = new USER();
+}
+else{
+  $util::logDebug( 'logout: $user exists, need to log him out' );
+}
 
-  // Taken from: http://php.net/manual/en/function.session-destroy.php
-  // Unset all of the session variables.
-  $_SESSION = array();
+/** This vvvvv block might not be needed here **/
+/** This vvvvv block might not be needed here **/
+if( ! $user->isLoggedIn() ){
+  // If user is not logged in they must be expelled!
+  header( 'Location: index' );
+//  exit();
+  exit( '<meta http-equiv="refresh" content="0;url=index" />' );
+}
+/** This ^^^^^ block might not be needed here **/
+/** This ^^^^^ block might not be needed here **/
 
-  // If it's desired to kill the session, also delete the session cookie.
-  // Note: This will destroy the session, and not just the session data!
-  if( ini_get( 'session.use_cookies' ) ){
-      $params = session_get_cookie_params();
-      setcookie( session_name(), '', time() - 42000,
-          $params[ 'path'], $params[ 'domain' ],
-          $params[ 'secure'], $params[ 'httponly' ]
-      );
-  }
-
-  // Finally, destroy the session.
-//  session_destroy();
-// Commented out because of this warning
-// Warning: session_destroy(): Trying to destroy uninitialized session in /home/fratell1/freitag.theinscrutable.us/thermo2/logout.php on line 22
-
-  $user->redirect( 'index.php' );
+// Now, log them out and expel them
+$user->doLogout();
+header( 'Location: index' );
+//exit();
+exit( '<meta http-equiv="refresh" content="0;url=index" />' );
 ?>
