@@ -37,68 +37,58 @@ div.electric_dt tr.details td.details-control
 
 <script>
 $( document ).ready( function(){
-  var dt = $( '#electric_table' ).on( 'processing.dt', function ( e, settings, processing ) {
-        $( '#processingIndicator' ).css( 'display', processing ? 'block' : 'none' );
-    } ).DataTable({
-     processing:      true
-    ,dom:             '<"toolbar">frtip'
-    ,serverSide:      true
-    ,ajax:            'electric_dl.php'
-    ,displayLength:   25
-    ,info:            true
-    ,searching:       true
-//    ,searchDelay:     2000
-    ,ordering:        false
-    ,scrollY:         '200px'
-    ,paging:          true
+
+//  var show_mtu_id       = 'mtu_id='                   + $( '#chart\\.daily\\.thermostat' ).val();
+
+  var show_mtu_id       = 'mtu_id='                   + 1; // Hard code 1
+
+//  var daily_interval_length    = 'chart.daily.interval.length='     + $( '#chart\\.daily\\.interval\\.length' ).val();
+//  var daily_interval_group     = 'chart.daily.interval.group='      + $( '#chart\\.daily\\.interval\\.group' ).val();
+//  var daily_to_date_string     = 'chart.daily.toDate='              + $( '#chart\\.daily\\.toDate' ).val();
+
+  // So this is asking for the ten minutes ending on July 6 at midnight ( so it's the last 9 minutes of July 5 and the first minute of July 6 = 23:51, :52, :53, :54, :55, :56, :57, :58, :59, 24:00 )
+  var daily_interval_length    = 'chart.daily.interval.length='     + 10;           // Hard code asking for ten units
+  var daily_interval_group     = 'chart.daily.interval.group='      + 0;            // Hard code set unit type as minutres (others are hours, days, weeks, months, years)
+  var daily_to_date_string     = 'chart.daily.toDate='              + '2018-07-06'; // Hard code set end date
+
+  // Browsers are very clever with image caching. In this case it breaks the web page function.
+  var no_cache_string = 'nocache=' + Math.random();
+
+  var url_string = '';
+  url_string = 'electric_dl?user=<?php echo $user->getName() ?>&session=<?php echo $user->getSession() ?>';
+
+  url_string = url_string + '&' + show_mtu_id + '&' +
+               daily_interval_length  + '&' + daily_interval_group   + '&' + daily_to_date_string  + '&' +
+               no_cache_string;
+
+
+  // Make ajax call to data source
+  $.getJSON( url_string, function( data ){
+    rawData = [];   // Reset data array i ncase this is a re-run
+    var min = 100;  // Set chart Y axis boundary flags so they are guaranteed to move
+    var max = 0;
+
+debugger;
+    $.each( data.answer[ 'allData' ], function( key, value ){
+debugger;
+/*
+      if( $.isNumeric( value ) && value > max ) max = value;
+      else if( $.isNumeric( value ) && value < min ) min = value;
+      rawData.push( {"date": key, "value": value } );
+*/
+$('#electric_table > tbody:last-child').append('<tr><td>'+value[0]+'</td><td>'+value[1]+'</td><td>'+value[2]+'</td><td>'+value[3]+'</td></tr>');
+    });
+
 
   });
 
-  $( 'div.toolbar' ).html( 'Custom tool bar! Text/images etc. Long text here to reach over to the search input box. MW' );
-
-  $( 'div.dataTables_filter input' ).off( 'keyup.DT search.DT input.DT paste.DT cut.DT' );
-  var searchDelay = null;
-  $( 'div.dataTables_filter input' ).on( 'keyup', function(){
-    clearTimeout( searchDelay );
-    searchDelay = setTimeout( function(){
-      var sss = $( 'div.dataTables_filter input' ).val();
-      if( sss != null ){
-        dt.search( sss ).draw();
-      }
-    }, 2000 );
-  });
 });
 
 </script>
 
-<br>Look here: http://stackoverflow.com/questions/1955810/div-floating-over-table
-<br>And here: https://datatables.net/reference/event/processing
-<br>And here: http://preloaders.net/preloaders/39/Funnel.gif
-<br>And finally here: http://preloaders.net/en/circular
-<br>
-<br>Add buttons to change scale.
-<br> When showing days, accumulate kWh by hour
-<br> When showing weeks, accumulate kWh by day
-<br> When showing months, accumulate kWh by day
-<br> When showing year, accumulate kWh by month
-<br>
-<br>Add a button to show the present selection as a graph instead of a table
-<br>
-<br>Determine limits for data to display
-<br> Need a range for number of days ( 1 .. ? )
-<br> Need a range for number of weeks ( 1 .. ? )
-<br> Need a range for number of months ( 1 .. ? )
-<br> Need a range for number of years ( 1 .. ? )
-<br>
-<br>Data marts should precompute all of these
-<br> Need a control table that keeps track of work completed?
-<br> Do not need a task to do this in the background though.
-<br>  The first time a new date range is requested that is not precomputed, compute it and save it.  Give the user a message to be patient.
+
 
 <div class='electric_dt'>
-  <div id='processingIndicator' >
-   <img src='http://preloaders.net/preloaders/39/Funnel.gif' style='position: relative; top: 50% z-index: '>
-  </div>
   Electric usage
 
   <table id='electric_table' class='display' cellspacing='0' width='100%'>
@@ -110,13 +100,12 @@ $( document ).ready( function(){
         <th>volts</th>
       </tr>
     </thead>
+    <tbody>
+    </tbody>
   </table>
 
 </div>
 
-<br><br><br><br>
-<hr>
-<br><br><br><br>
 
 <?php
   require_once( 'standard_page_foot.php' );

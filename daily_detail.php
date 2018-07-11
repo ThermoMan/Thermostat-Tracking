@@ -16,7 +16,7 @@
 <script type='text/javascript'>
 var rawData = [];
 function display_chart(){
-  // QQQ ALL arguments need a name review.  1) consistency  2) brevity  3) comprehension
+  // QQQ ALL arguments need a name review.  1) consistency  2) BREVITY  3) comprehension
   var daily_setpoint_selection = 'chart.daily.setpoint='            + document.getElementById( 'chart.daily.setpoint' ).checked;
   var show_heat_cycle_string   = 'chart.daily.showHeat='            + document.getElementById( 'chart.daily.showHeat' ).checked;
   var show_cool_cycle_string   = 'chart.daily.showCool='            + document.getElementById( 'chart.daily.showCool' ).checked;

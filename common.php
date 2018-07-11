@@ -422,21 +422,13 @@ class Database{
   public $conn;
 
   public function dbConnection(){
-//    global $timezone; // Pass the timezone in instead of using this global!
     global $util;
-//$util::logInfo( "common: dbConnection - 0" );
     $this->conn = null;
     try{
-//$util::logInfo( "common: dbConnection - 1 -->{$this->host}<-- -->{$this->port}<-- -->{$this->db_name}<--" );
-//      $this->conn = new PDO( "mysql:host={$this->host};port={$this->port};dbname={$this->db_name}", $this->username, $this->password );
       $this->conn = new PDO( "mysql:host={$this->host};port={$this->port};dbname={$this->db_name};charset=UTF8;", $this->username, $this->password );
 
-//$util::logInfo( "common: dbConnection - 2" );
-
       $this->conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-//$util::logInfo( "common: dbConnection - 3 for " . $util::$timezone );
       $this->conn->exec( "SET time_zone = '" . $util::$timezone . "'" );  // Set timezone for all MySQL functions
-//$util::logInfo( "common: dbConnection - OK" );
     }
     catch( Exception $e ){
       $util::logError( 'common: Database->dbConnection Connection error ' . $e->getMessage() );
@@ -446,9 +438,36 @@ class Database{
   }
 
   public function disconnect(){
+    global $util;
     $util::logDebug( 'common: Database->disconnect()' );
     $this->conn = null;
   }
+
+  public function backupOneTable( $tableName, $now ){
+    global $util;
+
+    $command = "mysqldump -u {$this->username} -p{$this->password} -h {$this->host} {$this->db_name} {$tableName} | gzip -9 - > {$util::$rootDir}backups/$now.{$tableName}.sql.gz";
+
+// QQQ Be careful, this log command writes your DB password!
+//$util::logInfo( "backup: backupOneTable: Trying backup using\n" . $command );
+// QQQ Be careful, this log command writes your DB password!
+
+    // Maybe need a try/catch around this?
+    $rv = exec( $command );
+
+    if( $rv != 0 ){
+      $util::logError( "backup: backupOneTable: Backup failed with $rv." );
+    }
+  /* Technically works, but is ugly (not like tar)
+    // Concatenate the .sql to the gzip
+    $command = "gzip -c {$rootDir}backup/$now.{$tableName}.sql >> {$rootDir}backup/{$dbConfig['table_prefix']}.$now.gz";
+  $util::logInfo( 'backup: backupOneTable: Trying to concatenate with ' . $command );
+    $rv = exec( $command );
+  */
+
+    return $rv;
+  }
+
 }
 
 // Display variables

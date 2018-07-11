@@ -36,8 +36,7 @@ if( is_null( $user ) ){
   <div style='background: linear-gradient(#007700, #77DD77); height: 50px; top: 0px; position: absolute; width: 100%;'>
     <span style='float: left; position: relative; top: 25%;'>
       <div style='display: inline-block; top: 4px; position: relative;'>
-        &nbsp;&nbsp;<a href='dt_test'>Data Table test</a>
-        &nbsp;&nbsp;<a href='foo'>Foo</a>
+        &nbsp;&nbsp;<a href='foo'>Some global page</a>
 <?php
 if( $user->isSiteAdmin() ){
   // Don't even show the button unless the user is the admin
@@ -99,16 +98,15 @@ else{
 if( $user->isLoggedIn() ){
 ?>
   <div style='background: linear-gradient(#007700, #77DD77); height: 50px; top: 50px; position: absolute; width: 100%;'>
-    <span style="float: left; position: relative; top: 25%;">
+    <span style='float: left; position: relative; top: 25%;'>
       <div style='display: inline-block; top: 4px; position: relative;'>
         &nbsp;&nbsp;<a href='dashboard'><span class='glyphicon glyphicon-home'></span> Dashboard</a>
+        &nbsp;&nbsp;<a href='electric'>Electric Use</a>
         &nbsp;&nbsp;<a href='daily_detail'>Daily Detail</a>
         &nbsp;&nbsp;<a href='history'>History</a>
         &nbsp;&nbsp;<a href='compare'>Compare</a>
         &nbsp;&nbsp;<a href='schedule'>Schedule</a>
         &nbsp;&nbsp;<a href='profile'><img class='sprite sprite_wheels' src='images/img_trans.gif' width='1' height='1' alt='icon: about'/> Profile</a>
-        &nbsp;&nbsp;<a href='electric'>Electric Use (Tabular)</a>
-        &nbsp;&nbsp;<a href='electric2'>Electric Use (Chart)</a>
       </div>
     </span>
   </div>

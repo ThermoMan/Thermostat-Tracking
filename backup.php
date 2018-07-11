@@ -1,49 +1,33 @@
 <?php
+$start_time = microtime(true);
 require_once( 'common.php' );
+$util::logInfo( 'backup: 0' );
 
-
-function backupOneTable( $tableName, $now ){
-  global $log;
-  global $dbConfig;
-  global $rootDir;
-
-  $command = "mysqldump -u {$dbConfig['username']} -p{$dbConfig['password']} -h {$dbConfig['host']} {$dbConfig['db']} {$tableName} | gzip -9 - > {$rootDir}backup/$now.{$tableName}.sql.gz";
-  //$command = "mysqldump -u {$dbConfig['username']} -p{$dbConfig['password']} -h {$dbConfig['host']} {$dbConfig['db']} {$tableName} > {$rootDir}backup/$now.{$tableName}.sql";
-
-  // Be careful, this log command writes your DB password!
-//  $log->logInfo( "backup: backupOneTable: Trying backup using\n" . $command );
-  // Be careful, this log command writes your DB password!
-
-  // Maybe need a try/catch around this?
-  $rv = exec( $command );
-
-  if( $rv != 0 )
-  {
-    $log->logInfo( "backup: backupOneTable: Backup failed with $rv." );
-  }
-
-/* Technically works, but is ugly (not like tar)
-  // Concatenate the .sql to the gzip
-  $command = "gzip -c {$rootDir}backup/$now.{$tableName}.sql >> {$rootDir}backup/{$dbConfig['table_prefix']}.$now.gz";
-$log->logInfo( 'backup: backupOneTable: Trying to concatenate with ' . $command );
-  $rv = exec( $command );
-*/
-
-  return $rv;
-}
+$database = new Database();
 
 function backupAllTables(){
-  global $log;
-  global $dbConfig;
-  global $rootDir;
+  global $util;
+  global $database;
 
   $now = date( 'Y-m-d-H-i', time() );
 
-  $log->logInfo( 'backup: backupAllTables: Backup starting.' );
-  $tableList = array( 'hvac_cycles', 'hvac_status', 'run_times', 'setpoints', 'temperatures', 'thermostats', 'time_index' );
+  $util::logInfo( 'backup: backupAllTables: Backup starting.' );
+  $tableList = array( 'hvac_cycles', 'hvac_status', 'locations', 'location_data', 'meters', 'meter_data', 'run_times', 'setpoints', 'thermostats', 'thermostat_data', 'users' );
   foreach( $tableList as $tableName ){
-    $log->logInfo( 'backup: backupAllTables: Backup starting for table: (' . $dbConfig['table_prefix'] . $tableName . ')' );
-    backupOneTable( $dbConfig['table_prefix'] . $tableName, $now );
+    $util::logInfo( 'backup: backupAllTables: Backup starting for table: (' . $database->table_prefix . $tableName . ')' );
+    $database->backupOneTable( $database->table_prefix . $tableName, $now );
   }
+  $util::logInfo( 'backup: backupAllTables: Backup complete.' );
+  return true;
 }
+
+$result = backupAllTables();
+
+$answer = array();
+if( $result == true ) $answer[ 'result' ] = 'success';
+else $answer[ 'result' ] = 'failure';
+echo json_encode( array( "answer" => $answer), JSON_NUMERIC_CHECK );
+
+$log::logInfo( 'backup: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+
 ?>

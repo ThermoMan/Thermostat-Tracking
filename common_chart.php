@@ -43,6 +43,7 @@ $chartPaddingLimit = 5;   // When to trigger the addition of space (pixels)
 $chartPaddingSpace = 10;  // Amount of space to add (pixels)
 */
 
+/*
 // Replaces chart with anti-hacking graphic (usually when web user has used a mal-formed date string)
 function bobby_tables(){
   $filename = './images/exploits_of_a_mom.png';
@@ -51,9 +52,10 @@ function bobby_tables(){
   fclose( $handle );
   echo $contents;
 }
+*/
 
 // QQQ This should be a UTIL function
-// QQQ The call to bobby_tables is not relevant in teh model code any more.
+// QQQ The call to bobby_tables is not relevant in the model code any more.
 function validate_date( $some_date ){
   $date_pattern = "/[2]{1}[0]{1}[0-9]{2}-[0-9]{2}-[0-9]{2}/";
   if( !preg_match( $date_pattern, $some_date ) || strlen( $some_date ) != 10 ){
@@ -70,7 +72,7 @@ $user = new USER( $uname, $session );
 
 if( $user == null || ! $user->hasSession( $uname, $session ) ){
   $util::logError( 'common_chart: Back end call with bad user details ' );
-  bobby_tables();
+//  bobby_tables();
   return false;
 }
 

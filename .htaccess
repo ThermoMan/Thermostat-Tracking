@@ -1,35 +1,14 @@
-# Updated 22 May, 2018
-# Minimize 'Server' header information
-#ServerTokens Prod
-# Disable server signature on server generated pages
-ServerSignature Off
+# Updated 10 July, 2018
 
-# GO HERE ---  READ THIS   http://php.net/manual/en/security.hiding.php
+ServerSignature Off
 
 Options -MultiViews
 
 RewriteEngine on
 
-
 RewriteRule ^([^.?]+)$ %{REQUEST_URI}.php [L]
-
 
 RewriteCond %{THE_REQUEST} "^[^ ]* .*?\.php[? ].*$"
 RewriteRule .* - [L,R=404]
-
-
-
-#
-# #Strip the trailing .php from the URL if included
-# RewriteCond %{THE_REQUEST} ^(.*)\.php([#?][^\ ]*)?\ HTTP/
-# RewriteRule ^(.*)\.php$ /$1 [R]
-#
-# #Strip the trailing .php from the URL if included
-# #RewriteRule ^(.+)\.php$ /$1 [R,L]
-# # Do not use because it also eats the directory name!
-#
-# RewriteCond %{REQUEST_FILENAME} !-d
-# RewriteCond %{REQUEST_FILENAME}.php -f
-# RewriteRule ^(.*)$ $1.php [L]
 
 # End of file

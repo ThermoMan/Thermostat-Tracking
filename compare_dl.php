@@ -1,6 +1,37 @@
 <?php
 $start_time = microtime(true);
 require_once( 'common_chart.php' );
+// _dl .... the "dl" means "data layer".  In MVC speak, this is the M.
+$util::logInfo( "compare_dl: 0" );
+
+
+$get_from = (isset($_GET['get_from']) && ($_GET['get_from'] == 'true')) ? 1 : 0;
+if( $get_from == 1){
+  $from_dates = array();
+
+// QQQ Need SQL to get the FROM dates, but for now, hard code....
+$from_dates = [2012, 2013, 2014, 2015, 2016, 2017 ];
+
+  $answer = array();
+  $answer[ 'from_dates' ] = $from_dates;
+  echo json_encode( array( 'answer' => $answer), JSON_NUMERIC_CHECK );
+$util::logInfo( 'compare_dl: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+  exit();
+}
+
+$get_to = (isset($_GET['get_to']) && ($_GET['get_to'] == 'true')) ? 1 : 0;
+if( $get_to == 1){
+  $to_dates = array();
+
+// QQQ Need SQL to get the FROM dates, but for now, hard code....
+$to_dates = [2013, 2014, 2015, 2016, 2017, 2018 ];
+
+  $answer = array();
+  $answer[ 'to_dates' ] = $to_dates;
+  echo json_encode( array( 'answer' => $answer), JSON_NUMERIC_CHECK );
+$util::logInfo( 'compare_dl: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+  exit();
+}
 
 $hddBaseF = 65;
 $cddBaseF = 65;
@@ -24,6 +55,7 @@ else{
 // DATE_FORMAT(date, '%Y-%m')
 
 $database = new Database();
+$pdo = $database->dbConnection();
 
 
 $sql = "SELECT DATE_FORMAT(date, '%m') AS theMonthNumber,
@@ -37,11 +69,11 @@ ROUND(SUM(IF( DATE_FORMAT(date, '%Y') = '2013', cool_runtime, 0))/60,0) AS coolH
 ROUND(SUM(IF( DATE_FORMAT(date, '%Y') = '2014', cool_runtime, 0))/60,0) AS coolHours14
 
 FROM {$database->table_prefix}run_times
-WHERE tstat_uuid = ?
+WHERE thermostat_id = ?
 GROUP BY 1
 ORDER BY 1";
 //$queryRunTimes = $pdo->prepare( $sql );
-//$queryRunTimes->execute( array( $uuid ) );
+//$queryRunTimes->execute( array( $thermostat_id ) );
 
 // Perhaps count the rows and if fewer than 24 then give message like "not enough data, be patient grasshopper"?
 
@@ -57,12 +89,12 @@ SELECT date_format(date, '%Y-%m-%d') AS date,
 IF( AVG(outdoor_temp) <= $hddBase, $hddBase - AVG(outdoor_temp), 0 ) AS avgTempHDD,
 IF( AVG(outdoor_temp) >= $cddBase, AVG(outdoor_temp) - $cddBase, 0 ) AS avgTempCDD
 FROM {$database->table_prefix}run_times
-WHERE tstat_uuid = ?
+WHERE thermostat_id = ?
 GROUP BY DATE_FORMAT(date, '%Y-%m-%d') ) derivedTemperatures
 GROUP BY 1
 ";
 //$queryDegreeDays = $pdo->prepare( $sql );
-//$queryDegreeDays->execute( array( $uuid ) );
+//$queryDegreeDays->execute( array( $thermostat_id ) );
 
 /**
   * To compute degree days....
@@ -111,7 +143,7 @@ FROM
       ROUND(SUM(IF( DATE_FORMAT(rt.date, '%Y') = '2013', rt.cool_runtime, 0))/60,0) AS coolHours13,
       ROUND(SUM(IF( DATE_FORMAT(rt.date, '%Y') = '2014', rt.cool_runtime, 0))/60,0) AS coolHours14
     FROM {$database->table_prefix}run_times rt
-    WHERE tstat_uuid = ?
+    WHERE thermostat_id = ?
     GROUP BY 1, 2
   ) t1,
   (
@@ -130,8 +162,8 @@ FROM
         date_format(t.date, '%Y-%m-%d') AS date,
         IF( AVG(t.outdoor_temp) <= {$hddBase}, {$hddBase} - AVG(t.outdoor_temp), 0 ) AS avgTempHDD,
         IF( AVG(t.outdoor_temp) >= {$cddBase}, AVG(t.outdoor_temp) - {$cddBase}, 0 ) AS avgTempCDD
-      FROM {$database->table_prefix}temperatures t
-      WHERE tstat_uuid = ?
+      FROM {$database->table_prefix}thermostat_data t
+      WHERE thermostat_id = ?
       GROUP BY DATE_FORMAT(date, '%Y-%m-%d')
     ) dt
   GROUP BY 1, 2
@@ -141,135 +173,16 @@ WHERE
 AND t1.theMonth = t2.theMonth
 ";
 
-//$queryGiant = $pdo->prepare( $giantSQL );
-//$queryGiant->execute( array( $uuid, $uuid ) );
+$queryGiant = $pdo->prepare( $giantSQL );
+$queryGiant->execute( array( $thermostat_id, $thermostat_id ) );
 
-$queryGiant = $user->runQuery( $giantSQL );
-$queryGiant->execute( array( $uuid, $uuid ) );
+$allData = $queryGiant->fetchAll( PDO::FETCH_OBJ );
 
-
-// Create and populate the pData object
-$MyData = new pData();
-
-while( $row = $queryGiant->fetch( PDO::FETCH_ASSOC ) ){
-
-  $MyData->addPoints( $row[ 'theMonth' ], 'Labels' );
-
-//  $MyData->addPoints( $row[ 'heatHours12' ], 'Heating12' );
-//  $MyData->addPoints( $row[ 'hdd12' ], 'Heating Degrees 2012' );
-  $MyData->addPoints( $row[ 'coolHours12' ], 'Cooling 2012' );
-  $MyData->addPoints( $row[ 'cdd12' ], 'Cooling Degrees 2012' );
-
-//  $MyData->addPoints( $row[ 'heatHours13' ], 'Heating13' );
-//  $MyData->addPoints( $row[ 'hdd13' ], 'Heating Degrees 2013' );
-  $MyData->addPoints( $row[ 'coolHours13' ], 'Cooling 2013' );
-  $MyData->addPoints( $row[ 'cdd13' ], 'Cooling Degrees 2013' );
-
-//  $MyData->addPoints( $row[ 'heatHours14' ], 'Heating14' );
-//  $MyData->addPoints( $row[ 'hdd14' ], 'Heating Degrees 2014' );
-//  $MyData->addPoints( $row[ 'coolHours14' ], 'Cooling 2014' );
-//  $MyData->addPoints( $row[ 'cdd14' ], 'Cooling Degrees 2014' );
-}
-
-// Attach the data series to the axis (by ordinal)
-//$MyData->setSerieOnAxis( 'Heating 2012', 0 );
-//$MyData->setSerieOnAxis( 'Heating 2013', 0 );
-//$MyData->setSerieOnAxis( 'Heating 2014', 0 );
-//$MyData->setSerieOnAxis( 'Heating Degrees 2012', 1 );
-//$MyData->setSerieOnAxis( 'Heating Degrees 2013', 1 );
-//$MyData->setSerieOnAxis( 'Heating Degrees 2014', 1 );
-$MyData->setSerieOnAxis( 'Cooling 2012', 0 );
-$MyData->setSerieOnAxis( 'Cooling 2013', 0 );
-//$MyData->setSerieOnAxis( 'Cooling 2014', 0 );
-$MyData->setSerieOnAxis( 'Cooling Degrees 2012', 1 );
-$MyData->setSerieOnAxis( 'Cooling Degrees 2013', 1 );
-//$MyData->setSerieOnAxis( 'Cooling Degrees 2014', 1 );
+$answer = array();
+$answer[ 'allData' ] = $allData;
+echo json_encode( array( "answer" => $answer), JSON_NUMERIC_CHECK );
 
 
-// Set names for Y-axis labels
-$MyData->setAxisName( 0, 'Hours' );
-$MyData->setAxisName( 1, 'Degrees' );
-$MyData->setAxisPosition( 1, AXIS_POSITION_RIGHT );
-
-// Set names for X-axis labels
-$MyData->setSerieDescription( 'Labels', 'Months' );
-$MyData->setAbscissa( 'Labels' );
-
-/**
-  * Set variables for going into common block
-  */
-$picTitle = 'Show the comparison run times';
-$chartTitle = 'HVAC run times for each month in the record';
-
-/**
-  * START of common block - this code should be identical for all charts so that they have a common look and feel
-  */
-$myPicture = new pImage( 900, 430, $MyData ); // Create the pChart object
-$myPicture->Antialias = FALSE;                // Turn OFF Antialiasing (it draws faster)
-
-// Draw the background
-$Settings = array( 'R' => 170, 'G' => 183, 'B' => 87, 'Dash' => 1, 'DashR' => 190, 'DashG' => 203, 'DashB' => 107, 'Alpha' => 60 );
-$myPicture->drawFilledRectangle( 0, 0, 900, 430, $Settings );
-
-// Overlay with a gradient
-$Settings = array( 'StartR' => 219, 'StartG' => 231, 'StartB' => 139, 'EndR' => 1, 'EndG' => 138, 'EndB' => 68, 'Alpha' => 50 );
-$myPicture->drawGradientArea( 0, 0, 900, 430, DIRECTION_VERTICAL, $Settings );
-$Settings = array( 'StartR' => 0, 'StartG' => 0, 'StartB' => 0, 'EndR' => 50, 'EndG' => 50, 'EndB' => 50, 'Alpha' => 80 );
-$myPicture->drawGradientArea( 0, 0, 900,  20, DIRECTION_VERTICAL, $Settings );
-
-// Add a border to the picture
-$myPicture->drawRectangle( 0, 0, 899, 429, array( 'R' => 0, 'G' => 0, 'B' => 0 ) );
-
-// Set font for all descriptive text
-$myPicture->setFontProperties( array( 'FontName' => 'Copperplate_Gothic_Light.ttf', 'FontSize' => 10 ) );
-
-// Write picture and chart titles
-$myPicture->drawText( 10, 14, $picTitle, array( 'R' => 255, 'G' => 255, 'B' => 255) );
-$myPicture->drawText( 60, 55, $chartTitle, array( 'FontSize' => 12, 'Align' => TEXT_ALIGN_BOTTOMLEFT ) );
-
-// Write the picture timestamp
-$myPicture->drawText( 680, 14, 'Last update ' . date( 'Y-m-d H:i' ), array( 'R' => 255, 'G' => 255, 'B' => 255) );
-
-// Define the chart area
-$graphAreaStartX = 60;
-$graphAreaEndX = 850;
-$graphAreaStartY = 60;
-$graphAreaEndY = 390;
-$myPicture->setGraphArea( $graphAreaStartX, $graphAreaStartY, $graphAreaEndX, $graphAreaEndY );
-
-// Draw the scale
-$myPicture->setFontProperties( array( 'FontName' => 'pf_arma_five.ttf', 'FontSize' => 6 ) );
-//$scaleSettings = array( 'Mode' => SCALE_MODE_MANUAL, 'ManualScale' => $AxisBoundaries, 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE, 'YMargin' => 0,'Floating' => TRUE );
-$scaleSettings = array( 'GridR' => 200, 'GridG' => 200, 'GridB' => 200, 'LabelingMethod' => LABELING_DIFFERENT, 'DrawSubTicks' => TRUE, 'CycleBackground' => TRUE, 'YMargin' => 0,'Floating' => TRUE );
-$myPicture->drawScale( $scaleSettings );
-
-// Write the chart legend - convert all legends to left aligned because there is no auto right alignment
-$myPicture->setFontProperties( array( 'FontName' => 'pf_arma_five.ttf', 'FontSize' => 6 ) );
-$myPicture->setShadow( TRUE, array( 'X' => 1, 'Y' => 1, 'R' => 0, 'G' => 0, 'B' => 0, 'Alpha' => 10 ) );
-$myPicture->drawLegend( 60, 412, array( 'Style' => LEGEND_NOBORDER, 'Mode' => LEGEND_HORIZONTAL ) );
-// END of common block
-
-
-// Draw the chart
-//$myPicture->drawLineChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DISPLAY_AUTO ) );
-//$myPicture->drawBarChart( array( 'DisplayValues' => FALSE, 'DisplayColor' => DISPLAY_AUTO ) );
-
-$Settings = array( 'DisplayValues' => FALSE, 'DisplayColor' => DISPLAY_AUTO, 'Gradient' => 1, 'AroundZero' => TRUE, 'Interleave' => 2  );
-$MyData->setSerieDrawable( 'Cooling 2012', TRUE );
-$MyData->setSerieDrawable( 'Cooling 2013', TRUE );
-$MyData->setSerieDrawable( 'Cooling Degrees 2012', FALSE );
-$MyData->setSerieDrawable( 'Cooling Degrees 2013', FALSE );
-$myPicture->drawBarChart( 'Cooling 2012', 'Cooling 2013', $Settings );
-
-$Settings = array( 'DisplayValues' => FALSE, 'DisplayColor' => DISPLAY_AUTO );
-$MyData->setSerieDrawable( 'Cooling 2012', FALSE );
-$MyData->setSerieDrawable( 'Cooling 2013', FALSE );
-$MyData->setSerieDrawable( 'Cooling Degrees 2012', TRUE );
-$MyData->setSerieDrawable( 'Cooling Degrees 2013', TRUE );
-$myPicture->drawLineChart( 'Cooling Degrees 2012', 'Cooling Degrees 2013', $Settings );
-
-// Render the picture
-$myPicture->autoOutput( 'images/compare_chart.png' );
-$log->logInfo( 'draw_compare.php: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+$util::logInfo( 'compare_dl: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>

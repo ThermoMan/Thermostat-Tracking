@@ -5,21 +5,33 @@
 ?>
 
 <script type='text/javascript'>
-function displayCompareChartExec(){
-  var show_thermostat_id = 'id=' + document.getElementById( 'chart.compare.thermostat' ).value;
-  var no_cache_string = 'nocache=' + Math.random(); // Browsers are very clever with image caching. That cleverness breaks this web page's function.
-  var url_string = 'compare_dl.php?user=<?php echo $user->getName() ?>&session=<?php echo $user->getSession() ?>';
+$( document ).ready( function(){
+  var show_thermostat_id       = 'thermostat_id='                   + $( '#chart\\.compare\\.thermostat' ).val();
 
-  url_string = url_string + '&' + show_thermostat_id + '&' + no_cache_string;
+  var url_string = '';
+  var url_base_string = 'compare_dl?user=<?php echo $user->getName() ?>&session=<?php echo $user->getSession() ?>';
+url_base_string = url_base_string + '&' + show_thermostat_id;
 
-  document.getElementById( 'compare_chart' ).src = url_string;
-}
+  // Populate the FROM select options
+  url_string = url_base_string + '&get_from=true';
+  $.getJSON( url_string, function( data ){
+// QQQ OK, gotta fix the stupid in HTML.  I like teh dot in my names but the double escape to see it.  That's just stupid and I have to live with it.
+    $( '#chart\\.compare\\.firstDate' ).empty();
+    $.each( data.answer[ 'from_dates' ], function( key, value ){
+      $( '#chart\\.compare\\.firstDate' ).append( $( '<option></option>' ).attr( 'value', value ).text( value ) );
+    });
+  });
 
-function displayCompareChart(){
-  document.getElementById( 'compare_chart' ).src = 'images/need_default.png'; // Redraw the placekeeper while the chart is rendering
-  // By using setTimeout we can separate the drawing of the placeholder image from the actual chart such that the browser will always draw the placeholder
-  setTimeout(function(){ displayCompareChartExec();}, 500);
-}
+  // Populate the TO select options
+  url_string = url_base_string + '&get_to=true';
+  $.getJSON( url_string, function( data ){
+// QQQ OK, gotta fix the stupid in HTML.  I like teh dot in my names but the double escape to see it.  That's just stupid and I have to live with it.
+    $( '#chart\\.compare\\.secondDate' ).empty();
+    $.each( data.answer[ 'to_dates' ], function( key, value ){
+      $( '#chart\\.compare\\.secondDate' ).append( $( '<option></option>' ).attr( 'value', value ).text( value ) );
+    });
+  });
+});
 </script>
 
 <input type='button' onClick='javascript: displayCompareChart();' value='Show'>
@@ -31,7 +43,7 @@ function displayCompareChart(){
 <?php
     if( $id == $thermostatRec['id'] ) print( ' selected ' );
 ?>
-    value='<?php print( $thermostatRec['id'] ); ?>'><?php print( $thermostatRec['name'] ); ?> </option>
+    value='<?php print( $thermostatRec['thermostat_id'] ); ?>'><?php print( $thermostatRec['name'] ); ?> </option>
 <?php
   }
 ?>
@@ -47,24 +59,19 @@ function displayCompareChart(){
   * ?Once many users are on consider showing comparison against average (in the same hemisphere at least) other users
   */
 -->
-  Compare <select id='chart.compare.firstDate'><option value='2012'>2012</option><option value='2013'>2013</option><option value='2014'>2014</option></select>
-  to <select id='chart.compare.secondDate'><option value='2012'>2012</option><option value='2013'>2013</option><option value='2014'>2014</option></select>
+  Compare <select id='chart.compare.firstDate'></select>
+  to <select id='chart.compare.secondDate'></select>
 
   for <select id='chart.compare.mode'><option value='0'>Heating</option><option value='1' selected>Cooling</option></select>
 
 <div class='content'>
   <br>
   <div class='thermo_chart'>
-    <img id='compare_chart' src='img/need_default.png' alt='Year-over-year comparison graph' title='Year-over-year comparison'>
   </div>
 </div>
 
 
-<script type='text/javascript'>
-$( document ).ready( function(){
-  displayCompareChartExec();
-});
-</script>
+
 
 <?php
   require_once( 'standard_page_foot.php' );

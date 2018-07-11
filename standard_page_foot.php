@@ -7,9 +7,6 @@
         <a target='_blank' href='http://www.codingcage.com/search/label/jQuery'>Coding Cage</a>&nbsp;&nbsp;
         <a target='_blank' href='http://www.codingcage.com/2015/04/php-login-and-registration-script-with.html'>User based system</a>&nbsp;&nbsp;
         <a target='_blank' href='https://jquery.com'>jQuery</a>&nbsp;&nbsp;
-        <!-- <a target='_blank' href='https://jqueryui.com'>jQueryUI</a>&nbsp;&nbsp; -->
-        <!-- <a target='_blank' href='https://getbootstrap.com/getting-started/'>Bootstrap</a>&nbsp;&nbsp; -->
-        <!-- pChart is out <a target='_blank' href='http://www.pchart.net'>pChart</a>&nbsp;&nbsp; -->
         <a target='_blank' href='https://canvasjs.com/docs/charts/basics-of-creating-html5-chart/'>canvasJS</a>&nbsp;&nbsp;
         <a target='_blank' href='http://www.chartjs.org/'>Chart.js</a>&nbsp;&nbsp;
         <a target='_blank' href='http://jsonlint.com'>JSON Lint</a>&nbsp;&nbsp;

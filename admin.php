@@ -6,15 +6,24 @@
   $login = new USER();
   if( ! $login->isLoggedin() || ! $login->isSiteAdmin() ){
     header( 'Location: index' );
-//    exit();
     exit( '<meta http-equiv="refresh" content="0;url=index" />' );
   }
 
   require_once( 'standard_page_top.php' );
 ?>
 
+<script type='text/javascript'>
+  function backup(){
+    var url_string = 'backup';
+    $.getJSON( url_string, function( data ){
+debugger;
+    });
+  }
+</script>
+
 <div style='text-align: left;'>
 <br />Throw a button on here to make a DB backup.
+<br /><button type='button' onClick='backup();'>Backup</button>
 <br />Are there any DB sanity check type things that need to happen?
 <br />Archive old data?
 <br />Add an active flag to user record.  Admin can toggle the flag.  Flag can get set by too many failed log in attempts.

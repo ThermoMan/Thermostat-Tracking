@@ -2,8 +2,7 @@
 $start_time = microtime(true);
 require_once( 'common_chart.php' );
 // _dl .... the "dl" means "data layer".  In MVC speak, this is the M.
-
-$util::logDebug( "daily_detail_dl: 0" );
+$util::logInfo( "daily_detail_dl: 0" );
 
 // Do not use this method as it assumes things about the quality of the data.
 // $table_flag = (isset($_REQUEST['table_flag'])) ? $_REQUEST['table_flag'] : false;
@@ -382,7 +381,6 @@ if( $show_outdoor_humidity == 1 ) $answer[ 'outdoorHumidity' ] = $outdoorHumidit
 //if( $show_setpoint == 1 ) $answer[ 'setpoint' ] = $setpoint;
 
 echo json_encode( array( "answer" => $answer), JSON_NUMERIC_CHECK );
-
 
 $util::logInfo( 'daily_detail_dl: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
