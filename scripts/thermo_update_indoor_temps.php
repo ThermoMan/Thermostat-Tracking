@@ -1,21 +1,20 @@
 <?php
+/**
+  * This script updates the indoor and outdoor temperatures and today's and yesterday total run time for each thermostat.
+  */
 $start_time = microtime(true);
 require_once( dirname(__FILE__).'/../common.php' );
-
 global $util;
+$util::logInfo( 'indoor_temps: Start.' );
 
-$util::logDebug( 'indoor_temps: Start.' );
-$today = date( 'Y-m-d' );
-$yesterday = date( 'Y-m-d', strtotime( 'yesterday' ));
 if( $argc < 2 ){
   $util::logError( 'indoor_temps: required argument missing.  Must send unix timestamp!' );
   die();
 }
 $unixTime = $argv[1]; // argv[0] is this files name
 
-/**
-  * This script updates the indoor and outdoor temperatures and today's and yesterday total run time for each thermostat.
-  */
+$today = date( 'Y-m-d' );
+$yesterday = date( 'Y-m-d', strtotime( 'yesterday' ));
 
 // Bandaid to keep things moving
 $database = new Database();
@@ -53,10 +52,10 @@ catch( Exception $e ){
 
 $queryMySQLServer->execute();
 $row = $queryMySQLServer->fetch( PDO::FETCH_ASSOC );
-$util::logDebug( "indoor_temps: The MySQL server thinks that the magic formatted time is {$row['magic_time']} where unix (on the webserver) thinks it is $unixTime" );
+//$util::logDebug( "indoor_temps: The MySQL server thinks that the magic formatted time is {$row['magic_time']} where unix (on the webserver) thinks it is $unixTime" );
 
 foreach( $allThermostats as $thermostatRec ){
-  $lockFileName = $lockFile . $thermostatRec['thermostat_id'];
+  $lockFileName = $util::$lockFile . $thermostatRec['thermostat_id'];
   $lock = @fopen( $lockFileName, 'w' );
   if( !$lock ){
     $util::logError( "indoor_temps: Could not write to lock file $lockFileName" );
@@ -104,13 +103,13 @@ foreach( $allThermostats as $thermostatRec ){
       try{
 //$util::logDebug( 'indoor_temps: G' );
         $stat->getStat();
-$util::logDebug( 'indoor_temps: storing the data for ' . $stat->uuid );
+//$util::logDebug( 'indoor_temps: storing the data for ' . $stat->uuid );
         $queryTemp->execute(array( $stat->thermostat_id, $stat->temp, $stat->humidity ) );
 // QQQ Need to test that one row was written or complain/throw (in order to save outdoor data).
-$util::logDebug( 'indoor_temps: I think there were (' . $queryTemp->rowCount() . ') rows inserted.' );
+//$util::logDebug( 'indoor_temps: I think there were (' . $queryTemp->rowCount() . ') rows inserted.' );
       }
       catch( Exception $e ){
-$util::logDebug( 'indoor_temps: I think there were (' . $queryTemp->rowCount() . ') rows inserted (and an exception was thrown).' );
+//$util::logDebug( 'indoor_temps: I think there were (' . $queryTemp->rowCount() . ') rows inserted (and an exception was thrown).' );
         $util::logError( 'indoor_temps: Error getting temperatures: ' . $e->getMessage() );
         $util::logError( "indoor_temps: Error getting temperatures from {$thermostatRec['thermostat_id']} {$thermostatRec['tstat_uuid']} {$thermostatRec['ip']}.  No data stored." );
       }
@@ -139,11 +138,11 @@ $util::logDebug( 'indoor_temps: I think there were (' . $queryTemp->rowCount() .
     flock( $lock, LOCK_UN );
   }
   else{
-    $util::logDebug( "indoor_temps: Couldn't get file lock for thermostat {$thermostatRec['thermostat_id']}" );
+    $util::logError( "indoor_temps: Couldn't get file lock for thermostat {$thermostatRec['thermostat_id']}" );
     die();
   }
   fclose( $lock );
 }
-$util::logDebug( 'indoor_temps: End: time ' . (microtime(true) - $start_time) . ' secs.' );
+$util::logInfo( 'indoor_temps: End: time ' . (microtime(true) - $start_time) . ' secs.' );
 
 ?>

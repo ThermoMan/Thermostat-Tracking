@@ -34,7 +34,7 @@ $util::logDebug( 'get_instant_status: 1' );
 try{
 //$util::logDebug( 'get_instant_status: 2 util root dir is ' . $util::$rootDir );
   foreach( $user->thermostats as $thermostatRec ){
-    $lockFileName = $lockFile . $thermostatRec['thermostat_id'];
+    $lockFileName = $util::$lockFile . $thermostatRec['thermostat_id'];
     $lock = @fopen( $lockFileName, 'w' );
     if( !$lock ){
       $util::logError( "indoor_temps: Could not write to lock file $lockFileName" );

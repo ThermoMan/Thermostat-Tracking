@@ -4,12 +4,17 @@ require_once( 'session.php' );
 require_once( 'common.php' );
 require_once( 'user.php' );
 
+
+// QQQ Need to add a static member function to the USER class that tests if a user ID is already in use (for users registering)
+// QQQ That function should have some protection in case someone is hammering the DB searching for IDs
+// QQQ Perahsp rename register.php to user_register.php so the user code falls together in file list (and so it can sort of be stand alone)
+
 if( is_null( $user ) ){
-  $util::logDebug( 'register: $user was null, had to make my own' );
+  $util::logDebug( '$user was null, had to make my own' );
   $user = new USER();
 }
 else{
-  $util::logDebug( 'register: $user already exists' );
+  $util::logDebug( '$user already exists' );
 }
 
 if( $user->isLoggedIn() != '' ){
@@ -45,23 +50,26 @@ if( isset( $_POST[ 'btn-signup' ] ) ){
   }
   else{
     try{
-//        $stmt = $user->runQuery( 'SELECT user_name, email FROM thermo2__users WHERE user_name = :uname' );
-// Bandaid to keep things moving
-$database = new Database();
-      $stmt = $user->runQuery( "SELECT user_name, email FROM {$database->table_prefix}users WHERE user_name = :uname" );
-//        $stmt->execute( array( ':uname' => $uname ) );
-      $stmt->bindparam( ':uname', $uname );
-      $stmt->execute();
+      // QQQ This may not actually be a bandaid.  Since we are in the register process, there is no USER object with a DB connection
+      $database = new Database();
+      $pdo = $database->dbConnection();
+      $sqlCheckName = "
+SELECT user_name
+      ,email
+  FROM {$database->table_prefix}users
+ WHERE user_name = :uname";
+      $stmtCheckName = $pdo->prepare( $sqlCheckName );
+      $stmtCheckName->bindparam( ':uname', $uname );
+      $stmtCheckName->execute();
 
-      $row = $stmt->fetch( PDO::FETCH_ASSOC );
+      $row = $stmtCheckName->fetch( PDO::FETCH_ASSOC );
 
       if( $row[ 'user_name' ] == $uname ){
-        $error[] = 'sorry username already taken !';
+        $error[] = 'Sorry, username already taken !';
       }
       else{
         if( $user->register( $uname, $umail, $upass ) ){
           header( 'Location sign-up.php?joined' );
-//          exit();
           exit( '<meta http-equiv="refresh" content="0;url=sign-up?joined" />' );
         }
         else{
@@ -71,7 +79,7 @@ $database = new Database();
     }
     catch( Exception $e ){
 // Log that exception message, but do not show it to the user.
-$util::logError( 'register: Exception during signup ' . $e->getMessage() );
+$util::logError( 'Exception during signup ' . $e->getMessage() );
       $error[] = 'Unknown bolluxing (b)!';
     }
   }

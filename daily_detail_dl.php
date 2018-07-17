@@ -2,7 +2,7 @@
 $start_time = microtime(true);
 require_once( 'common_chart.php' );
 // _dl .... the "dl" means "data layer".  In MVC speak, this is the M.
-$util::logInfo( "daily_detail_dl: 0" );
+$util::logInfo( '0' );
 
 // Do not use this method as it assumes things about the quality of the data.
 // $table_flag = (isset($_REQUEST['table_flag'])) ? $_REQUEST['table_flag'] : false;
@@ -80,20 +80,20 @@ $show_indoor_humidity = (isset($_GET['chart_daily_showIndoorHumidity']) && ($_GE
 $show_outdoor_humidity = (isset($_GET['chart_daily_showOutdoorHumidity']) && ($_GET['chart_daily_showOutdoorHumidity'] == 'false')) ? 0 : 1;
 
 /*
-$util::logDebug( "daily_detail_dl: source = $source" );
-$util::logDebug( "daily_detail_dl: show_indoor_temp = $show_indoor_temp" );
-$util::logDebug( "daily_detail_dl: show_outoor_temp = $show_outoor_temp" );
-$util::logDebug( "daily_detail_dl: from_date = $from_date" );
-$util::logDebug( "daily_detail_dl: to_date = $to_date" );
-$util::logDebug( "daily_detail_dl: interval_string = $interval_string" );
-$util::logDebug( "daily_detail_dl: interval_length = $interval_length" );
-$util::logDebug( "daily_detail_dl: interval_measure = $interval_measure" );
-$util::logDebug( "daily_detail_dl: show_heat_cycles = $show_heat_cycles" );
-$util::logDebug( "daily_detail_dl: show_cool_cycles = $show_cool_cycles" );
-$util::logDebug( "daily_detail_dl: show_fan_cycles = $show_fan_cycles" );
-$util::logDebug( "daily_detail_dl: show_setpoint = $show_setpoint" );
-$util::logDebug( "daily_detail_dl: show_indoor_humidity = $show_indoor_humidity" );
-$util::logDebug( "daily_detail_dl: show_outdoor_humidity = $show_outdoor_humidity" );
+$util::logDebug( "source = $source" );
+$util::logDebug( "show_indoor_temp = $show_indoor_temp" );
+$util::logDebug( "show_outoor_temp = $show_outoor_temp" );
+$util::logDebug( "from_date = $from_date" );
+$util::logDebug( "to_date = $to_date" );
+$util::logDebug( "interval_string = $interval_string" );
+$util::logDebug( "interval_length = $interval_length" );
+$util::logDebug( "interval_measure = $interval_measure" );
+$util::logDebug( "show_heat_cycles = $show_heat_cycles" );
+$util::logDebug( "show_cool_cycles = $show_cool_cycles" );
+$util::logDebug( "show_fan_cycles = $show_fan_cycles" );
+$util::logDebug( "show_setpoint = $show_setpoint" );
+$util::logDebug( "show_indoor_humidity = $show_indoor_humidity" );
+$util::logDebug( "show_outdoor_humidity = $show_outdoor_humidity" );
 */
 
 $database = new Database();
@@ -225,7 +225,7 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 ){
 
   $result = $queryTwo->execute(array( $start_date, $start_date, $start_date, $start_date, $end_date, $end_date, $start_date, $end_date, $thermostat_id ) );
 
-//$util::logInfo( "daily_detail_dl: Executing sqlTwo ($sqlTwo) for values $start_date, $start_date, $start_date, $start_date, $end_date, $end_date, $start_date, $end_date, $thermostat_id" );
+//$util::logInfo( "Executing sqlTwo ($sqlTwo) for values $start_date, $start_date, $start_date, $start_date, $end_date, $end_date, $start_date, $end_date, $thermostat_id" );
 
   $sqlThree = "SELECT heat_status
           ,DATEDIFF( start_date_heat, ? ) AS start_day_heat
@@ -253,7 +253,7 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 ){
 
   $result = $queryThree->execute(array( $from_date, $from_date, $from_date, $from_date, $thermostat_id ) );
 }
-$util::logDebug( "daily_detail_dl: 14" );
+$util::logDebug( "14" );
 
 if( $show_setpoint == 1 ){
   $sqlFour =
@@ -273,14 +273,14 @@ if( $show_setpoint == 1 ){
    ORDER BY switch_time ASC";
 
   $queryFour = $pdo->prepare( $sqlFour );
-$util::logDebug( "daily_detail_dl: Executing sqlFour ($sqlFour) for values $thermostat_id, $start_date, $end_date, $start_date" );
+$util::logDebug( "Executing sqlFour ($sqlFour) for values $thermostat_id, $start_date, $end_date, $start_date" );
   $result = $queryFour->execute(array( $thermostat_id, $start_date, $end_date, $start_date ) );
   while( $row = $queryFour->fetch( PDO::FETCH_ASSOC ) ){
     $queryFourData[] = $row;
   }
 }
 
-$util::logDebug( "daily_detail_dl: 15" );
+$util::logDebug( "15" );
 
 
 if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 ){
@@ -329,7 +329,7 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 ){
   }
 }
 
-$util::logDebug( "daily_detail_dl: 18" );
+$util::logDebug( "18" );
 
 if( $show_setpoint == 1 ){
 
@@ -368,7 +368,7 @@ if( $show_setpoint == 1 ){
   $interval = $prev_switch_time->diff($now);
 }
 
-$util::logDebug( "daily_detail_dl: 19" );
+$util::logDebug( "19" );
 
 $answer = array();
 
@@ -382,6 +382,6 @@ if( $show_outdoor_humidity == 1 ) $answer[ 'outdoorHumidity' ] = $outdoorHumidit
 
 echo json_encode( array( "answer" => $answer), JSON_NUMERIC_CHECK );
 
-$util::logInfo( 'daily_detail_dl: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+$util::logInfo( 'execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>

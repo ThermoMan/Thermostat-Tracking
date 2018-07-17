@@ -93,12 +93,12 @@ catch( Exception $e ){
   $util::logError( 'status: DB Exception while preparing SQL: ' . $e->getMessage() );
   die();
 }
-global $lockFile;
+//global $lockFile;
 
 $now = date( 'Y-m-d H:i:00' );
 foreach( $allThermostats as $thermostatRec ){
 //$util::logDebug( 'status: J' );
-  $lockFileName = $lockFile . $thermostatRec['thermostat_id'];
+  $lockFileName = $util::$lockFile . $thermostatRec['thermostat_id'];
   $lock = @fopen( $lockFileName, 'w' );
   if( !$lock ){
     $util::logError( "status: Could not write to lock file $lockFileName" );

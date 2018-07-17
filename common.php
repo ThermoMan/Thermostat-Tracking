@@ -1,41 +1,14 @@
 <?php
+error_reporting( E_STRICT );  // QQQ This is debug mode - REMOVE THIS LINE WHEN IN PRODUCTION
+
 /** Location for code that is common to all pages in the project.
   *
-  * Need to separate three concepts.
-  *   Code common to ALL functions (DB connection, logging, user class defintion etc...)
+  * Need to separate several concepts.
+  *   Code common to ALL functions (DB connection, logging, abstract user class defintion etc...)
+  *   Code common related this THIS specific application (user that has thermostats and electric meters)
   *   Code common to UI pages (session validation and setting up globals)
   *   Code common to back-end processes (prevent direct call, verify user sessions, etc...)
   *
-  */
-
-// This next thing ought to be in some utility package.
-
-/** For libraries that are not uniquely part of the application code base, there is a common
-  * location on the webserver so that all projects can use one instance of the library.
-
-+-- www
-    +-- common
-    |   +-- css
-    |   +-- html
-    |   +-- js
-    |   +-- php
-    |       +-- pChart -> pChart2.1.4
-    |       +-- mailer -> mailer.6.0.5
-    +-- MY_WEB_APP_HERE
-    |
-    +-- thermo2
-        +-- backup
-        +-- images
-        +-- install
-        +-- lib
-        |   +-- fonts
-        |   +-- tabs
-        +-- logs
-        +-- resources
-        +-- scripts
-
-  * In order to be able to reference those files without hard coded path names, the PHP include path needs to know about the relative location of
-  *  those libraries.
   */
 function add_include_path( $path ){
   foreach( func_get_args() AS $path ){
@@ -54,7 +27,6 @@ function add_include_path( $path ){
   }
 }
 add_include_path( '../common/php/' );
-
 require_once( 'config.php' );
 
 require_once( 'lib/t_lib.php' );                // Used for reaading the 3M-50 Thermostats
@@ -62,23 +34,50 @@ require_once( 'lib/e_lib.php' );                // Used for reading the TED 5000
 // Need lib for LIFX smart bulbs
 // Need lib for SolarCity panel reading
 require_once( 'lib/ExternalWeather.php' );      // Used for reading outside temperature data from one of several sources.
-//require_once( 'KLogger.php' );                  // Used for writing log file (original location https://github.com/katzgrau/KLogger )
-
-
 require_once( 'simple_html_dom.php' );          // Used for ???? ( original location https://sourceforge.net/projects/simplehtmldom/files/ )
 
-$rootDir = dirname(__FILE__) . '/';
-$logDir =  $rootDir . 'logs/';
+
+/** For libraries that are not uniquely part of the application code base, there is a common
+  * location on the webserver so that all projects can use one instance of the library.
+
++-- www
+    +-- common
+    |   +-- bootstrap -> bootstrap-3.3.7
+    |   +-- css
+    |   +-- fonts
+    |   +-- html
+    |   +-- js
+    |       +-- amcharts -> amcharts-3.20.12
+    |   +-- php
+    |       +-- mailer -> mailer.6.0.5
+    +-- MY_WEB_APP_HERE
+    |
+    +-- thermo2
+        +-- backup
+        +-- images
+        +-- install
+        +-- lib
+        +-- locks
+        +-- logs
+        +-- resources
+        +-- scripts
+        +-- sessions
+
+  * In order to be able to reference those files without hard coded path names, the PHP include path needs to know about the relative location of
+  *  those libraries.
+  */
 
 // Create a utility class with these "global variables".  Make it a singleton
 //define( 'LOG_LEVEL', array( 'DEBUG' => 0, 'INFO' => 1, 'WARN' => 2, 'ERROR' => 3 ) );
 $LOG_LEVEL = array( 'DEBUG' => 0, 'INFO' => 1, 'WARN' => 2, 'ERROR' => 3 );
+// These ought to be enum tyhpe values INSIDE the UTIX class
 
 // Create a utility class with these "global variables".  Make it a singleton
 class UTIX{
   private static $instance;
 
-  // Consider using const type
+  // Consider using const type?
+  // QQQ Maybe have a getter for each insterad of making them public?
   public static $lockFile;
   public static $timezone;
   public static $rootDir;
@@ -102,14 +101,16 @@ class UTIX{
 // All these directories, the app should create them if they do not exist
     self::$logDir = self::$rootDir . 'logs/';
     self::$sessionDir = self::$rootDir . 'sessions/';   // This one requires the app to have a sessions sub directory.
-//    self::$lockFile = '/tmp/thermo.lock';
-// Maybe only need lockDir and not lockFile since what file name is in use may depend on what asset is being queried.
-// Will need some sort of cleaup routine to periodically clean out old locks that are obviously invalid (probably anything over ten minutes old is bad)
-    self::$lockFile = self::$rootDir . 'locks/thermo.lock';   // Ought/Needs to include username in file name
-//    self::$lockDir = self::$rootDir . 'locks/';  // This one requires the app to have a locks sub directory.
 
-//    self::$timezone = 'America/Chicago';
-//    self::$adminUsername = 'test7';
+    /**
+      * Lockfile - set to a path that exists on your system
+      *  the thermostat id from the database will be appended to this filename
+      * This keeps thermo_update_temps and thermo_update_status from running at the same time.  If they both hit the
+      * thermostat at the same time, the thermostat could be overloaded and become unresponsive for 20-30 minutes
+      * until the wifi module resets.
+      */
+    self::$lockFile = self::$rootDir . 'locks/thermo.lock';   // Ought/Needs to include username in file name?
+
     self::$timezone = TIME_ZONE;
     self::$adminUsername = SITE_ADMIN;          // This establishes a site administrator ID
 
@@ -129,34 +130,52 @@ class UTIX{
   * DEBUG **
   * TRACE
   *
-**/
-  private static function logIt( $message ){
+ **/
+  private static function logIt( $message, $levelText ){
     $logFile = self::$logDir . 'log_';
     if( self::is_cli() ){
       $logFile = $logFile . 'script_';
     }
     $logFile = $logFile . date( 'Y-m-d' ) . '.txt';
-
     $fh = fopen( $logFile, 'a' );
-//    fwrite( $fh, date( 'Y-m-d G:i:s.u' ) . $message . "\n" );
-    fwrite( $fh, (new DateTime( 'now' ))->format( 'Y-m-d G:i:s.u' ) . $message . "\n" );
+
+    // Add trace info to the log message
+    $trace = debug_backtrace();
+    $lastVal = count( $trace ) - 1;
+    $traceText = '';
+    for( $ii = $lastVal; $ii > 0 ; $ii-- ){
+      $traceText = $traceText . '{' . basename( $trace[ $ii ]['file'] ) . '}';
+      if( $ii != $lastVal ){
+        $traceText = $traceText . '(' . $trace[ $ii+1 ]['function'] . ')';
+      }
+      if( $ii > 1 && $ii != $lastVal ){
+        $traceText = $traceText . ' ->';
+      }
+    }
+/*
+    $fileFullName = basename( $_SERVER['PHP_SELF'] );
+    $fileExt = pathinfo( $fileFullName ).['extension'];
+    $traceText = rtrim( $fileFullName, '.' . $fileExt );
+*/
+
+    fwrite( $fh, (new DateTime( 'now' ))->format( 'Y-m-d G:i:s.u' ) . ' ' . $levelText . '|' . $traceText . '|' . $message . "\n" );
     fclose( $fh );
   }
   public static function logDebug( $message ){
     if( self::$logLevel > 0 ) return;
-    self::logIt( ' - DEBUG --> ' . $message );
+    self::logIt( $message, '- DEBUG --' );
   }
   public static function logInfo( $message ){
     if( self::$logLevel > 1 ) return;
-    self::logIt( ' -- INFO --> ' . $message );
+    self::logIt( $message, '-- INFO --' );
   }
   public static function logWarn( $message ){
     if( self::$logLevel > 2 ) return;
-    self::logIt( ' -- WARN --> ' . $message );
+    self::logIt( $message, '-- WARN --' );
   }
   public static function logError( $message ){
     // Always log errors.
-    self::logIt( ' - ERROR --> ' . $message );
+    self::logIt( $message,  '- ERROR --' );
   }
   public static function setLogLevel( $level ){
 self::logInfo( "common: setLogLevel with level = $level" );
@@ -166,6 +185,23 @@ self::logInfo( "common: setLogLevel with level = $level" );
 //      self::$logLevel = LOG_LEVEL[ $level ];
       self::$logLevel = 5;
      }
+  }
+
+  public static function logClean(){
+    $oldFileTime = time() - ( 7 * 24 * 3600 ); // Kill files older than 7 days.
+    $count = 0;
+    foreach( glob( self::$logDir . '*.txt' ) as $file ){
+      if( !is_file( $file ) ){
+        // Sanity check - do NOT delete it, if it's not a file!
+        continue;
+      }
+
+      if( filemtime($file) - $oldFileTime <= 0 ){
+        $count++;
+        unlink( $file );
+      }
+    }
+    return $count;
   }
 
   // To find out if a web user is calling the script or a command line/cron user ( original location http://www.binarytides.com/php-check-running-cli/ )
@@ -284,12 +320,12 @@ self::logDebug( "common: send_mail from web" );
 
       // These arguments are optional
 //      $attachment =  isset( $optional[ "Attachment" ] ) ? $optional[ "Attachment" ] : null;
-//$util::logDebug( "common: send_mail attachment is $attachment " );
+//self::logDebug( "common: send_mail attachment is $attachment " );
 
       $mail->Send();
     }
     catch( Exception $e ){
-      $util::logError( 'common: send_mail error ' . $e->getMessage() );
+      self::logError( 'common: send_mail error ' . $e->getMessage() );
       return false;
     }
     return true;
@@ -341,6 +377,9 @@ self::logInfo( "common: timeout is $timeout ( " . ($timeout / (60 * 60 * 24) ) .
     }
   }
 
+  // QQQ Need a function to cleanSessions()
+  // QQQ It will look at the file system and the DB and delete any session file that has no DB record or has an expired DB record
+
   // The functions below are specific to my app.  The ones above are generic.
 
   public static function checkThermostat( $p_user ){
@@ -358,21 +397,11 @@ self::logInfo( "common: timeout is $timeout ( " . ($timeout / (60 * 60 * 24) ) .
     }
   }
 
+  // QQQ Need a function to checkElectric() to see if user has any meters set up
+
 }
 $util = UTIX::getInstance();
-//$util::logInfo( 'common: UTIX class instantiated as util for ' . $util::$timezone );
 
-
-/**
-  * Lockfile - set to a path that exists on your system
-  *  the thermostat id from the database will be appended to this filename
-  * This keeps thermo_update_temps and thermo_update_status from running at the same time.  If they both hit the
-  * thermostat at the same time, the thermostat could be overloaded and become unresponsive for 20-30 minutes
-  * until the wifi module resets.
-  */
-//$lockFile = '/tmp/thermo.lock'; // Need username in file name
-//$lockFile = $util->lockFile;
-$lockFile = $util::$lockFile;
 
 /**
   * Really need to have timezone for each location so that all data is stored in the 'local' zone.
@@ -439,14 +468,14 @@ class Database{
 
   public function disconnect(){
     global $util;
-    $util::logDebug( 'common: Database->disconnect()' );
+$util::logDebug( 'common: Database->disconnect()' );
     $this->conn = null;
   }
 
   public function backupOneTable( $tableName, $now ){
     global $util;
 
-    $command = "mysqldump -u {$this->username} -p{$this->password} -h {$this->host} {$this->db_name} {$tableName} | gzip -9 - > {$util::$rootDir}backups/$now.{$tableName}.sql.gz";
+    $command = "mysqldump -u {$this->username} -p{$this->password} -h {$this->host} {$this->db_name} {$this->table_prefix}{$tableName} | gzip -9 - > {$util::$rootDir}backups/$now.{$tableName}.sql.gz";
 
 // QQQ Be careful, this log command writes your DB password!
 //$util::logInfo( "backup: backupOneTable: Trying backup using\n" . $command );

@@ -44,7 +44,7 @@ function display_chart(){
 
   // Make ajax call to data source
   $.getJSON( url_string, function( data ){
-    rawData = [];   // Reset data array i ncase this is a re-run
+    rawData = [];   // Reset data array in case this is a re-run
     var min = 100;  // Set chart Y axis boundary flags so they are guaranteed to move
     var max = 0;
 
@@ -75,7 +75,22 @@ debugger;
 
 </script>
 
+<div style='display: block;'>
+
+<div style='display: inline;'>
 <input type='button' onClick='javascript: display_chart();' value='Show'>
+</div>
+
+<div style='display: inline; position: relative; top: 31px;'>
+<select id='LOC' size='3' style='width: 95px;'>
+<option value='0'>Home</option>
+<option value='1'>Parents</option>
+<option value='2'>Rental 1</option>
+<option value='3'>Rental 2</option>
+<option value='4'>Rental 3</option>
+</select>
+</div>
+
 
 <select id='chart.daily.thermostat'>
 <?php
@@ -91,6 +106,14 @@ debugger;
 ?>
 </select>
 
+<div style='display: inline; position: relative; top: 31px;'>
+<select multiple id='TMP' size='3' style='width: 95px;'>
+<option value='0'>Outside</option>
+<option value='1'>Upstairs</option>
+<option value='2'>Basement</option>
+</select>
+</div>
+
 <select id='chart.daily.source'>
   <option value='0'>Outoor</option>
   <option value='1'>Indoor</option>
@@ -105,9 +128,11 @@ debugger;
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; humidity Indoor<input type='checkbox' id='chart.daily.showIndoorHumidity' name='chart.daily.showIndoorHumidity'/>
 &nbsp;Outdoor<input type='checkbox' id='chart.daily.showOutdoorHumidity' name='chart.daily.showOutdoorHumidity'/>
+</div>
 
-<br>
+<br><br>
 
+<div style='block;'>
 <input type='button' onClick='javascript: interval(-1);' value='Previous' title='Show previous timeframe' >
 Timeframe <input type='text' id='chart.daily.interval.length' value='7' size='3'>
 <select id='chart.daily.interval.group' style='width: 65px'>
@@ -122,6 +147,7 @@ Timeframe <input type='text' id='chart.daily.interval.length' value='7' size='3'
 ?>
 ending on <input type='date' id='chart.daily.toDate' size='10' value='<?php print( $show_date ); ?>' max='<?php print( $show_date ); ?>' step='1'/>
 <input type='button' onClick='javascript: interval(1);' value='Next' title='Show next timeframe' >
+</div>
 
 <div class='content'>
 <br>
@@ -221,7 +247,7 @@ var chart = AmCharts.makeChart("chartdiv", {
     "dataProvider": rawData
 });
 
-chart.addListener("rendered", zoomChart);
+chart.addListener( "rendered", zoomChart );
 
 zoomChart();
 

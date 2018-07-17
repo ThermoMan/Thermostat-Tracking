@@ -77,6 +77,7 @@ switch( $interval_measure )
 //   GROUP BY DATE(date) ) a
 
 $database = new Database();
+$pdo = $database->dbConnection();
 
 $sql = "SELECT
           a.date,
@@ -94,13 +95,15 @@ $sql = "SELECT
                  MAX(indoor_temp) AS indoor_max,
                  MIN(indoor_temp) AS indoor_min
                FROM {$database->table_prefix}temperatures
-               WHERE tstat_uuid = ?
+               WHERE tstat_uuid = :uname
                AND DATE(date) BETWEEN '$from_date' AND '$to_date'
                GROUP BY {$group_by_text} ) a
         LEFT JOIN {$database->table_prefix}run_times b
         ON a.date = DATE( b.date ) AND a.tstat_uuid = b.tstat_uuid";
-$query = $user->runQuery( $sql );
-$query->execute( array( $uuid ) );
+$stmt = $pdo->prepare( $sql );
+$stmt->bindparam( ':uname', $uname );
+$stmt->execute();
+
 
 /**
   * This is a holdover concern from the HVAC Runtime chart code...

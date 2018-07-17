@@ -71,7 +71,7 @@ $session = (isset($_REQUEST['session'])) ? $_REQUEST['session'] : null; // Set s
 $user = new USER( $uname, $session );
 
 if( $user == null || ! $user->hasSession( $uname, $session ) ){
-  $util::logError( 'common_chart: Back end call with bad user details ' );
+  $util::logError( 'Back end call with bad user details ' );
 //  bobby_tables();
   return false;
 }
@@ -84,7 +84,7 @@ if( $thermostat_id == null ){
   if( is_array( $thermostat ) && isset( $thermostat['thermostat_id'] ) ){
     $thermostat_id = $thermostat['thermostat_id'];
 //    if( $thermostat_id != $thermostat['thermostat_id'] ){
-//      $util::logError( 'common_chart: Requested thermostat_id does not match user thermostat_id - I smell a hacker!' );
+//      $util::logError( 'Requested thermostat_id does not match user thermostat_id - I smell a hacker!' );
 //      throw new Config_Exception( 'common_chart: error 1.  check logs.' );
 //    }
   }
@@ -92,7 +92,7 @@ if( $thermostat_id == null ){
 
 if( $thermostat_id == null ){
   // If there still is not one chosen then abort
-  $util::logError( 'common_chart: Thermostat ID was NULL!' );
+  $util::logError( 'Thermostat ID was NULL!' );
   // Need to redirect output to some image showing user there was an error and suggesting to read the logs.
   throw new Config_Exception( 'common_chart: error 3.  check logs.' );
 }
@@ -110,7 +110,7 @@ foreach( $user->thermostats as $thermostatRec ){
 // QQQ Names per user ought to be unique
 if( $statName == null ){
   // If the chosen thermostat is not known to the system then abort
-  $util::logError( 'common_chart: Requested thermostat ID was not found! (by ID)' );
+  $util::logError( 'Requested thermostat ID was not found! (by ID)' );
   // Need to redirect output to some image showing user there was an error and suggesting to read the logs.
   throw new Config_Exception( 'common_chart: error 5.  check logs.' );
 }

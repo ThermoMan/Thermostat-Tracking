@@ -1,12 +1,13 @@
 <?php
 require_once( 'common.php' ); // To let me do logging
+// QQQ Maybe rename this user_session so the user stuff hangs together in a file list and can be pulled out for code reuse more easily.
 
 global $util;
-$util::logDebug( 'session: 0' );
+$util::logDebug( 'Start' );
 
 // Force to https from http
 if( $_SERVER[ 'HTTPS' ] != 'on'){
-  $util::logInfo( 'session: forced user to https from http' );
+  $util::logError( 'Forced user to https from http' );
   header( 'Location: https://' . $_SERVER[ 'HTTP_HOST' ] . $_SERVER['REQUEST_URI'] );
   exit( '<meta http-equiv="refresh" content="0;url=https://' . $_SERVER[ 'HTTP_HOST' ] . $_SERVER['REQUEST_URI'] . '" />' );
 }
@@ -23,22 +24,22 @@ $allowedInsecurePages[] = [ 'about.php', 'index.php' ];
 //QQQ The idea here is that if you are not logged in you are forced to to go index.php
 //QQQ  UNLESS you're looking at one of these allowed pages.
 
-//$util::logDebug( "session: I think you are on page " . basename( $_SERVER[ 'SCRIPT_FILENAME' ] ) );
+//$util::logDebug( "I think you are on page " . basename( $_SERVER[ 'SCRIPT_FILENAME' ] ) );
 if( !isset( $section ) ) $section = 'undefined';
 if( ( ! in_array( basename( $_SERVER[ 'SCRIPT_FILENAME' ] ), $allowedInsecurePages ) ) && ( 'xyzzy' !== $section ) ){
-//$util::logDebug( "session: I think you are on page " . basename( $_SERVER[ 'SCRIPT_FILENAME' ] ) . " which is not an open page" );
+//$util::logDebug( "I think you are on page " . basename( $_SERVER[ 'SCRIPT_FILENAME' ] ) . " which is not an open page" );
   require_once( 'user.php' );
   $user = new USER();
   if( !$user->isLoggedIn() ){
-$util::logError( 'session: Evicting unknown user from secure page' );
+    $util::logError( 'Evicting unknown user from secure page' );
     header( 'Location: index' );
     exit( '<meta http-equiv="refresh" content="0;url=index" />' );
   }
 //  else{
-//    $util::logDebug( "session: I think you are logged in, so everything is hunky dory" );
+//    $util::logDebug( "I think you are logged in, so everything is hunky dory" );
 //  }
 }
 //else{
-//  $util::logDebug( "session: I think everyone is allowed to see that page" );
+//  $util::logDebug( "I think everyone is allowed to see that page" );
 //}
 ?>

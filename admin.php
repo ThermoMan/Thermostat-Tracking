@@ -14,7 +14,13 @@
 
 <script type='text/javascript'>
   function backup(){
-    var url_string = 'backup';
+//    var url_string = 'backup';
+    var url_string = 'admin_dl?user=<?php echo $user->getName() ?>&session=<?php echo $user->getSession() ?>&action=backup';
+    $.getJSON( url_string, function( data ){
+    });
+  }
+  function cleanLogs(){
+    var url_string = 'admin_dl?user=<?php echo $user->getName() ?>&session=<?php echo $user->getSession() ?>&action=clean_logs';
     $.getJSON( url_string, function( data ){
 debugger;
     });
@@ -22,13 +28,13 @@ debugger;
 </script>
 
 <div style='text-align: left;'>
-<br />Throw a button on here to make a DB backup.
-<br /><button type='button' onClick='backup();'>Backup</button>
-<br />Are there any DB sanity check type things that need to happen?
-<br />Archive old data?
-<br />Add an active flag to user record.  Admin can toggle the flag.  Flag can get set by too many failed log in attempts.
-<br />Something else?
-<br/><br/>
+<br><button type='button' onClick='backup();'>Backup</button>
+<br><button type='button' onClick='cleanLogs();'>Delete old log files</button>
+<br>Are there any DB sanity check type things that need to happen?
+<br>Archive old data?
+<br>Add an active flag to user record.  Admin can toggle the flag.  Flag can get set by too many failed log in attempts.
+<br>Something else?
+<br><br>
 <?php
   echo '<br>display_errors = ' . ini_get( 'display_errors' );
   echo '<br>PHP_OS = ' . PHP_OS;

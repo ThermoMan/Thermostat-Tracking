@@ -2,7 +2,7 @@
 $start_time = microtime(true);
 require_once( 'common_chart.php' );
 // _dl .... the "dl" means "data layer".  In MVC speak, this is the M.
-$util::logInfo( "compare_dl: 0" );
+$util::logInfo( "compare_dl: Start" );
 
 
 $get_from = (isset($_GET['get_from']) && ($_GET['get_from'] == 'true')) ? 1 : 0;

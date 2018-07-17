@@ -3,7 +3,7 @@ require_once( 'common.php' ); // This is REQUIRED even when duplicate because of
 require_once( 'user.php' );   // This is REQUIRED even when duplicate because of confirm.php (at the very least)
 
 global $util;
-$util::logDebug( 'standard_page_top: 0' );
+//$util::logDebug( 'standard_page_top: Start' );
 if( is_null( $user ) ){
   $util::logWarn( "standard_page_top: \$user was not already defined by {$_SERVER['PHP_SELF']}" );
   $user = new USER();
@@ -26,8 +26,8 @@ if( is_null( $user ) ){
 
 <!-- QQQ  Really ought to not waste time loading these things if they are not used on this specific page -->
 <!-- QQQ  Should add a set of flags in each source file for which libs are needed and load them conditionally -->
-  <link rel='stylesheet' type='text/css' href='../common/js/jquery.dataTables.min.css' >
-  <script type='text/javascript' src='../common/js/jquery.dataTables.min.js'></script>
+<!--  <link rel='stylesheet' type='text/css' href='../common/js/jquery.dataTables.min.css' > -->
+<!--  <script type='text/javascript' src='../common/js/jquery.dataTables.min.js'></script> -->
 <!--  <link rel='stylesheet' type='text/css' href='../common/js/jquery.dataTables.scroller.min.css' > -->
 <!--  <script type='text/javascript' src='../common/js/jquery.dataTables.scroller.min.js'></script> -->
 </head>

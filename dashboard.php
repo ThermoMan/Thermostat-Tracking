@@ -3,7 +3,7 @@
   require_once( 'standard_page_top.php' );
   if( ! $util::checkThermostat( $user ) ) return;
 
-$util::logDebug( 'dashboard.php 0' );
+$util::logDebug( 'dashboard: 0' );
 //$util::send_mail( 'theinscrutable@yahoo.com', 'Your message here', 'User ID registration email' );
 
 ?>
