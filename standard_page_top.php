@@ -21,7 +21,7 @@ if( is_null( $user ) ){
   <link rel='stylesheet' type='text/css' href='../common/bootstrap/css/bootstrap.min.css' />
   <link rel='stylesheet' type='text/css' href='resources/thermo.css' />
 
-  <script type='text/javascript' src='../common/js/jquery-3.1.0.min.js'></script>
+  <script type='text/javascript' src='../common/js/jquery-3.3.1.min.js'></script>
   <script type='text/javascript' src='../common/bootstrap/js/bootstrap.min.js'></script>
 
 <!-- QQQ  Really ought to not waste time loading these things if they are not used on this specific page -->

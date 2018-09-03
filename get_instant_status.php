@@ -9,7 +9,7 @@ $start_time = microtime( true );
 require_once( 'common.php' );
 require_once( 'user.php' );
 
-$util::logDebug( 'get_instant_status: 0' );
+$util::logDebug( '0' );
 
 $returnString = '';
 $greetingMsg = '';
@@ -30,9 +30,9 @@ if( ! $util::checkThermostat( $user ) ){
 /** Get thermostat info
   *
   */
-$util::logDebug( 'get_instant_status: 1' );
+$util::logDebug( '1' );
 try{
-//$util::logDebug( 'get_instant_status: 2 util root dir is ' . $util::$rootDir );
+//$util::logDebug( '2 util root dir is ' . $util::$rootDir );
   foreach( $user->thermostats as $thermostatRec ){
     $lockFileName = $util::$lockFile . $thermostatRec['thermostat_id'];
     $lock = @fopen( $lockFileName, 'w' );
@@ -44,19 +44,19 @@ try{
     $setPoint = '';
 
     if( flock( $lock, LOCK_EX ) ){
-$util::logInfo( "get_instant_status: Connecting to Thermostat ID = ({$thermostatRec['thermostat_id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
+$util::logInfo( "Connecting to Thermostat ID = ({$thermostatRec['thermostat_id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
 
       //$stat = new Stat( $thermostatRec['ip'], $thermostatRec['thermostat_id'] );
       //$stat = new Stat( $thermostatRec['ip'] );
       $stat = new Stat( $thermostatRec );
-$util::logDebug( 'get_instant_status: 5' );
+$util::logDebug( '5' );
 
       try{
-$util::logInfo( 'get_instant_status: Trying to talk to thermostat' );
+$util::logInfo( 'Trying to talk to thermostat' );
         $statData = $stat->getStat();
       }
       catch( Exception $e ){
-$util::logError( 'get_instant_status: $stat->getStat() threw an unpleasant error and could not talk to the stat' );
+$util::logError( '$stat->getStat() threw an unpleasant error and could not talk to the stat' );
       }
       $heatStatus = ($stat->tstate == 1) ? 'on' : 'off';
       $coolStatus = ($stat->tstate == 2) ? 'on' : 'off';
@@ -79,7 +79,7 @@ $util::logError( 'get_instant_status: $stat->getStat() threw an unpleasant error
           $outsideData = $externalWeatherAPI->getOutdoorWeather( $ZIP );
           $outdoorTemp = $outsideData['temp'];
           $outdoorHumidity = $outsideData['humidity'];
-$util::logInfo( "get_instant_status: Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
+$util::logInfo( "Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
           //$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
           $greetingMsgWeather = "$outdoorTemp &deg;$weatherConfig[units] outside";
         }
@@ -111,7 +111,7 @@ $util::logError( 'External weather failed: ' . $e->getMessage() );
   }
 }
 catch( Exception $e ){
-  $util::logError( 'get_instant_status: Thermostat failed: ' . $e->getMessage() );
+  $util::logError( 'Thermostat failed: ' . $e->getMessage() );
   $returnString = "<p>No response from unit, please check WiFi connection at unit location.";
 }
 
@@ -120,6 +120,6 @@ catch( Exception $e ){
 // Need to JSON the text so that there is an object with values passed back?
 
 echo $returnString;
-$util::logInfo( 'get_instant_status: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+$util::logInfo( 'execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>

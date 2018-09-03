@@ -383,5 +383,4 @@ if( $show_outdoor_humidity == 1 ) $answer[ 'outdoorHumidity' ] = $outdoorHumidit
 echo json_encode( array( "answer" => $answer), JSON_NUMERIC_CHECK );
 
 $util::logInfo( 'execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
-
 ?>

@@ -2,6 +2,10 @@
   require_once( 'session.php' );
   require_once( 'standard_page_top.php' );
 ?>
+<script type='text/javascript' src='../common/js/calendarPicker/jquery.calendarPicker.js'></script>
+<link rel='stylesheet' type='text/css' href='../common/js/calendarPicker/jquery.calendarPicker.css'/>
+<script type='text/javascript' src='../common/js/moment-with-locales.js'></script>
+
 
 <style>
 .grid-container
@@ -14,24 +18,39 @@
 
 .grid-container>div
 {
+  border: 2px solid black;
+  margin: 2px;
+  background-color: #928d81;
+}
+
+.grid-container select
+{
+  width: 160px !important;
+  height: 100px;
+  background-color: #928d81;
+  border-bottom: 1px dashed #666;
 }
 </style>
 
 <script>
 var rawData = [];
 
-function fetchData( mtu_id, intervalLength, intervalGroup, toDate ){
+function fetchData(){
+
+  var fromDate = moment( calPickFrom.currentDate ).format( 'YYYY-MM-DD HH:mm' );
+  var toDate = moment( calPickTo.currentDate ).format( 'YYYY-MM-DD HH:mm' );
+
   var query1 = {};
   query1[ 'key' ] = 'use';
   query1[ 'meter' ] = 1;
-  query1[ 'from_date' ] = '2018-07-14 05:50';
-  query1[ 'to_date' ] = '2018-07-14 06:00';
+  query1[ 'from_date' ] = fromDate;
+  query1[ 'to_date' ] = toDate;
 
   var query2 = {};
   query2[ 'key' ] = 'gen';
   query2[ 'meter' ] = 2;
-  query2[ 'from_date' ] = '2018-07-14 05:50';
-  query2[ 'to_date' ] = '2018-07-14 06:00';
+  query2[ 'from_date' ] = fromDate;
+  query2[ 'to_date' ] = toDate;
 
   var query = [];
   query[0] = query1;
@@ -47,6 +66,7 @@ function fetchData( mtu_id, intervalLength, intervalGroup, toDate ){
   jsonData[ 'session' ] = '<?php echo $user->getSession() ?>';
   jsonData[ 'request' ] = request;
 
+debugger;
  $.ajax({
          type:        'GET'
         ,url:         'electric_dl'
@@ -56,6 +76,31 @@ function fetchData( mtu_id, intervalLength, intervalGroup, toDate ){
         ,success:     function( data ){
 debugger; // Check the result
 console.log( data );
+          rawData = [];   // Reset data array in case this is a re-run
+          $.each( data.response.answer, function( key, value ){
+              rawData.push( {"date": value.date, "con": value.watts, "gen": 0 } );
+
+/*
+            if( value[0] == 1){
+//              $( '#consumption > tbody:last-child' ).append('<tr><td>'+value[1]+'</td><td>'+value[2]+'</td><td>'+value[3]+'</td></tr>');
+              generate = false;
+              consume = true;
+              rawData.push( {"date": value.date, "con": value.watts, "gen": 0 } );
+            }
+            else{
+//              $( '#generation > tbody:last-child' ).append('<tr><td>'+value[1]+'</td><td>'+value[2]+'</td><td>'+value[3]+'</td></tr>');
+              generate = true;
+              consume = false;
+              rawData.push( {"date": value[1], "con": 0, "gen": value[2] } );
+            }
+*/
+          });
+chart1 = doChart( false, true, rawData );
+/*
+          if( consume ){
+            chart1 = doChart( generate, consume, rawData );
+          }
+*/
         }
         ,failure:     function( errMsg ){
 debugger; // Check the result
@@ -89,21 +134,39 @@ var consume = false;
 */
 }
 
+var calPickFrom;
+var calPickTo;
 $( document ).ready( function(){
+// QQQ Check out the calendars that support aselecting a date RANGE
+// QQQ http://roberto.open-lab.com/2010/03/23/so-hard-to-have-a-date/
+  calPickFrom = $( '#cpf' ).calendarPicker({
+     monthNames:    [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
+    ,dayNames:      [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ]
+    //,useWheel: true
+    //,callbackDelay: 500
+    ,years:         2 // Two on each side of selected
+    ,months:        4 // Four on each side of selected
+    ,days:          5 // Five on each side of selected
+    ,date:          new Date( (new Date().valueOf()) - (1000 * 60 * 60 * 24 * 7) )  // Last week
+    ,showDayArrows: true
+    ,callback:      function( cal ){
+      $( '#cpfd' ).html( 'From date: ' + cal.currentDate );
+    }});
+  calPickTo = $( '#cpt' ).calendarPicker({
+     monthNames:    [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
+    ,dayNames:      [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ]
+    //,useWheel: true
+    //,callbackDelay: 500
+    ,years:         2 // Two on each side of selected
+    ,months:        4 // Four on each side of selected
+    ,days:          5 // Five on each side of selected
+    ,date: new Date() // Today
+    ,showDayArrows: true
+    ,callback:      function( cal ){
+      $( '#cptd' ).html( 'To date: ' + cal.currentDate );
+    }});
 
-  // So this is asking for the ten minutes ending on July 6 at midnight ( so it's the last 9 minutes of July 5 and the first minute of July 6 = 23:51, :52, :53, :54, :55, :56, :57, :58, :59, 24:00 )
-  var mtu_id = 1;                 // Hard code 1 for now
-  var intervalLength = 3000;     // Hard code asking for a few minutes of data
-  var intervalGroup = 0;          // Hard code set unit type as minutes (others are hours, days, weeks, months, years)
-  var toDate = '2018-07-15';
-
-  fetchData( mtu_id, intervalLength, intervalGroup, toDate );
-
-  var mtu_id = 2;                 // Hard code 2 for now
-  var intervalLength = 300;       // Hard code asking for a few minutes of data
-//  fetchData( mtu_id, intervalLength, intervalGroup, toDate );
-
-  //chart2 = doChart();
+  fetchData();
 });
 
 </script>
@@ -140,21 +203,29 @@ $( document ).ready( function(){
   </div>
 
   <div>
-    <div>From</div>
+    <div>From <button onclick='calPickFrom.changeDate( new Date() );' style='line-height: 11px; float: right; position: relative; top: 2px; right: 2px;'>Today</button></div>
+    <div id='cpf' style='width: 340px'></div>
+    <span id='cpfd'></span>
+<!--
     <div>
       <input type='date' id='FROM' size='10' value='' max='' min='' step='1'/>
     </div>
+-->
   </div>
   <div>
-    <div>To</div>
+    <div>To <button onclick='calPickTo.changeDate( new Date() );' style='line-height: 11px; float: right; position: relative; top: 2px; right: 2px;'>Today</button></div>
+    <div id='cpt' style='width: 340px'></div>
+    <span id='cptd'></span>
+<!--
     <div>
       <input type='date' id='TO' size='10'   value='' max='' min='' step='1'/>
     </div>
+-->
   </div>
 
 
 </div>
-
+<button onClick='fetchData();'>Clicker</button>
 <style>
 #chartdiv {
   width: 100%;
@@ -169,11 +240,12 @@ $( document ).ready( function(){
 var chart1;
 var chart2;
 function doChart( g, c, rd ){
-if( g ){
-}
-else{
-}
-var chart = AmCharts.makeChart("chartdiv", {
+  if( g ){
+  }
+  else{
+  }
+debugger;
+var chart = AmCharts.makeChart( 'chartdiv', {
     "type": "serial",
     "theme": "dark",
     "dataProvider": rd,

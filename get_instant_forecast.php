@@ -3,7 +3,7 @@ $start_time = microtime(true);
 require_once( 'common.php' );
 require_once( 'user.php' );
 
-//$util::logDebug( 'get_instant_forecast: 0' );
+//$util::logDebug( '0' );
 
 /* Put useful comments here and either merge code with get_instant_status.php or make this a virtual clone of that file */
 
@@ -28,7 +28,7 @@ if( $weatherConfig[ 'useForecast' ] ){
 //      $returnString = '';
 
       try{
-//$util::logDebug( 'get_instant_forecast: 1 zipcode = ' . $thermostatRec['location_string'] );
+//$util::logDebug( '1 zipcode = ' . $thermostatRec['location_string'] );
         if( $lastZIP != $thermostatRec['location_string'] ){
           // Only get outside info for subsequent locations if the location has changed
           $lastZIP = $thermostatRec['location_string'];
@@ -44,9 +44,9 @@ if( $weatherConfig[ 'useForecast' ] ){
           /** Get environmental info
             *
             */
-//$util::logDebug( 'get_instant_forecast: 2' );
+//$util::logDebug( '2' );
           $forecastData = $externalWeatherAPI->getOutdoorForcast( $lastZIP );
-//$util::logDebug( 'get_instant_forecast: 3' );
+//$util::logDebug( '3' );
 
           // Format data for screen presentation
           if( is_array( $forecastData ) ){
@@ -82,20 +82,20 @@ if( $weatherConfig[ 'useForecast' ] ){
 
       }
       catch( Exception $e ){
-        $util::logError( 'get_instant_forecast: External forecast failed: ' . $e->getMessage() );
+        $util::logError( 'External forecast failed: ' . $e->getMessage() );
         // Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
         $returnString = $returnString . "<p><img src='images/Alert.png'/>Presently unable to read forecast.</p>";
       }
     }
   }
   catch( Exception $e ){
-    $util::logError( 'get_instant_forecast: Some bugs failure or other ' . $e->getMessage() );
+    $util::logError( 'Some bugs failure or other ' . $e->getMessage() );
     $returnString = "<p><img src='images/Alert.png'/>Presently unable to read forecast.</p>";
   }
 }
 // This is a little hacky, but change all http to https
 $returnString = str_replace('http://', 'https://', $returnString );
 echo $returnString;
-//$util::logDebug( 'get_instant_forecast: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+//$util::logDebug( 'execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>

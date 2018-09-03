@@ -26,27 +26,34 @@ $util::logDebug( 'double_bogus ' . var_export( $double_bogus, true ) ); // Shoul
 */
 
 if( isset( $uname ) && isset( $user_session ) ){
-try{
-  $user = new USER( $uname, $user_session );
-$util::logDebug( 'I got a user!' );
+  try{
+    $user = new USER( $uname, $user_session );
+  //$util::logDebug( 'I got a user!' );
+  }
+  catch( Exception $e ){
+    $util::logError( 'BUG' );
+  }
+
+  // QQQ Need to test that mtu_id belongs to user_id
+  // QQQ Should start IDs from number other than 1!
+
+
+  /*
+    foreach( $user->TED5000_Gateways as $gatewayRec ){
+  //$util::logDebug( 'row has ' . var_export( $gatewayRec ) );
+    }
+  */
 }
-catch( Exception $e ){
-  $util::logDebug( 'BUG' );
+else
+{
+  $util::logError( 'No user or session specified' );
+  exit();
 }
 
-  foreach( $user->TED5000_Gateways as $gatewayRec ){
-$util::logDebug( 'row has ' . var_export( $gatewayRec ) );
-  }
-}
+$database = new Database();
+$pdo = $database->dbConnection();
 
 $util::logDebug( 'working on queries' );
-foreach( $queryList as $query ){
-$util::logDebug( 'key is ' . $query['key'] );
-$util::logDebug( 'meter is ' . $query['meter'] );
-$util::logDebug( 'from_date is ' . $query['from_date'] );
-$util::logDebug( 'to_date is ' . $query['to_date'] );
-}
-$util::logDebug( 'done with queries' );
 
 /* Here is what the request should look like
 {
@@ -70,7 +77,7 @@ $util::logDebug( 'done with queries' );
     "reponse_type": "merge"
   }
 }
-This has the request in an JSON onject.
+This has the request in an JSON object.
 The query is what is being asked for.  It's always an array even if it has only one element.
 The query has four parts
 key: the name of the value column to be used in the reponse
@@ -81,8 +88,57 @@ The response_type is one of "merge", "append", "all"
 all: If you make three queries, you get three answers.  It's a way of doing everything in one call instead of making three separate one query requests.
 append: The resutls of the second (and subsequent) queries are appended on the end of the first one.
 merge: Each query answer will become a new column in the final result - all using the common date key. this will need special logic in case there are gaps in the key sequence
+*/
+foreach( $queryList as $query ){
+$util::logDebug( 'key is ' . $query['key'] );
 
+  $mtu_id = $query['meter'];
+  $from_date = $query['from_date'];
+  $to_date = $query['to_date'];
 
+// QQQ Verify that both dates are dates/properly formatted
+// QQQ Verify that neither date are not future?
+
+$util::logDebug( "mtu_id = $mtu_id" );
+$util::logDebug( "from_date = $from_date" );
+$util::logDebug( "to_date = $to_date" );
+
+$allData = array();
+
+/*
+  $sqlGetAllData =
+"SELECT mtu_id
+       ,date_format( date, '%Y/%m/%d %H:%i' ) AS date
+       ,watts
+       ,volts
+   FROM {$database->table_prefix}meter_data
+  WHERE mtu_id = :mtu_id
+    AND date BETWEEN :from_date AND :to_date";
+*/
+  $sqlGetAllData =
+"SELECT date_format( date, '%Y/%m/%d %H:%i' ) AS date
+       ,watts
+   FROM {$database->table_prefix}meter_data
+  WHERE mtu_id = :mtu_id
+    AND date BETWEEN :from_date AND :to_date";
+
+  $queryGetAllData = $pdo->prepare( $sqlGetAllData );
+
+  $queryGetAllData->bindParam( ':mtu_id', $mtu_id );
+  $queryGetAllData->bindParam( ':from_date', $from_date, PDO::PARAM_STR );
+  $queryGetAllData->bindParam( ':to_date', $to_date, PDO::PARAM_STR );
+
+  $queryGetAllData->execute();
+
+  //$allData = $queryGetAllData->fetchAll( PDO::FETCH_NUM );
+  $allData = $queryGetAllData->fetchAll( PDO::FETCH_OBJ );
+  //$allData = $queryGetAllData->fetchAll();
+
+$util::logDebug( 'There were '.count($allData).' rows returned from the query.' );
+}
+$util::logDebug( 'done with queries' );
+
+/*
 Here is what the response should look like
 {
   "response": {
@@ -114,138 +170,68 @@ User, Session, and no_cache (if present in original) are NOT included in the rep
 
 An answer from a single query ("response_type" could be "append" or "all")
     "answer": {
-      "2018-07-14 05:50": 1,
-      "2018-07-14 05:51": 1,
-      "2018-07-14 05:52": 1,
-      "2018-07-14 05:53": 1,
-      "2018-07-14 05:54": 1,
-      "2018-07-14 05:55": 1,
-      "2018-07-14 05:56": 1,
-      "2018-07-14 05:57": 1,
-      "2018-07-14 05:58": 1,
-      "2018-07-14 05:59": 1,
-      "2018-07-14 06:00": 1
+      "2018-07-14 05:50": 7000,
+      "2018-07-14 05:51": 7000,
+      "2018-07-14 05:52": 7000,
+      "2018-07-14 05:53": 7000,
+      "2018-07-14 05:54": 7000,
+      "2018-07-14 05:55": 7000,
+      "2018-07-14 05:56": 7000,
+      "2018-07-14 05:57": 7000,
+      "2018-07-14 05:58": 7000,
+      "2018-07-14 05:59": 7000,
+      "2018-07-14 06:00": 7000
     }
 
 An answer from two queries ("response_type" is "merge")
     "answer": {
-      "2018-07-14 05:50": [{"use":1},{"gen":2}],
-      "2018-07-14 05:51": [{"use":1},{"gen":2}],
-      "2018-07-14 05:52": [{"use":1},{"gen":2}],
-      "2018-07-14 05:53": [{"use":1},{"gen":2}],
-      "2018-07-14 05:54": [{"use":1},{"gen":2}],
-      "2018-07-14 05:55": [{"use":1},{"gen":2}],
-      "2018-07-14 05:56": [{"use":1},{"gen":2}],
-      "2018-07-14 05:57": [{"use":1},{"gen":2}],
-      "2018-07-14 05:58": [{"use":1},{"gen":2}],
-      "2018-07-14 05:59": [{"use":1},{"gen":2}],
-      "2018-07-14 06:00": [{"use":1},{"gen":2}]
+      "2018-07-14 05:50": [{"use"7000},{"gen"-5000}],
+      "2018-07-14 05:51": [{"use"7000},{"gen"-5000}],
+      "2018-07-14 05:52": [{"use"7000},{"gen"-5000}],
+      "2018-07-14 05:53": [{"use"7000},{"gen"-5000}],
+      "2018-07-14 05:54": [{"use"7000},{"gen"-5000}],
+      "2018-07-14 05:55": [{"use"7000},{"gen"-5000}],
+      "2018-07-14 05:56": [{"use"7000},{"gen"-5000}],
+      "2018-07-14 05:57": [{"use"7000},{"gen"-5000}],
+      "2018-07-14 05:58": [{"use"7000},{"gen"-5000}],
+      "2018-07-14 05:59": [{"use"7000},{"gen"-5000}],
+      "2018-07-14 06:00": [{"use"7000},{"gen"-5000}]
     }
 
 An answer from two queries ("response_type" is "append").  Note that by the rules of JSON if the key column contains literally identical
  values like the example below the subsequent appearance of a key will overwrite the values in the earlier appearance.
     "answer": {
-      "2018-07-14 05:50": 1,
-      "2018-07-14 05:51": 1,
-      "2018-07-14 05:52": 1,
-      "2018-07-14 05:53": 1,
-      "2018-07-14 05:54": 1,
-      "2018-07-14 05:55": 1,
-      "2018-07-14 05:56": 1,
-      "2018-07-14 05:57": 1,
-      "2018-07-14 05:58": 1,
-      "2018-07-14 05:59": 1,
-      "2018-07-14 06:00": 1,
-      "2018-07-14 05:50": 2,
-      "2018-07-14 05:51": 2,
-      "2018-07-14 05:52": 2,
-      "2018-07-14 05:53": 2,
-      "2018-07-14 05:54": 2,
-      "2018-07-14 05:55": 2,
-      "2018-07-14 05:56": 2,
-      "2018-07-14 05:57": 2,
-      "2018-07-14 05:58": 2,
-      "2018-07-14 05:59": 2,
-      "2018-07-14 06:00": 2
+      "2018-07-14 05:50": 7000,
+      "2018-07-14 05:51": 7000,
+      "2018-07-14 05:52": 7000,
+      "2018-07-14 05:53": 7000,
+      "2018-07-14 05:54": 7000,
+      "2018-07-14 05:55": 7000,
+      "2018-07-14 05:56": 7000,
+      "2018-07-14 05:57": 7000,
+      "2018-07-14 05:58": 7000,
+      "2018-07-14 05:59": 7000,
+      "2018-07-14 06:00": 7000,
+      "2018-07-14 05:50": -5000,
+      "2018-07-14 05:51": -5000,
+      "2018-07-14 05:52": -5000,
+      "2018-07-14 05:53": -5000,
+      "2018-07-14 05:54": -5000,
+      "2018-07-14 05:55": -5000,
+      "2018-07-14 05:56": -5000,
+      "2018-07-14 05:57": -5000,
+      "2018-07-14 05:58": -5000,
+      "2018-07-14 05:59": -5000,
+      "2018-07-14 06:00": -5000
     }
 In your query, if you don't want data over write make sure the query key date ranges do not overlap!
 */
 
 
-
-
-// Get ending date for chart
-$to_date = (isset($_GET['chart_daily_toDate'])) ? htmlspecialchars( $_GET['chart_daily_toDate'] ) : date( 'Y-m-d' );
-if( ! $util::isValidDate( $to_date, 'Y-m-d' ) ){
-  throw new Config_Exception( 'electric_dl: error 4.  check logs.' );
-$util::logInfo( "should NEVER see this message in logs!" );
-}
-//$to_date = date( 'Y-m-d 00:00', strtotime( "$to_date + 1 day" ) );
-$to_date = date( 'Y-m-d 00:00', strtotime( "$to_date" ) );
-
-// Verify that date is not future?
-
-$interval_measure = (isset($_GET['chart_daily_interval_group'])) ? $_GET['chart_daily_interval_group'] : 0;
-if( $interval_measure < 0 || $interval_measure > 3 ){
-  // 0: minutes, 1: hours, 2: days, 3: weeks, 4: years
-  $interval_measure = 0;
-}
-
-if( isset( $_GET['chart_daily_interval_length'] ) ){
-  $interval_length = $_GET['chart_daily_interval_length'];
-
-  // Bounds checking
-  if( $interval_length < 1 ) $interval_length = 1;
-  if( $interval_length > 1096 ) $interval_length = 1096;
-}
-
-$date_text = array( 0 => 'minutes', 1 => 'hours', 2 => 'days', 3 => 'weeks', 3 => 'years' );
-$interval_string = $to_date . ' - ' . $interval_length . ' ' . $date_text[$interval_measure];
-
-// Compute the "from date"
-$from_date = date( 'Y-m-d %H:%i', strtotime( $interval_string ) );
-
-/*
-$util::logDebug( "mtu_id = $mtu_id" );
-$util::logDebug( "from_date = $from_date" );
-$util::logDebug( "to_date = $to_date" );
-$util::logDebug( "interval_string = $interval_string" );
-$util::logDebug( "interval_length = $interval_length" );
-$util::logDebug( "interval_measure = $interval_measure" );
-*/
-
-$database = new Database();
-$pdo = $database->dbConnection();
-
-// QQQ Need to test that mtu_id belongs to user_id
-// QQQ Should start IDs from number other than 1!
-
-
-$allData = array();
-
-$sqlGetAllData =
-"SELECT mtu_id
-       ,date_format( date, '%Y/%m/%d %H:%i' )
-       ,watts
-       ,volts
-   FROM {$database->table_prefix}meter_data
-  WHERE mtu_id = :mtu_id
-    AND date BETWEEN :from_date AND :to_date";
-
-$util::logDebug( "sqlGetAllData = $sqlGetAllData" );
-
-$queryGetAllData = $pdo->prepare( $sqlGetAllData );
-$queryGetAllData->bindParam( ':mtu_id', $mtu_id );
-$queryGetAllData->bindParam( ':from_date', $from_date );
-$queryGetAllData->bindParam( ':to_date', $to_date );
-$queryGetAllData->execute();
-
-$allData = $queryGetAllData->fetchAll( PDO::FETCH_NUM );
-// $allData = $queryGetAllData->fetchAll( PDO::FETCH_OBJ );
-
-$answer = array();
-$answer[ 'allData' ] = $allData;
-echo json_encode( array( "answer" => $answer), JSON_NUMERIC_CHECK );
+$response = array();
+$response[ 'request' ] = $request;
+$response[ 'answer' ] = $allData;
+echo json_encode( array( "response" => $response), JSON_NUMERIC_CHECK );
 
 $util::logInfo( 'electric_dl: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
