@@ -3,6 +3,11 @@ $start_time = microtime(true);
 require_once( 'common.php' );
 require_once( 'user.php' );
 
+$util::logError( 'Forecast is DISABLED for now.' );
+$returnString = "<p><img src='images/Alert.png'/>Forecast is presently disabled.</p>";
+echo $returnString;
+exit;
+
 //$util::logDebug( '0' );
 
 /* Put useful comments here and either merge code with get_instant_status.php or make this a virtual clone of that file */
@@ -45,7 +50,7 @@ if( $weatherConfig[ 'useForecast' ] ){
             *
             */
 //$util::logDebug( '2' );
-          $forecastData = $externalWeatherAPI->getOutdoorForcast( $lastZIP );
+          $forecastData = $externalWeatherAPI->getOutdoorForecast( $lastZIP, $util );
 //$util::logDebug( '3' );
 
           // Format data for screen presentation
@@ -75,7 +80,8 @@ if( $weatherConfig[ 'useForecast' ] ){
             $returnString .= '</tr></table>';
           }
           else{
-            $util::logError( 'Expected to get an array back from $externalWeatherAPI->getOutdoorForcast( $lastZIP ) but did not.' );
+            $util::logError( 'Expected to get an array back from $externalWeatherAPI->getOutdoorForcast( $lastZIP ) but did not.  $lastZIP is [[[' . $lastZIP . ']]]' );
+//$util::logInfo( 'return data is [[[' . $forecastData . ']]]' );
             $returnString .= 'No response from forecast provider.';
           }
         }

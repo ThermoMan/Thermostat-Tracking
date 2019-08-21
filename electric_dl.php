@@ -233,6 +233,6 @@ $response[ 'request' ] = $request;
 $response[ 'answer' ] = $allData;
 echo json_encode( array( "response" => $response), JSON_NUMERIC_CHECK );
 
-$util::logInfo( 'electric_dl: execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
+$util::logInfo( 'execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>

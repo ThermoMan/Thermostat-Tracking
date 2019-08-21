@@ -24,7 +24,7 @@ else{
 /*
   Presently this data structure is only designed for TED5000 - needs update if we are to support other usage monitors
   a user has one or more locations
-  a location has one or more Gateways
+  a location has one or more Gateways (PERHAPS A LOCATION HAS ZERO ELECTRIC MONITORS!!!)
   a Gateway has one to four MTUs (an MTU measures either usage or generation)
 
   foreach( user->locations as location ){
@@ -89,10 +89,7 @@ AND met.mtu_id = data.mtu_id";
         $queryLastContactDate->execute();
         $mtuLastTime = $queryLastContactDate->fetchColumn();
 //$util::logDebug( 'Talk to MTU ' . $gatewayRec['mtu'] . ' OK. -> ' . $mtuLastTime );
-
         $mtu[] = array( "mtu" => $gatewayRec['mtu'], "key" => "QQQ", "date" => $mtuLastTime );
-
-
       }
       catch( Exception $e ){
         $util::logError( 'Some DB error prevented query. ' . $e->getMessage() );
@@ -125,24 +122,24 @@ $answer[ 'status' ] = $status;
 
 echo json_encode( array( "answer" => $answer), JSON_NUMERIC_CHECK );
 /*
-The output ought to be sometihng like this
+The output ought to be something like this
 {
   "answer": {
-    "message": "Some message here",
-    "status": 0
-    "location":[{
-      "name": "Home"
+     "message": "Some message here"
+    ,"status": 0
+    ,"location":[{
+       "name": "Home"
       ,"gateway": {
-        "present_date": "2018-08-26 16:25:10",
-        "uptime": "689788 seconds",
-        "present_use": "0.776 kWh",
-        "projected_use": "534.152 kWh",
-        "mtu": [{
-          "key": "use",
-          "last_read_date": "2018\/08\/26 14:00"
+         "present_date": "2018-08-26 16:25:10"
+        ,"uptime": "689788 seconds"
+        ,"present_use": "0.776 kWh"
+        ,"projected_use": "534.152 kWh"
+        ,"mtu": [{
+           "key": "use"
+          ,"last_read_date": "2018\/08\/26 14:00"
         }, {
-          "key": "gen",
-          "last_read_date": "2018\/08\/26 13:59"
+           "key": "gen"
+          ,"last_read_date": "2018\/08\/26 13:59"
         }]
       }
     }]
