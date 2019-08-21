@@ -1,5 +1,105 @@
+OpenWeather API
+get a FREE API key at:
+https://home.openweathermap.org/subscriptions
 
-The following is a sample of the result of calling the forecast from weatherunderground
+Make an API call like:
+https://api.openweathermap.org/data/2.5/forecast?id=524901&APPID={APIKEY}
+OR
+https://api.openweathermap.org/data/2.5/weather?q=London,uk&units=imperial&APPID=0123456789ABCDEF0123456789ABCDEF
+
+Response in JSON look like
+
+{
+	"coord": {
+		"lon": -0.13,
+		"lat": 51.51
+	},
+	"weather": [{
+		"id": 800,
+		"main": "Clear",
+		"description": "clear sky",
+		"icon": "01n"
+	}],
+	"base": "stations",
+	"main": {
+		"temp": 55.47,
+		"pressure": 1027,
+		"humidity": 66,
+		"temp_min": 50,
+		"temp_max": 61
+	},
+	"visibility": 10000,
+	"wind": {
+		"speed": 5.82,
+		"deg": 230
+	},
+	"clouds": {
+		"all": 0
+	},
+	"dt": 1566338574,
+	"sys": {
+		"type": 1,
+		"id": 1412,
+		"message": 0.0112,
+		"country": "GB",
+		"sunrise": 1566276809,
+		"sunset": 1566328492
+	},
+	"timezone": 3600,
+	"id": 2643743,
+	"name": "London",
+	"cod": 200
+}
+
+Interpret with
+Parameters:
+• coord
+ o coord.lon City geo location, longitude
+ o coord.lat City geo location, latitude
+• weather (more info Weather condition codes)
+ o weather.id Weather condition id
+ o weather.main Group of weather parameters (Rain, Snow, Extreme etc.)
+ o weather.description Weather condition within the group
+ o weather.icon Weather icon id
+• base Internal parameter
+• main
+ o main.temp Temperature. Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
+ o main.pressure Atmospheric pressure (on the sea level, if there is no sea_level or grnd_level data), hPa
+ o main.humidity Humidity, %
+ o main.temp_min Minimum temperature at the moment. This is deviation from current temp that is possible for large cities and megalopolises geographically expanded (use these parameter optionally). Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
+ o main.temp_max Maximum temperature at the moment. This is deviation from current temp that is possible for large cities and megalopolises geographically expanded (use these parameter optionally). Unit Default: Kelvin, Metric: Celsius, Imperial: Fahrenheit.
+ o main.sea_level Atmospheric pressure on the sea level, hPa
+ o main.grnd_level Atmospheric pressure on the ground level, hPa
+• wind
+ o wind.speed Wind speed. Unit Default: meter/sec, Metric: meter/sec, Imperial: miles/hour.
+ o wind.deg Wind direction, degrees (meteorological)
+• clouds
+ o clouds.all Cloudiness, %
+• rain
+ o rain.1h Rain volume for the last 1 hour, mm
+ o rain.3h Rain volume for the last 3 hours, mm
+• snow
+ o snow.1h Snow volume for the last 1 hour, mm
+ o snow.3h Snow volume for the last 3 hours, mm
+• dt Time of data calculation, unix, UTC
+• sys
+ o sys.type Internal parameter
+ o sys.id Internal parameter
+ o sys.message Internal parameter
+ o sys.country Country code (GB, JP etc.)
+ o sys.sunrise Sunrise time, unix, UTC
+ o sys.sunset Sunset time, unix, UTC
+• timezone Shift in seconds from UTC
+• id City ID
+• name City name
+• cod Internal parameter
+
+
+
+Old docs below this point................
+Weatherunderground has taken their API offline
+
+The following is the result of calling the forecast from weatherunderground
 http://api.wunderground.com/api/API/forecast/q/90210.xml
 
 <response>
