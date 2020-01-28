@@ -1,0 +1,264 @@
+html {
+  /** CSS now allows custom properties (these are NOT variables!)
+   ** to be defined and used within the scope of the element for
+   ** which they are defined.  The ":root" pseudo class is parent
+   ** of all classes as is "html" - so you can use them like variables.
+   ** It is a new enough feature that :root is still buggy but html works.
+   **/
+  --card-default-head-bg: #FFFFFF;
+  --card-default-body-bg: #EEEEEE;
+  --card-default-border: #000000;
+  --card-default-shadow: #0000008C;
+  --card-default-hover-shadow: #000000DC;
+/*  --card-default-scroll-bar:    UNDEFINED - I just let it be default */
+/*  --card-default-scroll-thumb:  UNDEFINED - I just let it be default */
+
+
+  --card-red-head-bg: #E0AEAE;
+  --card-red-body-bg: #F4EBEB;
+  --card-red-border: #804E4E;
+/*  --card-red-shadow:            UNDEFINED - they all use the same shadow color */
+  --card-red-scroll-bar: #E0AEAE;
+  --card-red-scroll-thumb: #764444;
+
+  --card-green-head-bg: #AEE0AE;
+  --card-green-body-bg: #EBF4EB;
+  --card-green-border: #4E804E;
+  --card-green-scroll-bar: #AEE0AE;
+  --card-green-scroll-thumb: #447644;
+
+  --card-blue-head-bg: #AEAEE0;
+  --card-blue-body-bg: #EBEBF4;
+  --card-blue-border: #4E4E80;
+  --card-blue-scroll-bar: #AEAEE0;
+  --card-blue-scroll-thumb: #444476;
+
+  --card-grey-head-bg: #969696;
+  --card-grey-body-bg: #CCCCCC;
+  --card-grey-border: #4E4E4E;
+  --card-grey-scroll-bar: #9B9696;
+  --card-grey-scroll-thumb: #444444;
+
+  --card-gold-head-bg: #FFDF00;
+  --card-gold-body-bg: #FBFBDE;
+  --card-gold-border: #D5B719;
+  --card-gold-scroll-bar: #EEE8AA;
+  --card-gold-scroll-thumb: #DAA520;
+}
+
+/* this red bordered div is for debugging - comment it out later on */
+/****
+div {
+  border: 1px solid red;
+}
+****/
+
+.bigbox {
+  border: 1px solid black;
+}
+
+/* Default cards                     */
+/* Default color is black and white  */
+/* Default shape is square corners   */
+/* Default cards are not scrollable - they expand to hold content */
+
+.main_card_table {
+  display: flex;
+  align-items: flex-start; /* Prevent box from growing to match adjacent boxes */
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 0px;
+  text-align: left;
+}
+
+.main_card {
+  margin: 8px;
+  min-width: 350px;
+  max-width: 450px;
+  width: 23%;
+  box-shadow: 4px 4px 8px 0px var(--card-default-shadow);
+  border: 4px solid var(--card-default-border);
+  overflow: hidden;
+}
+.main_card:hover {
+  box-shadow: 4px 8px 16px 0 var(--card-default-hover-shadow);
+}
+
+.main_card_head {
+  display: flex;
+  flex-wrap: nowrap;
+  height: 48px;
+  line-height: 18px;
+  font-weight: bold;
+  font-size: 120%;
+  overflow: hidden;
+  background: var(--card-default-head-bg);
+  border-bottom: 4px solid var(--card-default-border);
+}
+
+.main_card_title {
+  /* Overall title box - could this be collapsed into the head? */
+  border-spacing: 0px;
+  height: 48px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.main_card_title div{
+  display: inline-block;
+}
+
+.main_card_subtitle {
+ font-weight: lighter;
+ font-size: smaller;
+ display: block !important;
+}
+
+.main_card_body {
+  margin-right: 1px;
+  padding: 7px 3px 13px 3px;
+  font-weight: normal;
+  font-size: 100%;
+  min-height: 125px;
+  height: 100%;
+  background: var(--card-default-body-bg);
+  overflow: hidden;
+}
+
+.main_card_box {
+  min-height: 200px;
+}
+
+/* Colored Cards                               */
+/* Defined colors are red, green, blue, & grey */
+.card_red.main_card {
+  border-color: var(--card-red-border);
+}
+.card_red > .main_card_head {
+  background-color: var(--card-red-head-bg);
+  border-color: var(--card-red-border);
+}
+.card_red > .main_card_body {
+  background-color: var(--card-red-body-bg);
+}
+
+.card_green.main_card {
+  border-color: var(--card-green-border);
+}
+.card_green > .main_card_head {
+  background-color: var(--card-green-head-bg);
+  border-color: var(--card-green-border);
+}
+.card_green > .main_card_body {
+  background-color: var(--card-green-body-bg);
+}
+
+.main_card.card_blue {
+  border-color: var(--card-blue-border);
+}
+.card_blue > .main_card_head {
+  background-color: var(--card-blue-head-bg);
+  border-color: var(--card-blue-border);
+}
+.card_blue > .main_card_body {
+  background-color: var(--card-blue-body-bg);
+}
+
+.main_card.card_grey {
+  border-color: var(--card-grey-border);
+}
+.card_grey > .main_card_head {
+  background-color: var(--card-grey-head-bg);
+  border-color: var(--card-grey-border);
+}
+.card_grey > .main_card_body {
+  background-color: var(--card-grey-body-bg);
+}
+
+.main_card.card_gold {
+ border-color: var(--card-gold-border);
+}
+.card_gold > .main_card_head {
+ background-color: var(--card-gold-head-bg);
+ border-color: var(--card-gold-border);
+}
+.card_gold > .main_card_body {
+ background-color: var(--card-gold-body-bg);
+}
+
+/* Rounded Cards */
+.main_card.rounded {
+  border-radius: 15px;
+}
+
+.card_tall .main_card_box {
+ min-height: 500px;
+}
+
+.main_card.card_wide {
+ min-width: 500px;
+ max-width: 600px;
+}
+
+/* Scrollable Cards */
+.scrollable .main_card_box {
+  max-height: 250px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.scrollable ::-webkit-scrollbar {
+  width: 4px;
+}
+
+/* Scrollable Colored Cards */
+.card_red .main_card_box {
+  scrollbar-color: var(--card-red-scroll-thumb) var(--card-red-scroll-bar);
+}
+.card_red ::-webkit-scrollbar-thumb {
+  background: var(--card-red-scroll-thumb);
+}
+.card_red ::-webkit-scrollbar-track {
+  background: var(--card-red-scroll-bar);
+}
+
+.card_green .main_card_box {
+  scrollbar-color: var(--card-green-scroll-thumb) var(--card-green-scroll-bar);
+}
+.card_green ::-webkit-scrollbar-thumb {
+  background: var(--card-green-scroll-thumb);
+}
+.card_green: :-webkit-scrollbar-track {
+  background: var(--card-green-scroll-bar);
+}
+
+.card_blue .main_card_box {
+  scrollbar-color: var(--card-blue-scroll-thumb) var(--card-blue-scroll-bar);
+}
+.card_blue ::-webkit-scrollbar-thumb {
+  background: var(--card-blue-scroll-thumb);
+}
+.card_blue ::-webkit-scrollbar-track {
+  background: var(--card-blue-scroll-bar);
+}
+
+.card_grey .main_card_box {
+  scrollbar-color:  var(--card-grey-scroll-thumb)var(--card-grey-scroll-bar);
+}
+.card_grey ::-webkit-scrollbar-thumb {
+  background: var(--card-grey-scroll-thumb);
+}
+.card_grey ::-webkit-scrollbar-track {
+  background: var(--card-grey-scroll-bar);
+}
+
+.card_gold .main_card_box {
+ scrollbar-color: var(--card-gold-scroll-thumb)var(--card-gold-scroll-bar);
+}
+.card_gold ::-webkit-scrollbar-thumb {
+ background: var(--card-gold-scroll-thumb);
+}
+.card_gold ::-webkit-scrollbar-track {
+ background: var(--card-gold-scroll-bar);
+}
