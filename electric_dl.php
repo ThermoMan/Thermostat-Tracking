@@ -2,7 +2,8 @@
 $start_time = microtime(true);
 require_once( 'common.php' );
 require_once( 'user.php' );
-$util::logInfo( 'Start' );
+
+$util::logInfo( 'start' );
 
 //$util::logDebug( 'THE WORKS ' . json_encode( $_REQUEST ) );
 $jsonData = $_REQUEST;
@@ -44,8 +45,7 @@ if( isset( $uname ) && isset( $user_session ) ){
     }
   */
 }
-else
-{
+else{
   $util::logError( 'No user or session specified' );
   exit();
 }
@@ -105,26 +105,41 @@ $util::logDebug( "to_date = $to_date" );
 
 $allData = array();
 
+
+  $sqlGetAllData = "
+  SELECT loc.location_string
+        ,meter.is_generator
+        ,meter.description
+        ,date_format( date, '%Y/%m/%d %H:%i' ) AS date
+        ,watts
+        ,volts
+    FROM thermo2__users AS user
+        ,thermo2__meters AS meter
+        ,thermo2__meter_data AS data
+        ,thermo2__locations AS loc
+   WHERE user.user_name = :uname
+     AND meter.user_id = user.user_id
+     AND meter.mtu_id = data.mtu_id
+     AND meter.location_id = loc.location_id
+     AND data.date BETWEEN :from_date AND :to_date
+ORDER BY loc.location_string ASC
+        ,meter.is_generator ASC
+        ,meter.description ASC
+        ,data.date ASC";
+
 /*
-  $sqlGetAllData =
-"SELECT mtu_id
-       ,date_format( date, '%Y/%m/%d %H:%i' ) AS date
-       ,watts
-       ,volts
-   FROM {$database->table_prefix}meter_data
-  WHERE mtu_id = :mtu_id
-    AND date BETWEEN :from_date AND :to_date";
-*/
   $sqlGetAllData =
 "SELECT date_format( date, '%Y/%m/%d %H:%i' ) AS date
        ,watts
    FROM {$database->table_prefix}meter_data
   WHERE mtu_id = :mtu_id
     AND date BETWEEN :from_date AND :to_date";
-
+*/
   $queryGetAllData = $pdo->prepare( $sqlGetAllData );
 
-  $queryGetAllData->bindParam( ':mtu_id', $mtu_id );
+  $queryGetAllData->bindParam( ':uname', $uname );
+
+//  $queryGetAllData->bindParam( ':mtu_id', $mtu_id );
   $queryGetAllData->bindParam( ':from_date', $from_date, PDO::PARAM_STR );
   $queryGetAllData->bindParam( ':to_date', $to_date, PDO::PARAM_STR );
 
@@ -138,6 +153,43 @@ $util::logDebug( 'There were '.count($allData).' rows returned from the query.' 
 }
 $util::logDebug( 'done with queries' );
 
+
+  // Find the most recent stored meter read for all the meters for the present user.
+  $sql = "
+SELECT loc.location_string
+      ,meter.description
+      ,meter.is_generator
+      ,MAX(data.date) AS last_contact
+  FROM thermo2__users AS user
+      ,thermo2__meters AS meter
+      ,thermo2__meter_data AS data
+      ,thermo2__locations AS loc
+ WHERE user.user_name = :uname
+   AND meter.user_id = user.user_id
+   AND meter.mtu_id = data.mtu_id
+   AND meter.location_id = loc.location_id
+GROUP BY loc.location_string
+        ,meter.description
+        ,meter.is_generator
+ORDER BY loc.location_string ASC
+        ,meter.description ASC
+        ,meter.is_generator ASC";
+//$util::logInfo( '$sql ' . $sql );
+
+  $stmt = $pdo->prepare( $sql );
+  $stmt->bindParam( ':uname', $uname );
+  $stmt->execute();
+
+  $allMeters = $stmt->fetchAll( PDO::FETCH_ASSOC );
+
+  $last_read_dates = array();
+  foreach( $allMeters as $meterRec ){
+    $last_read_dates[ $meterRec[ 'location_string' ] ][ $meterRec[ 'description' ] ] = $meterRec[ 'last_contact' ];
+  }
+$util::logInfo( '$last_read_dates is ' . print_r($last_read_dates, true) );
+
+
+
 /*
 Here is what the response should look like
 {
@@ -148,13 +200,15 @@ Here is what the response should look like
           "key": "use",
           "meter": 1,
           "from_date": "2018-07-14 05:50",
-          "to_date": "2018-07-14 06:00"
+          "to_date": "2018-07-14 06:00",
+          "last_read_date":"2019-12-29 14:00"
         },
         {
           "key": "gen",
           "meter": 2,
           "from_date": "2018-07-14 05:50",
-          "to_date": "2018-07-14 06:00"
+          "to_date": "2018-07-14 06:00",
+          "last_read_date":"2019-12-29 14:00"
         }
       ],
       "reponse_type": "merge"

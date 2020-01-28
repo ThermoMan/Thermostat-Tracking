@@ -2,9 +2,9 @@
   require_once( 'session.php' );
   require_once( 'standard_page_top.php' );
 ?>
-<script type='text/javascript' src='../common/js/calendarPicker/jquery.calendarPicker.js'></script>
+<script type='application/javascript' src='../common/js/calendarPicker/jquery.calendarPicker.js'></script>
 <link rel='stylesheet' type='text/css' href='../common/js/calendarPicker/jquery.calendarPicker.css'/>
-<script type='text/javascript' src='../common/js/moment-with-locales.js'></script>
+<script type='application/javascript' src='../common/js/moment-with-locales.js'></script>
 
 
 <style>
@@ -232,9 +232,9 @@ $( document ).ready( function(){
   height: 500px;
 }
 </style>
-<script type='text/javascript' src='../common/js/amcharts/amcharts.js'></script>
-<script type='text/javascript' src='../common/js/amcharts/serial.js'></script>
-<script type="text/javascript" src='../common/js/amcharts/themes/dark.js'></script>
+<script type='application/javascript' src='../common/js/amcharts/amcharts.js'></script>
+<script type='application/javascript' src='../common/js/amcharts/serial.js'></script>
+<script type='application/javascript' src='../common/js/amcharts/themes/dark.js'></script>
 <div id='chartdiv' style='width: 90%; height: 400px; background-color: #282828; margin: 0 auto; padding: 10px;'></div>
 <script>
 var chart1;

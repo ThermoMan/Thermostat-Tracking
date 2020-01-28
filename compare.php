@@ -4,7 +4,7 @@
   if( ! $util::checkThermostat( $user ) ) return;
 ?>
 
-<script type='text/javascript'>
+<script type='application/javascript'>
 $( document ).ready( function(){
   var show_thermostat_id       = 'thermostat_id='                   + $( '#chart\\.compare\\.thermostat' ).val();
 

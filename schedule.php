@@ -4,7 +4,7 @@
   if( ! $util::checkThermostat( $user ) ) return;
 ?>
 
-<script type='text/javascript'>
+<script type='application/javascript'>
 function copy( mode, day ){
   document.getElementById( 'd'+day+'p0time'+mode ).value = document.getElementById( 'd'+(day-1)+'p0time'+mode ).value;
   document.getElementById( 'd'+day+'p1time'+mode ).value = document.getElementById( 'd'+(day-1)+'p1time'+mode ).value;

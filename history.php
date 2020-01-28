@@ -4,7 +4,7 @@
   if( ! $util::checkThermostat( $user ) ) return;
 ?>
 
-<script type='text/javascript'>
+<script type='application/javascript'>
 function display_chart_build_and_display( chart_target ){
   var show_thermostat_id = 'id=' + document.getElementById( 'chart.history.thermostat' ).value;
   var show_indoor = 'Indoor=' + document.getElementById( 'history_selection' ).value;
@@ -80,7 +80,7 @@ ending on <input type='date' id='chart.history.toDate' size='10' value='<?php pr
   </div>
 </div>
 
-<script type='text/javascript'>
+<script type='application/javascript'>
 $( document ).ready( function(){
   display_historic_chart();
 });

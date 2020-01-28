@@ -16,93 +16,14 @@ $util::logDebug( 'dashboard: 0' );
 }
 .thrm_dashboard
 {
-/*   display: inline-block; */
   margin: 0px 5px 0px 5px;  /* top right bottom left */
-/*  margin-left: 50px; */
   text-align: left;
-/*  float: left; */
   width: 400px;
   height: 250px;
-/*  overflow-y: auto; */
 }
-
 </style>
 
-<script type='text/javascript'>
-// timeSince is a good candidate for a standard library
-// Set precision numerically instead of on/off?
-// QQQ modify this to return a JSON object with a string and some other meta data so you can do logic on the elapsed time.
-function timeSince( oldDate, RoE ){
-  var Exact = 0;
-  var Rough = 1;
-  var Veryrough = 2;    // Only go 2 intervals deep (eg Years + Months or Months + Days or Days + Hours or Hours + Minutes and NEVER seconds)
-  // optional argument RoE is "Rough or Exact" time since requested date with Rough as default.
-  RoE = RoE || Rough;
-
-  var seconds = Math.floor( ( new Date( ( Date.now() - oldDate ) ) ) / 1000 );
-  var returnString = '';
-
-  var secondsInYear = 31536000;   // All years are 365 days.
-  var secondsInMonth = 2592000;   // All months are 30 days.
-  var secondsInDay = 86400;
-  var secondsInHour = 3600;
-  var secondsInMinute = 60;
-
-  var intervalYears = Math.floor( seconds / secondsInYear );
-  if( intervalYears > 0 ){
-    seconds = seconds - ( intervalYears * secondsInYear );
-    returnString = intervalYears + ' year';
-    if( intervalYears > 1 ){ returnString = returnString + 's'; }
-    if( RoE == Rough ){ return 'about ' + returnString + ' ago'; }
-  }
-
-
-  var intervalMonths = Math.floor( seconds / secondsInMonth );
-  if( intervalMonths > 0 ){
-    seconds = seconds - ( intervalMonths * secondsInMonth );
-    if( returnString.length > 0 ){ returnString = returnString + ' '; }
-    returnString = returnString + intervalMonths + ' month';
-    if( intervalMonths > 1 ){ returnString = returnString + 's'; }
-    if( RoE == Rough ){ return 'about ' + returnString + ' ago'; }
-  }
-
-  var intervalDays = Math.floor( seconds / secondsInDay );
-  if( intervalDays > 0 ){
-    seconds = seconds - ( intervalDays * secondsInDay );
-    if( returnString.length > 0 ){ returnString = returnString + ' '; }
-    returnString = returnString + intervalDays + ' day';
-    if( intervalDays > 1 ){ returnString = returnString + 's'; }
-    if( RoE == Rough ){ return 'about ' + returnString + ' ago'; }
-  }
-
-  var intervalHours = Math.floor( seconds / secondsInHour );
-  if( intervalHours > 0 ){
-    seconds = seconds - ( intervalHours * secondsInHour );
-    if( returnString.length > 0 ){ returnString = returnString + ' '; }
-    returnString = returnString + intervalHours + ' hour';
-    if( intervalHours > 1 ){ returnString = returnString + 's'; }
-    if( RoE == Rough ){ return 'about ' + returnString + ' ago'; }
-  }
-
-  var intervalMinutes = Math.floor( seconds / secondsInMinute );
-  if( intervalMinutes > 0 ){
-    seconds = seconds - ( intervalMinutes * secondsInMinute );
-    if( returnString.length > 0 ){ returnString = returnString + ' '; }
-    returnString = returnString + intervalMinutes + ' minute';
-    if( intervalMinutes > 1 ){ returnString = returnString + 's'; }
-    if( RoE == Rough ){ return 'about ' + returnString + ' ago'; }
-  }
-
-  if( seconds > 0 ){
-    if( returnString.length > 0 ){ returnString = returnString + ' '; }
-    returnString = returnString + Math.floor( seconds ) + ' second';
-    if( seconds > 1 ){ returnString = returnString + 's'; }
-  }
-
-  if( RoE == Rough ){ return 'about ' + returnString + ' ago'; }
-  else{ return returnString + ' ago'; }
-}
-
+<script type='application/javascript'>
 function formatHVAC( p_data ){
 //  $( '#status' ).html( p_data );
 // return 0;
@@ -204,7 +125,7 @@ function update( p_section, p_time ){
 
 function show(){
   update( 'status', 15000 );
-  update( 'forecast' );
+//  update( 'forecast' );
   update( 'electro', 10000 );
 }
 
@@ -219,25 +140,55 @@ $( document ).ready( function(){
 <button type='button' class='btn btn-primary' id='refresh_dashboard'>Refresh All <span class='glyphicon glyphicon-repeat'></span></button>
 <br><br><br>
 
-<div class='thrm_row'>
-  <div class='col-md-4 thrm_dashboard' id='status' data-default='<span><img src="images/img_trans.gif" width="1" height="1" class="large_sprite wheels" /></span><span>Looking up present status and conditions. (This may take some time)</span>' >
+<div class="main_card_table">
+
+<div class="main_card card_red scrollable">
+<div class="main_card_head"><div class="main_card_title">
+<div>HVAC
+</div></div></div>
+<div class="main_card_body"><div class="main_card_box">
+  <div id='status' data-default='<span><img src="images/img_trans.gif" width="1" height="1" class="large_sprite wheels" /></span><span>Looking up present status and conditions. (This may take some time)</span>' >
     <span><img src='images/img_trans.gif' width='1' height='1' class='large_sprite wheels' /></span><span>Looking up the present status and conditions.</span>
   </div>
+</div></div></div>
+
+<div class="main_card card_green rounded scrollable card_wide">
+<div class="main_card_head"><div class="main_card_title">
+<div>Weather
+</div></div></div>
+<div class="main_card_body"><div class="main_card_box">
   <div class='col-md-4 thrm_dashboard' id='forecast' data-default='<span><img src="images/img_trans.gif" width="1" height="1" class="large_sprite wheels" /></span><span>Looking up the forecast.</span>' >
     <span><img src='images/img_trans.gif' width='1' height='1' class='large_sprite wheels' /></span><span>Looking up the forecast.</span>
   </div>
-  <div class='col-md-4 thrm_dashboard' id='electro' data-default='<span><img src="images/img_trans.gif" width="1" height="1" class="large_sprite wheels" /></span><span>Looking up the present electric usage.</span>' >
+</div></div></div>
+
+<div class="main_card card_gold scrollable">
+<div class="main_card_head"><div class="main_card_title">
+<div>Electric Meter
+</div></div></div>
+<div class="main_card_body"><div class="main_card_box">
+  <div id='electro' data-default='<span><img src="images/img_trans.gif" width="1" height="1" class="large_sprite wheels" /></span><span>Looking up the present electric usage.</span>' >
     <span><img src='images/img_trans.gif' width='1' height='1' class='large_sprite wheels' /></span><span>Looking up the present electric usage.</span>
   </div>
-</div>
+</div></div></div>
 
+<div class="main_card card_grey scrollable">
+<div class="main_card_head"><div class="main_card_title">
+<div>Water Heater
+</div></div></div>
+<div class="main_card_body"><div class="main_card_box">
+  <div id='water_heater' data-default='<span><img src="images/img_trans.gif" width="1" height="1" class="large_sprite wheels" /></span><span>Checking if the water heater is online.</span>' >
+    <span><img src='images/img_trans.gif' width='1' height='1' class='large_sprite wheels' /></span><span>Checking if the water heater is online.</span>
+  </div>
+</div></div></div>
+
+</div>
 
 <div  style='visibility: visible;'>
 <section style='text-align: left;'>
 <style>
 fieldset
 {
-  border: 2px solid red;
   background-color: #DDDDDD;
   max-width: 650px;
   margin-left: 10px;
@@ -260,7 +211,6 @@ ul.a
   <fieldset>
     <legend>To Do List</legend>
     <ul class='a'>
-      <li>Why is my fieldset not totally outlined in red?  I seem to be inheriting a legend style from somewhere else!</li>
       <li>Update the JavaScript time-ago to understand future too.</li>
       <li>Fix ALL data inserts to set alarm when insert date is future (by more than some threshhold)</li>
       <li>This means I need an alarm state table (per user) that shows on dashboard first, and turns on LIFX later, can also email user (but not spam him!)</li>

@@ -1,6 +1,9 @@
 <?php
 require_once( 'common.php' );
 
+class User_Exception extends Exception{
+}
+
 // QQQ Need to add a static member function that tests if a user ID is already in use (for users registering)
 // QQQ That function should have some protection in case someone is hammering the DB searching for IDs
 
@@ -12,6 +15,7 @@ class USER{
   private $conn;
   public  $thermostats = array();
   public  $MTUs = array();
+  public  $locations = array();
   private $uname;
   private $session;
 
@@ -28,62 +32,97 @@ class USER{
       $this->uname = $_SESSION[ 'user_name' ];
       $this->session = $_SESSION[ 'user_session' ];
     }
-    else if( $uname != null && $session != null && $this->hasSession( $uname, $session ) ){
-//$util::logDebug( '1b' );
-      $this->uname = $uname;
-      $this->session = $session;
+    else if( $uname != null && $session != null ){
+      if( $this->hasSession( $uname, $session ) ){
+        $this->uname = $uname;
+        $this->session = $session;
+      }else{
+        $util::logError( 'User tried to connect with bad session data' );
+        throw new User_Exception( 'Invalid session.  Check logs' );
+      }
     }
 
 //$util::logDebug( '2' );
     if( $this->uname != null && $this->session != null ){
       // Put user Thermostat(s) in the list.
 //$util::logDebug( '2a' );
-      $sql = "
-SELECT stat.thermostat_id
-      ,stat.tstat_uuid
-      ,stat.model
-      ,stat.fw_version
-      ,stat.wlan_fw_version
-      ,stat.ip
-      ,stat.name
-      ,stat.description
-      ,stat.user_id
-      ,loc.location_string
-      ,loc.timezone
-  FROM {$this->database->table_prefix}users AS user
-      ,{$this->database->table_prefix}thermostats AS stat
-      ,{$this->database->table_prefix}locations AS loc
- WHERE user.user_name = :uname
-   AND stat.user_id = user.user_id
-   AND loc.location_id = stat.location_id";
-      $stmt = $this->conn->prepare( $sql );
+      $sql2 = "
+  SELECT stat.thermostat_id
+        ,stat.tstat_uuid
+        ,stat.model
+        ,stat.fw_version
+        ,stat.wlan_fw_version
+        ,stat.ip
+        ,stat.name
+        ,stat.description
+        ,stat.user_id
+        ,loc.location_string
+        ,loc.timezone
+    FROM {$this->database->table_prefix}users AS user
+        ,{$this->database->table_prefix}thermostats AS stat
+        ,{$this->database->table_prefix}locations AS loc
+   WHERE user.user_name = :uname
+     AND stat.user_id = user.user_id
+     AND loc.location_id = stat.location_id
+ORDER BY loc.location_string ASC";
+      $stmt = $this->conn->prepare( $sql2 );
       $stmt->bindParam( ':uname', $this->uname );
       $stmt->execute();
       $this->thermostats = $stmt->fetchAll( PDO::FETCH_ASSOC );
 //$util::logDebug( '2e' );
+    // QQQ Need a flag on all the devices to show if they are considered active or not.  There may be historical data from devices and locations no longer extant!
+// QQQ add this to the WHERE clause
+// AND stat.is_active = 1
+// QQQ where 1 is active and 0 is inactive (or rather "not 1" is inactive - which allows other status numbers to be used during setup phase etc...)
+// NEW, VERIFIED, NORMAL, TURNED OFF BY USER, TOO MANY COMMS ERRORS (giving up - send email to user)
+// QQQ Also want a flag to turn on and off the per minite contact for keeping history
+
 
       // Put user TED 5000(s) in the list.
-      $sql2 = "
-SELECT mtu.mtu_id
-      ,mtu.mtu
-      ,mtu.is_generator
-      ,mtu.ip
-      ,mtu.name
-      ,mtu.description
-      ,loc.location_string
-      ,loc.timezone
-  FROM {$this->database->table_prefix}users AS user
-      ,{$this->database->table_prefix}meters AS mtu
-      ,{$this->database->table_prefix}locations AS loc
- WHERE user.user_name = :uname
-   AND mtu.user_id = user.user_id
-   AND loc.location_id = mtu.location_id";
-      $stmt = $this->conn->prepare( $sql2 );
+      $sql3 = "
+  SELECT mtu.mtu_id
+        ,mtu.mtu
+        ,mtu.is_generator
+        ,mtu.ip
+        ,mtu.name
+        ,mtu.description
+        ,loc.location_string
+        ,loc.timezone
+    FROM {$this->database->table_prefix}users AS user
+        ,{$this->database->table_prefix}meters AS mtu
+        ,{$this->database->table_prefix}locations AS loc
+   WHERE user.user_name = :uname
+     AND mtu.user_id = user.user_id
+     AND loc.location_id = mtu.location_id
+ORDER BY loc.location_string ASC";
+      $stmt = $this->conn->prepare( $sql3 );
       $stmt->bindParam( ':uname', $this->uname );
       $stmt->execute();
       $this->TED5000_Gateways = $stmt->fetchAll( PDO::FETCH_ASSOC );
+//$util::logDebug( '3' );
+
+      // Put user Locations in the list.
+      $sql4 = "
+  SELECT distinct loc.location_string
+        ,loc.timezone
+    FROM {$this->database->table_prefix}users AS user
+        ,{$this->database->table_prefix}meters AS mtu
+        ,{$this->database->table_prefix}locations AS loc
+        ,{$this->database->table_prefix}thermostats AS stat
+   WHERE user.user_name = :uname
+     AND (mtu.user_id = user.user_id
+     AND loc.location_id = mtu.location_id)
+     OR (stat.user_id = user.user_id
+     AND loc.location_id = stat.location_id)
+ORDER BY loc.location_string ASC";
+
+      $stmt = $this->conn->prepare( $sql4 );
+      $stmt->bindParam( ':uname', $this->uname );
+      $stmt->execute();
+      $this->locations = $stmt->fetchAll( PDO::FETCH_ASSOC );
+//$util::logDebug( '4' );
+
     }
-$util::logDebug( '3' );
   }
 
   public function getName(){
@@ -129,7 +168,7 @@ $key = '12345';
 // QQQ Fix this.
 $url =  "//{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
 $util::logDebug( "email url = $url" );
-      $message = "Please click this <a href='URL TO SERVER/thermo2/confirm.php?key=$key'>link</a> to confirm your registation.";
+      $message = "Please click this <a href='https://giocatolli.theinscrutable.us/~netguy/thermo2/confirm.php?key=$key'>link</a> to confirm your registation.";
       $util::send_mail( $umail, $message, 'User ID registration email' );
 
 

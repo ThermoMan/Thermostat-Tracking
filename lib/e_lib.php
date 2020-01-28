@@ -57,27 +57,27 @@ add these variables
     curl_setopt( $this->ch, CURLOPT_URL, $commandURL );
     $retry = 0;
     do{
-if( $retry > 0 ) $log->logInfo( "e_lib: getMTUData: setting timeout to $newTimeout for try number $retry." );
+if( $retry > 0 ) $util::logInfo( "e_lib: getMTUData: setting timeout to $newTimeout for try number $retry." );
       curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, $newTimeout );
       $retry++;
       $outputs = curl_exec( $this->ch );
       if( curl_errno( $this->ch ) != 0 ){
-        $log->logWarn( 't_lib: getStatData curl error (' .  curl_error( $this->ch ) .' -> '. curl_errno( $this->ch ) . ") when performing command ($cmd) on try number $retry" );
+        $util::logWarn( 't_lib: getStatData curl error (' .  curl_error( $this->ch ) .' -> '. curl_errno( $this->ch ) . ") when performing command ($cmd) on try number $retry" );
         if( curl_errno( $this->ch ) == 28 ){
           $newTimeout += self::$timeoutIncrement;
-          $log->logInfo( "e_lib: getMTUData: changed timeout to $newTimeout because of timeout error in curl command." );
+          $util::logInfo( "e_lib: getMTUData: changed timeout to $newTimeout because of timeout error in curl command." );
         }
       }
-      / * * Build in one second sleep after each communication attempt
-        *
-        * Later on, in a many MTU environment, each mtu will need to be queried in a thread so that the delays
-        * do not stack up and slow the overall application to a crawl.
-        * /
+      / ** Build in one second sleep after each communication attempt
+         *
+         * Later on, in a many MTU environment, each mtu will need to be queried in a thread so that the delays
+         * do not stack up and slow the overall application to a crawl.
+         * /
       sleep( 1 );    }
     while( ( curl_errno( $this->ch ) != 0 ) && ($retry < self::$maxRetries) );
 
     if( $retry > 1 ){
-      $log->logWarn( "e_lib: Made $retry attempts and last curl status was " . curl_errno( $this->ch ) );
+      $util::logWarn( "e_lib: Made $retry attempts and last curl status was " . curl_errno( $this->ch ) );
     }
     $this->connectOK = curl_errno( $this->ch ); // Only capture the last status because the retries _might_ have worked!
 
@@ -96,7 +96,7 @@ if( $retry > 0 ) $log->logInfo( "e_lib: getMTUData: setting timeout to $newTimeo
 
     if( $this->connectOK != 0 ){
       // Drat some problem.  Now what?
-      $log->logError( 'e_lib: getMTUData communication error.' );
+      $util::logError( 'e_lib: getMTUData communication error.' );
     }
 
     return $outputs;
@@ -105,7 +105,7 @@ if( $retry > 0 ) $log->logInfo( "e_lib: getMTUData: setting timeout to $newTimeo
 
   // Just ping the thing to get a sign of life
   public function getStatus(){
-    global $log;
+    global $util;
 
 /*
 THE UNIT STATUS PAGE HAS UPTIME THAT THE MAIN XML DOES NOT!!!!!
@@ -143,7 +143,7 @@ Need to grab data for system and 3rd Party posting data (if any)
     $outputs = curl_exec( $this->ch );
 
     if( strlen( $outputs ) < 1 ){
-      $log->logError( "e_lib: No useful return from TED 5000" );
+      $util::logError( "e_lib: No useful return from TED 5000" );
     }
     else{
       $xml = simplexml_load_string( $outputs );
@@ -159,7 +159,7 @@ Need to grab data for system and 3rd Party posting data (if any)
         return true;
       }
       catch( Exception $e ){
-        $log->logError( "e_lib: Error while parsing returned data - $e->getMessage()" );
+        $util::logError( "e_lib: Error while parsing returned data - $e->getMessage()" );
       }
     }
     return false;

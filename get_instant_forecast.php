@@ -3,10 +3,12 @@ $start_time = microtime(true);
 require_once( 'common.php' );
 require_once( 'user.php' );
 
+/*
 $util::logError( 'Forecast is DISABLED for now.' );
 $returnString = "<p><img src='images/Alert.png'/>Forecast is presently disabled.</p>";
 echo $returnString;
 exit;
+*/
 
 //$util::logDebug( '0' );
 
@@ -14,8 +16,16 @@ exit;
 
 $uname = (isset($_REQUEST['user'])) ? $_REQUEST['user'] : null;         // Set uname to chosen user name (or null if not chosen)
 $session = (isset($_REQUEST['session'])) ? $_REQUEST['session'] : null; // Set session to chosen session id (or null if not chosen)
-$user = new USER( $uname, $session );
-if( ! $util::checkThermostat( $user ) ) return;
+try{
+  $user = new USER( $uname, $session );
+}
+catch( Exception $e ){
+  $util::logError( 'Error while creating user.  Might be invalid session?' );
+  $returnString = "<p><img src='images/Alert.png'/>Forecast is presently unavailable.</p>";
+  echo $returnString;
+  exit;
+}
+//if( ! $util::checkThermostat( $user ) ) return; // <-- This is not a good way to check session
 
 $lastZIP = '';
 $returnString = '';
@@ -23,20 +33,12 @@ $returnString = '';
 if( $weatherConfig[ 'useForecast' ] ){
   // Only check forecast if we're asking for it.
   try{
-    /** Get stat info
-      *
-      */
-    foreach( $user->thermostats as $thermostatRec ){
-      // This loop really ought to be per location, not per thermostat!
-
-// QQQ error here!
-//      $returnString = '';
-
+    foreach( $user->locations as $locationRec ){
       try{
-//$util::logDebug( '1 zipcode = ' . $thermostatRec['location_string'] );
-        if( $lastZIP != $thermostatRec['location_string'] ){
+$util::logDebug( '1 zipcode = ' . $locationRec['location_string'] );
+        if( $lastZIP != $locationRec['location_string'] ){
           // Only get outside info for subsequent locations if the location has changed
-          $lastZIP = $thermostatRec['location_string'];
+          $lastZIP = $locationRec['location_string'];
 
           $externalWeatherAPI = new ExternalWeather( $weatherConfig );
           /** Bad code follows.
@@ -49,9 +51,9 @@ if( $weatherConfig[ 'useForecast' ] ){
           /** Get environmental info
             *
             */
-//$util::logDebug( '2' );
+$util::logDebug( '2' );
           $forecastData = $externalWeatherAPI->getOutdoorForecast( $lastZIP, $util );
-//$util::logDebug( '3' );
+$util::logDebug( '3' );
 
           // Format data for screen presentation
           if( is_array( $forecastData ) ){
@@ -81,7 +83,7 @@ if( $weatherConfig[ 'useForecast' ] ){
           }
           else{
             $util::logError( 'Expected to get an array back from $externalWeatherAPI->getOutdoorForcast( $lastZIP ) but did not.  $lastZIP is [[[' . $lastZIP . ']]]' );
-//$util::logInfo( 'return data is [[[' . $forecastData . ']]]' );
+$util::logInfo( 'return data is [[[' . $forecastData . ']]]' );
             $returnString .= 'No response from forecast provider.';
           }
         }

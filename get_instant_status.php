@@ -1,21 +1,12 @@
 <?php
-/**
-  * This guy needs some work.  It mixes up the MVC pretty badly.
-  * This code should be considered 'M' since it fetches the actual data.
-  * But it is acting like 'V' when it creates a reply that includes HTML.
-  * It really ought to package the info up into some JSON like structure and return that to the caller in case the caller is not a web page.
-  */
+// QQQ Put this line at the top of every file that must only appear as an include ??
+//if( $REQUEST_URL == $URL_OF_CURRENT_PAGE ){ http_response_code(404); die(); }
+
 $start_time = microtime( true );
 require_once( 'common.php' );
 require_once( 'user.php' );
 
-$util::logDebug( '0' );
-
-$returnString = '';
-$greetingMsg = '';
-$greetingMsgWeather = '';
-
-$lastZIP = '';
+//$util::logDebug( '0' );
 
 $uname = (isset($_REQUEST['user'])) ? $_REQUEST['user'] : null;         // Set uname to chosen user name (or null if not chosen)
 $session = (isset($_REQUEST['session'])) ? $_REQUEST['session'] : null; // Set session to chosen session id (or null if not chosen)
@@ -27,99 +18,259 @@ if( ! $util::checkThermostat( $user ) ){
   return;
 }
 
-/** Get thermostat info
-  *
-  */
-$util::logDebug( '1' );
+//
+//$util::logInfo( '$user is ' . print_r($user, true) );
+
+// Bandaid to keep things moving
+$database = new Database();
+$pdo = $database->dbConnection();
+
+  // Find the most recent stored temperature for all the thermostats for the present user.
+  $sql = "
+  SELECT loc.location_string
+        ,stat.name AS thermostat_name
+        ,MAX(data.date) AS last_contact
+    FROM {$database->table_prefix}users AS user
+        ,{$database->table_prefix}thermostats AS stat
+        ,{$database->table_prefix}thermostat_data AS data
+        ,{$database->table_prefix}locations AS loc
+   WHERE user.user_name = :uname
+     AND stat.user_id = user.user_id
+     AND data.thermostat_id = stat.thermostat_id
+     AND loc.location_id = stat.location_id
+GROUP BY stat.name
+         ,loc.location_string
+ORDER BY loc.location_string ASC";
+//$util::logInfo( '$sql ' . $sql );
+
+  $stmt = $pdo->prepare( $sql );
+  $stmt->bindParam( ':uname', $uname );
+  $stmt->execute();
+
+  $allThermostats = $stmt->fetchAll( PDO::FETCH_ASSOC );
+
+  $last_read_dates = array();
+  foreach( $allThermostats as $thermostatRec ){
+    $last_read_dates[ $thermostatRec[ 'location_string' ] ][ $thermostatRec[ 'thermostat_name' ] ] = $thermostatRec[ 'last_contact' ];
+  }
+//$util::logInfo( '$last_read_dates is ' . print_r($last_read_dates, true) );
+
+
+$oldLocString = '';
+$locations = array();
 try{
-//$util::logDebug( '2 util root dir is ' . $util::$rootDir );
-  foreach( $user->thermostats as $thermostatRec ){
-    $lockFileName = $util::$lockFile . $thermostatRec['thermostat_id'];
-    $lock = @fopen( $lockFileName, 'w' );
-    if( !$lock ){
-      $util::logError( "indoor_temps: Could not write to lock file $lockFileName" );
-      continue;
+
+  foreach( $user->thermostats as $thermostat ){
+    // This is a list of thermostats ordered by location_string
+    if( $oldLocString != $thermostat["location_string"] ){
+      $oldLocString = $thermostat["location_string"];
+      $loc = array();
+      $thermostats = array();
+      $loc['name'] = $oldLocString;
+// No, do not code outdoor temp in this data structure!
+//      $loc['temperature'] = 95.5; // QQQ Need to look up actual external temperature here.
     }
 
-    $setPoint = '';
+    try{
+      $tStat = new Stat( $thermostat );
 
-    if( flock( $lock, LOCK_EX ) ){
-$util::logInfo( "Connecting to Thermostat ID = ({$thermostatRec['thermostat_id']})  uuid  = ({$thermostatRec['tstat_uuid']}) ip = ({$thermostatRec['ip']}) name = ({$thermostatRec['name']})" );
+// When location and thermostat match, add the last conftact date (do this even if no lock)
+$last_read_date = '2018-08-26 14:00';
+$last_read_date = $last_read_dates[ $oldLocString ][ $thermostat['name'] ];
+$util::logInfo( '$last_read_date is ' . $last_read_date );
 
-      //$stat = new Stat( $thermostatRec['ip'], $thermostatRec['thermostat_id'] );
-      //$stat = new Stat( $thermostatRec['ip'] );
-      $stat = new Stat( $thermostatRec );
-$util::logDebug( '5' );
+      if( $tStat->getLock() ){
+//$util::logDebug( 'I got lock' );
+        $statData = $tStat->getStat();
 
-      try{
-$util::logInfo( 'Trying to talk to thermostat' );
-        $statData = $stat->getStat();
-      }
-      catch( Exception $e ){
-$util::logError( '$stat->getStat() threw an unpleasant error and could not talk to the stat' );
-      }
-      $heatStatus = ($stat->tstate == 1) ? 'on' : 'off';
-      $coolStatus = ($stat->tstate == 2) ? 'on' : 'off';
-      // (later?) If any of the the devices are on ask the DB how long they have been running (in hours:minutes)
-
-      $fanStatus  = ($stat->fstate == 1) ? 'on' : 'off';
-      $setPoint   = ' The target is ' . (string)(($stat->tstate == 1) ? $stat->t_heat : $stat->t_cool);
-
-      $greetingMsg = "<p>At $thermostatRec[name] ";
-
-      /** Get outside info
-        *
-        */
-      try{
-        if( $lastZIP != $ZIP ){
-          // Only get outside info for subsequent locations if the location has changed
-          $lastZIP = $ZIP;
-
-          $externalWeatherAPI = new ExternalWeather( $weatherConfig );
-          $outsideData = $externalWeatherAPI->getOutdoorWeather( $ZIP );
-          $outdoorTemp = $outsideData['temp'];
-          $outdoorHumidity = $outsideData['humidity'];
-$util::logInfo( "Outside Weather for {$ZIP}: Temp $outdoorTemp Humidity $outdoorHumidity" );
-          //$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
-          $greetingMsgWeather = "$outdoorTemp &deg;$weatherConfig[units] outside";
-        }
-      }
-      catch( Exception $e ){
-$util::logError( 'External weather failed: ' . $e->getMessage() );
-        // Need to add the Alert icon to the sprite map and set relative position in the thermo.css file
-        $returnString = $returnString . "<p><img src='images/Alert.png'/ alt='alert'>Presently unable to read outside information.</p>";
-        $greetingMsgWeather = "<p><img src='images/Alert.png'/ alt='alert'>Presently unable to read outside information.</p>";
-        //$returnString = $returnString . "<p>$thermostatRec[name] says it is $stat->time</p>";
-      }
-
-      if( $stat->connectOK == 0 ){
-        // If we did talk to the thermostat
-        //$returnString = $returnString . "<p>At $thermostatRec[name] it's $stat->time and $outdoorTemp &deg;$weatherConfig[units] outside and $stat->temp &deg;$weatherConfig[units] inside.</p>";
-        $returnString = $returnString . $greetingMsg . "it's $stat->time and " . $greetingMsgWeather . " and $stat->temp &deg;$weatherConfig[units] inside.</p>";
-
-        $returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='large_sprite heater_$heatStatus'     alt='heat' title='The heater is $heatStatus' /> The heater is $heatStatus.".(($heatStatus == 'on') ? "$setPoint" : '').'</p>';
-        $returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='large_sprite compressor_$coolStatus' alt='cool' title='The compressor is $coolStatus' /> The compressor is $coolStatus.".(($coolStatus == 'on') ? "$setPoint" : '').'</p>';
-        $returnString = $returnString . "<p><img src='images/img_trans.gif' width='1' height='1' class='large_sprite fan_$fanStatus'         alt='fan'  title='The fan is $fanStatus'/> The fan is $fanStatus.</p>";
+        $heatStatus = ($tStat->tstate == 1) ? 'on' : 'off';
+        $coolStatus = ($tStat->tstate == 2) ? 'on' : 'off';
+        // (later?) If any of the the devices are on ask the DB how long they have been running (in hours:minutes)
+        $fanStatus  = ($tStat->fstate == 1) ? 'on' : 'off';
+        $setPoint   = ' The target is ' . (string)(($tStat->tstate == 1) ? $tStat->t_heat : $tStat->t_cool);
+        $tStat->releaseLock();
+        $message = 'OK';
+        $status = 0;
       }
       else{
-        // If we could not talk to the thermostat
-        $returnString = $returnString . $greetingMsg . date('H:i', time()) . ' and ' . $greetingMsgWeather . ' and presently unable to communicate with the thermostat.</p>';
+        $message = 'Can not get thermostat lock.';
+        $util::logError( $message );
+        $status = 3;
       }
-
     }
-    fclose( $lock );
+    catch( Exception $e ){
+      $message = 'Thermostat communication failed: ' . $e->getMessage();
+      $util::logError( $message );
+      $status = 2;
+    }
+
+    $stat = array();
+    $stat['name'] = $thermostat['name'];
+    $stat['message'] = $message;
+    $stat['status'] = $status;
+//$util::logInfo( '$tStat is ' . print_r($tStat, true) );
+    $stat['present_time'] = $tStat->time;
+    $stat['set_point'] = $setPoint;
+    $stat['temperature'] = $tStat->temp;
+    $stat['humidity'] = $tStat->humidity;
+
+    $stat['heater'] = $heatStatus;
+    $stat['compressor'] = $coolStatus;
+    $stat['fan'] = $fanStatus;
+    $stat['last_read_date'] = $last_read_date;
+
+    $loc['thermostats'][] = $stat;
+
+    $locations[] = $loc;
   }
+//$util::logDebug( 'After locations loop' );
+
+
+  //$message = print_r($user, true);
+  $message = 'OK';
+  $status = 0;
 }
 catch( Exception $e ){
-  $util::logError( 'Thermostat failed: ' . $e->getMessage() );
-  $returnString = "<p>No response from unit, please check WiFi connection at unit location.";
+  $message = 'It all failed: ' . $e->getMessage();
+  $util::logError( $message );
+  $status = 1;
 }
 
 
+$answer[ 'locations' ] = $locations;
+$answer[ 'message' ] = $message;;
+$answer[ 'status' ] = $status;  // Need a code for partial success (perhaps negative numbers are partial fail while positive numbers are total fail - since all others use positive non-zero as fail)
 
-// Need to JSON the text so that there is an object with values passed back?
+echo json_encode( array( "answer" => $answer), JSON_NUMERIC_CHECK );
 
-echo $returnString;
+
+/*
+New output
+The output ought to be something like this (the structure ought to strongly resemble that of the electric answer)
+{
+  "answer":{
+    "message":"Connection worked",
+    "status":0,
+    "locations":[{
+      "name":"Home",
+      "temperature":95.5,
+      "thermostats":[{
+        "name":"Hallway",
+        "present_date":"2018-09-04 03:52",
+        "temperature":75.5,
+        "heater":"off",
+        "compressor":"on",
+        "fan":"on",
+        "last_read_date":"2018-08-26 14:00"
+      },{
+        "name":"Upstairs",
+        "present_date":"2018-09-04 03:52",
+        "temperature":77,
+        "heater":"off",
+        "compressor":"off",
+        "fan":"off",
+        "last_read_date":"2018-08-26 14:00"
+      }]
+    },{
+      "name":"Vacation Home",
+      "temperature":65,
+      "thermostats":[{
+        "name":"First floor",
+        "present_date":"2018-09-04 03:52",
+        "temperature":73,
+        "heater":"on",
+        "compressor":"off",
+        "fan":"on",
+        "last_read_date":"2018-08-26 14:00"
+      },{
+        "name":"Basement",
+        "present_date":"2018-09-04 03:52",
+        "temperature":77,
+        "heater":"off",
+        "compressor":"off",
+        "fan":"off",
+        "last_read_date":"2018-08-26 14:00"
+      }]
+    }]
+  }
+}
+*/
+
+/*
+$thermostats = array();
+$locations = array();
+
+$thermostat[ 'name'] = 'Hallway';
+$thermostat[ 'message' ] = 'OK';
+$thermostat[ 'status' ] = 0;
+$thermostat[ 'present_date'] = '2019-03-21 15:46';
+$thermostat[ 'temperature'] = 66.5;
+// Do I need set point in here?
+$thermostat[ 'heater'] = 'off';
+$thermostat[ 'compressor'] = 'on';
+$thermostat[ 'fan'] = 'on';
+$thermostat[ 'last_read_date'] = '2019-03-21 15:30';
+
+$thermostats[] = $thermostat;
+
+$thermostat[ 'name'] = 'Upstairs';
+$thermostat[ 'message' ] = 'OK';
+$thermostat[ 'status' ] = 0;
+$thermostat[ 'present_date'] = '2019-03-21 15:47';   // It takes a few seconds to read the next one.
+$thermostat[ 'temperature'] = 68;
+$thermostat[ 'heater'] = 'off';
+$thermostat[ 'compressor'] = 'off';
+$thermostat[ 'fan'] = 'off';
+$thermostat[ 'last_read_date'] = '2019-03-21 15:30';
+
+$thermostats[] = $thermostat;
+
+$location[ 'name'] = 'Home';
+$location[ 'temperature'] = 81.9;    // This is the outside temperature (I do not think the outside temperature should be in here for the dashboard!  It should be part of the forecast card)
+$location[ 'thermostats'] = $thermostats;
+
+$thermostats = NULL;  // Reset the variable so I can fill it up again.
+$locations[] = $location;
+
+$thermostat[ 'name'] = 'First floor';
+$thermostat[ 'message' ] = 'OK';
+$thermostat[ 'status' ] = 0;
+$thermostat[ 'present_date'] = '2019-03-21 15:49';   // It takes a few seconds to read the next one.
+$thermostat[ 'temperature'] = 73;
+$thermostat[ 'heater'] = 'on';
+$thermostat[ 'compressor'] = 'off';
+$thermostat[ 'fan'] = 'on';
+$thermostat[ 'last_read_date'] = '2019-03-21 15:30';
+
+$thermostats[] = $thermostat;
+
+$thermostat[ 'name'] = 'Basement';
+$thermostat[ 'message' ] = 'Error';
+$thermostat[ 'status' ] = 12;        // Example of a failure of some kind.  The types of error that the front end cares about can be determined later.
+$thermostat[ 'present_date'] = NULL;
+$thermostat[ 'temperature'] = NULL;
+$thermostat[ 'heater'] = NULL;
+$thermostat[ 'compressor'] = NULL;
+$thermostat[ 'fan'] = NULL;
+$thermostat[ 'last_read_date'] = '2019-03-21 14:00';
+
+$thermostats[] = $thermostat;
+
+
+$location['name'] = 'Vacation Home';
+$location['temperature'] = 65;    // This is the outside temperature (I do not think the outside temperature should be in here for the dashboard!  It should be part of the forecast card)
+$location['thermostats'] = $thermostats;
+
+
+$locations[] = $location;
+
+
+$answer[ 'message' ] = 'OK';
+$answer[ 'status' ] = 0;
+$answer[ 'locations' ] = $locations;
+echo json_encode( array( "answer" => $answer), JSON_NUMERIC_CHECK );
+*/
+
 $util::logInfo( 'execution time was ' . (microtime(true) - $start_time) . ' seconds.' );
 
 ?>

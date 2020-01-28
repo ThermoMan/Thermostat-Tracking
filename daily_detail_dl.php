@@ -2,55 +2,63 @@
 $start_time = microtime(true);
 require_once( 'common_chart.php' );
 // _dl .... the "dl" means "data layer".  In MVC speak, this is the M.
-$util::logInfo( '0' );
 
-// Do not use this method as it assumes things about the quality of the data.
-// $table_flag = (isset($_REQUEST['table_flag'])) ? $_REQUEST['table_flag'] : false;
+// For some stupid reason I have to go fetch my own data instead of using $_POST/$_GET/$_REQUEST etc...
+$pArguments = json_decode( file_get_contents( 'php://input' ), true );
+//$sArguments = file_get_contents( 'php://input' );
+//$util::logDebug( "Raw string is = <<$sArguments>>" );
+//$pArguments = json_decode( $sArguments, true );
 
+$uname = (isset($pArguments['user'])) ? $pArguments['user'] : null;         // Set uname to chosen user name (or null if not chosen)
+$session = (isset($pArguments['session'])) ? $pArguments['session'] : null; // Set session to chosen session id (or null if not chosen)
 
-// QQQ need to change this.  I want two separate flags fetch_indoor_temps = true/false  fetch_outdoor_temps = true/false
-// QQQ ALL arguments need a name review.  1) consistency  2) brevity  3) comprehension
-$source = 2;  // Default to showing both
-if( isset( $_GET['chart_daily_source'] ) ){
-  // The "." character in the URL is somehow converted to an "_" character when PHP goes to look at it.
-  $source = $_GET['chart_daily_source'];
+try{
+  $user = new USER( $uname, $session );
 }
-if( $source < 0 || $source > 2 ){
-  // If it is out of bounds, show both.  0: outdoor, 1: indoor, 2: both
-  $source = 2;
-}
-
-// Default to off
-$show_indoor_temp = 0;
-$show_outoor_temp = 0;
-switch( $source ){
-  case 0:
-    $show_indoor_temp = 1;
-    $show_outoor_temp = 0;
-  break;
-  case 1:
-    $show_indoor_temp = 0;
-    $show_outoor_temp = 1;
-  break;
-  case 2:
-    $show_indoor_temp = 1;
-    $show_outoor_temp = 1;
-  break;
+catch( Exception $e ){
+  $util::logError( 'Error creating user' );
+  $answer['status'] = 1;
+  $answer['message'] = "No session";
+  echo json_encode( array( "answer" => $answer ), JSON_NUMERIC_CHECK );
+  return;
 }
 
-// Get ending date for chart
-$to_date = (isset($_GET['chart_daily_toDate'])) ? htmlspecialchars( $_GET['chart_daily_toDate'] ) : date( 'Y-m-d' );
-if( ! validate_date( $to_date ) ) return;
+$answer = array();
+
+if( ! $util::checkThermostat( $user ) ){
+  $util::logError( 'User has no thermostats configured' );
+
+  $answer['status'] = 1;
+  $answer['message'] = "No session";
+  echo json_encode( array( "answer" => $answer ), JSON_NUMERIC_CHECK );
+  return;
+}
+
+// Show which temperatures.  Default to off.
+$showIndoor = isset($pArguments['showIndoor']) ? $pArguments['showIndoor'] : false;
+$showOutdoor = isset($pArguments['showOutdoor']) ? $pArguments['showOutdoor'] : false;
+
+// Get ending date for chart.  Default to today
+$toDate = isset($pArguments['toDate']) ? htmlspecialchars( $pArguments['toDate'] ) : date( 'Y-m-d' );
+if( ! validate_date( $toDate ) ){
+  $util::logError( 'Bad date' );
+
+  $answer['status'] = 1;
+  $answer['message'] = "Bad date";
+  echo json_encode( array( "answer" => $answer ), JSON_NUMERIC_CHECK );
+  return;
+
+}
 // Verify that date is not future?
 
-$interval_measure = (isset($_GET['chart_daily_interval_group'])) ? $_GET['chart_daily_interval_group'] : 0;
+$interval_measure = isset($pArguments['interval_measure']) ? $pArguments['interval_measure'] : 0;
 if( $interval_measure < 0 || $interval_measure > 3 ){
   // 0: days, 1: weeks, 2: months, 3: years
   $interval_measure = 0;
 }
 
-if( isset( $_GET['chart_daily_interval_length'] ) ){
-  $interval_length = $_GET['chart_daily_interval_length'];
+if( isset( $pArguments['interval_length'] ) ){
+  $interval_length =  $pArguments['interval_length'];
 
   // Bounds checking
   if( $interval_length < 1 ) $interval_length = 1;
@@ -58,43 +66,42 @@ if( isset( $_GET['chart_daily_interval_length'] ) ){
 }
 
 $date_text = array( 0 => 'days', 1 => 'weeks', 2 => 'months', 3 => 'years' );
-$interval_string = $to_date . ' -' . $interval_length . ' ' . $date_text[$interval_measure];
+$interval_string = $toDate . ' -' . $interval_length . ' ' . $date_text[$interval_measure];
 
 // Compute the "from date"
-$from_date = date( 'Y-m-d 00:00', strtotime( $interval_string ) );
+$fromDate = date( 'Y-m-d 00:00', strtotime( $interval_string ) );
+$toDate = date( 'Y-m-d 23:59', strtotime( "$toDate + 1 day" ) );
 
-// There is the appearance of one extra day on every chart...
-//$from_date = date( 'Y-m-d 00:00', strtotime( "$from_date + 1 day" ) );
-
-$to_date = date( 'Y-m-d 23:59', strtotime( "$to_date + 1 day" ) );
 
 // Set default cycle display to none
-$show_heat_cycles = (isset($_GET['chart_daily_showHeat']) && ($_GET['chart_daily_showHeat'] == 'false')) ? 0 : 1;
-$show_cool_cycles = (isset($_GET['chart_daily_showCool']) && ($_GET['chart_daily_showCool'] == 'false')) ? 0 : 1;
-$show_fan_cycles  = (isset($_GET['chart_daily_showFan'])  && ($_GET['chart_daily_showFan']  == 'false')) ? 0 : 1;
+$showHeat = isset($pArguments['showHeat']) ? $pArguments['showHeat'] : false;
+$showCool = isset($pArguments['showCool']) ? $pArguments['showCool'] : false;
+$showFan = isset($pArguments['showFan']) ? $pArguments['showFan'] : false;
+
 // Set default for displaying set point temp to "off"
-$show_setpoint    = (isset($_GET['chart_daily_setpoint']) && ($_GET['chart_daily_setpoint']  == 'false')) ? 0 : 1;
+$showSetpoint = (isset($pArguments['showSetpoint'])) ? $pArguments['showSetpoint'] : false;
 
 // Set default humidity display to none
-$show_indoor_humidity = (isset($_GET['chart_daily_showIndoorHumidity']) && ($_GET['chart_daily_showIndoorHumidity'] == 'false')) ? 0 : 1;
-$show_outdoor_humidity = (isset($_GET['chart_daily_showOutdoorHumidity']) && ($_GET['chart_daily_showOutdoorHumidity'] == 'false')) ? 0 : 1;
+$showIndoorHumidity = isset($pArguments['showIndoorHumidity']) ? $pArguments['showIndoorHumidity'] : false;
+$showOutdoorHumidity = isset($pArguments['showOutdoorHumidity']) ? $pArguments['showOutdoorHumidity'] : false;
 
-/*
-$util::logDebug( "source = $source" );
-$util::logDebug( "show_indoor_temp = $show_indoor_temp" );
-$util::logDebug( "show_outoor_temp = $show_outoor_temp" );
-$util::logDebug( "from_date = $from_date" );
-$util::logDebug( "to_date = $to_date" );
-$util::logDebug( "interval_string = $interval_string" );
-$util::logDebug( "interval_length = $interval_length" );
-$util::logDebug( "interval_measure = $interval_measure" );
-$util::logDebug( "show_heat_cycles = $show_heat_cycles" );
-$util::logDebug( "show_cool_cycles = $show_cool_cycles" );
-$util::logDebug( "show_fan_cycles = $show_fan_cycles" );
-$util::logDebug( "show_setpoint = $show_setpoint" );
-$util::logDebug( "show_indoor_humidity = $show_indoor_humidity" );
-$util::logDebug( "show_outdoor_humidity = $show_outdoor_humidity" );
-*/
+$util::logDebug( "showIndoor = <<" . ($showIndoor ? 'true' : 'false') . ">>" );
+$util::logDebug( "showOutdoor = <<" . ($showOutdoor ? 'true' : 'false') . ">>" );
+$util::logDebug( "fromDate = <<$fromDate>>" );
+$util::logDebug( "toDate = <<$toDate>>" );
+$util::logDebug( "interval_string = <<$interval_string>>" );
+$util::logDebug( "interval_length = <<$interval_length>>" );
+$util::logDebug( "interval_measure = <<$interval_measure>>" );
+$util::logDebug( "showHeat = <<" . ($showHeat ? 'true' : 'false') . ">>" );
+$util::logDebug( "showCool = <<" . ($showCool ? 'true' : 'false') . ">>" );
+$util::logDebug( "showFan = <<" . ($showFan ? 'true' : 'false') . ">>" );
+$util::logDebug( "showSetpoint = <<" . ($showSetpoint ? 'true' : 'false') . ">>" );
+$util::logDebug( "showIndoorHumidity = <<" . ($showIndoorHumidity ? 'true' : 'false') . ">>" );
+$util::logDebug( "showOutdoorHumidity = <<" . ($showOutdoorHumidity ? 'true' : 'false') . ">>" );
+$util::logInfo( 'EARLY EXIT' );
+return;
+
+
 
 $database = new Database();
 $pdo = $database->dbConnection();
@@ -142,7 +149,7 @@ AND temps.thermostat_id = ?
 WHERE all_ranger.period BETWEEN ? AND ?
 ORDER BY all_ranger.period ASC";
 $queryGetIndoorData = $pdo->prepare( $sqlGetIndoorData );
-$queryGetIndoorData->execute( array( $thermostat_id, $from_date, $to_date ) );
+$queryGetIndoorData->execute( array( $thermostat_id, $fromDate, $toDate ) );
 
 
 while( $row = $queryGetIndoorData->fetch( PDO::FETCH_ASSOC ) ){
@@ -151,9 +158,6 @@ while( $row = $queryGetIndoorData->fetch( PDO::FETCH_ASSOC ) ){
   $indoorTemp[ $row['date'] ] =  $row['indoor_temp'];
   $indoorHumidity[ $row['date'] ] = str_replace( -1, 'void', $row['indoor_humidity'] );
 }
-
-
-
 
 $outdoorTemp = array();
 $outdoorHumidity = array();
@@ -183,25 +187,21 @@ $location_id = 1;
 
 $queryGetOutdoorData = $pdo->prepare( $sqlGetOutdoorData );
 
-$queryGetOutdoorData->execute( array( $from_date, $to_date, $location_id, $from_date, $to_date, $location_id, $from_date, $to_date, $location_id ) );
+$queryGetOutdoorData->execute( array( $fromDate, $toDate, $location_id, $fromDate, $toDate, $location_id, $fromDate, $toDate, $location_id ) );
 
 while( $row = $queryGetOutdoorData->fetch( PDO::FETCH_ASSOC ) ){
   $outdoorTemp[ $row['date'] ] =  $row['outdoor_temp'];
   $outdoorHumidity[ $row['date'] ] = $row['outdoor_humidity'];
 }
 
-
 $minutes = '30';
-
-
 $dates = '';
 
-
 // For a $show_date of '2012-07-10' get the start and end bounding datetimes
-$start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($from_date));  // "2012-07-10 00:00:00";
-$end_date = strftime( '%Y-%m-%d 23:59:59', strtotime($to_date));      // "2012-07-10 23:59:59";
+$start_date = strftime( '%Y-%m-%d 00:00:00', strtotime($fromDate));  // "2012-07-10 00:00:00";
+$end_date = strftime( '%Y-%m-%d 23:59:59', strtotime($toDate));      // "2012-07-10 23:59:59";
 
-if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 ){
+if( ($showHeat + $showCool + $showFan) > 0 ){
   /**
     * This SQL should include cycles that started on the previous night or ended on the
     *  following morning for any given date.
@@ -219,7 +219,6 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 ){
   FROM {$database->table_prefix}hvac_cycles
   WHERE start_time >= ? AND end_time <= ? AND thermostat_id = ?
   ORDER BY start_time ASC";
-
 
   $queryTwo = $pdo->prepare( $sqlTwo );
 
@@ -251,11 +250,11 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 ){
 
   $queryThree = $pdo->prepare( $sqlThree );
 
-  $result = $queryThree->execute(array( $from_date, $from_date, $from_date, $from_date, $thermostat_id ) );
+  $result = $queryThree->execute(array( $fromDate, $fromDate, $fromDate, $fromDate, $thermostat_id ) );
 }
 $util::logDebug( "14" );
 
-if( $show_setpoint == 1 ){
+if( $showSetpoint == 1 ){
   $sqlFour =
   "SELECT set_point, switch_time
    FROM {$database->table_prefix}setpoints
@@ -283,23 +282,21 @@ $util::logDebug( "Executing sqlFour ($sqlFour) for values $thermostat_id, $start
 $util::logDebug( "15" );
 
 
-if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 ){
+if( ($showHeat + $showCool + $showFan) > 0 ){
   // The SQL has already been executed.  Now just draw it.
 
-
   while( $row = $queryTwo->fetch( PDO::FETCH_ASSOC ) ){
-
     // 'YYYY-MM-DD HH:mm:00'  There are NO seconds in these data points.
     $cycle_start = $LeftMargin + ((($row['start_day'] * 1440) + ($row['start_hour'] * 60) + $row['start_minute'] ) * $PixelsPerMinute);
     $cycle_end   = $LeftMargin + ((($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute);
 
-    if( $row['system'] == 1 && $show_heat_cycles == 1 ){
+    if( $row['system'] == 1 && $showHeat == 1 ){
       // Heat
     }
-    else if( $row['system'] == 2 && $show_cool_cycles == 1 ){
+    else if( $row['system'] == 2 && $showCool == 1 ){
       // A/C
     }
-    else if( $row['system']== 3 && $show_fan_cycles == 1 ){
+    else if( $row['system']== 3 && $showFan == 1 ){
       // Fan
     }
   }
@@ -308,19 +305,19 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 ){
 
   while( $row = $queryThree->fetch( PDO::FETCH_ASSOC ) ){
     // Should be only one row!
-    if( $row['heat_status'] == 1 && $show_heat_cycles == 1 ){
+    if( $row['heat_status'] == 1 && $showHeat == 1 ){
       // If the AC is on now AND we want to draw it
       $cycle_start = $LeftMargin + (($row['start_day_heat'] * 1440) + ($row['start_hour_heat'] * 60) + $row['start_minute_heat'] ) * $PixelsPerMinute;
       $cycle_end   = $LeftMargin + (($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute;
 
     }
-    if( $row['cool_status'] == 1 && $show_cool_cycles == 1 ){
+    if( $row['cool_status'] == 1 && $showCool == 1 ){
       // If the AC is on now AND we want to draw it
       $cycle_start = $LeftMargin + (($row['start_day_cool'] * 1440) + ($row['start_hour_cool'] * 60) + $row['start_minute_cool'] ) * $PixelsPerMinute;
       $cycle_end   = $LeftMargin + (($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute;
 
     }
-    if( $row['fan_status'] == 1 && $show_fan_cycles == 1 ){
+    if( $row['fan_status'] == 1 && $showFan == 1 ){
       // If the AC is on now AND we want to draw it
       $cycle_start = $LeftMargin + (($row['start_day_fan'] * 1440) + ($row['start_hour_fan'] * 60) + $row['start_minute_fan'] ) * $PixelsPerMinute;
       $cycle_end   = $LeftMargin + (($row['end_day']   * 1440) + ($row['end_hour']   * 60) + $row['end_minute'] )   * $PixelsPerMinute;
@@ -331,8 +328,7 @@ if( ($show_heat_cycles + $show_cool_cycles + $show_fan_cycles) > 0 ){
 
 $util::logDebug( "18" );
 
-if( $show_setpoint == 1 ){
-
+if( $showSetpoint == 1 ){
   $first_row = 1;
 //  while( $row = $queryFour->fetch( PDO::FETCH_ASSOC ) )
   foreach( $queryFourData as $row ){
@@ -345,7 +341,7 @@ if( $show_setpoint == 1 ){
     if( $first_row == 1 ){
       $first_row = 0;
       $prev_setpoint = $row['set_point'];
-      $prev_switch_time = date_create( $from_date );
+      $prev_switch_time = date_create( $fromDate );
       $start_px = $LeftMargin;
       continue;
     }
@@ -368,17 +364,17 @@ if( $show_setpoint == 1 ){
   $interval = $prev_switch_time->diff($now);
 }
 
-$util::logDebug( "19" );
+//$util::logDebug( "19" );
 
-$answer = array();
+if( $showIndoor == 1 ) $answer[ 'indoorTemp' ] = $indoorTemp;
+if( $showIndoorHumidity == 1 ) $answer[ 'indoorHumidity' ] = $indoorHumidity;
 
-if( $show_indoor_temp == 1 ) $answer[ 'indoorTemp' ] = $indoorTemp;
-if( $show_indoor_humidity == 1 ) $answer[ 'indoorHumidity' ] = $indoorHumidity;
+if( $showOutdoor == 1 ) $answer[ 'outdoorTemp' ] = $outdoorTemp;
+if( $showOutdoorHumidity == 1 ) $answer[ 'outdoorHumidity' ] = $outdoorHumidity;
 
-if( $show_outoor_temp == 1 ) $answer[ 'outdoorTemp' ] = $outdoorTemp;
-if( $show_outdoor_humidity == 1 ) $answer[ 'outdoorHumidity' ] = $outdoorHumidity;
+$answer['status'] = 0;
 
-//if( $show_setpoint == 1 ) $answer[ 'setpoint' ] = $setpoint;
+//if( $showSetpoint == 1 ) $answer[ 'setpoint' ] = $setpoint;
 
 echo json_encode( array( "answer" => $answer), JSON_NUMERIC_CHECK );
 

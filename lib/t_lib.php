@@ -64,15 +64,19 @@ public $dummy_time = null, $dummy_temp = null;
          $rssi = null;
 
   public function __construct( $thermostatRec ){
+    //QQQ Need to throw an exception is the data passed in is NOT a thermostatRec or is NULL
+    //QQQ But this next thing isn't working the way I expected it to.
+    if( !isset( $thermostatRec ) ){ throw new Thermostat_Exception( "Can't instantiate thermostat object, no data passed to constructor" ); }
+
 //global $util;
-//$util::logDebug( 't_lib: contructor 0' );
+//$util::logDebug( 'contructor 0' );
     $this->thermostat_id = $thermostatRec['thermostat_id'];
     $this->IP = $thermostatRec['ip'];
-//$util::logDebug( 't_lib: contructor 1' );
+//$util::logDebug( 'contructor 1' );
 //    $this->ZIP = $thermostatRec['location_string'];
-//$util::logDebug( 't_lib: contructor 2' );
+//$util::logDebug( 'contructor 2' );
     $this->ch = curl_init();
-//$util::logDebug( 't_lib: contructor 3' );
+//$util::logDebug( 'contructor 3' );
     curl_setopt( $this->ch, CURLOPT_USERAGENT, 'A' );
     curl_setopt( $this->ch, CURLOPT_RETURNTRANSFER, 1 );
     curl_setopt( $this->ch, CURLOPT_LOCALPORT, 9000 );
@@ -107,9 +111,9 @@ public $dummy_time = null, $dummy_temp = null;
 
     // System variables
 //    $this->uuid = 0;
-//$util::logDebug( 't_lib: contructor 4' );
+//$util::logDebug( 'contructor 4' );
     $this->uuid = $thermostatRec['tstat_uuid'];
-//$util::logDebug( 't_lib: contructor 5' );
+//$util::logDebug( 'contructor 5' );
 // Use the default device ID instead of 0
 
     $this->api_version = 0;
@@ -126,7 +130,7 @@ public $dummy_time = null, $dummy_temp = null;
     $this->rssi = 0;
 
     // Cloud variables
-//$util::logDebug( 't_lib: contructor 6' );
+//$util::logDebug( 'contructor 6' );
   }
 
   public function __destruct(){
@@ -142,12 +146,12 @@ public $dummy_time = null, $dummy_temp = null;
     // For reference http://www.php.net/curl_setopt
     curl_setopt( $this->ch, CURLOPT_URL, $commandURL );
 
-//$util::logDebug( 't_lib: getStatData trying...' );
+//$util::logDebug( 'getStatData trying...' );
     $retry = 0;
     do{
-//$util::logDebug( 't_lib: getStatData doing...' );
+//$util::logDebug( 'getStatData doing...' );
       if( $retry > 0 ){
-        $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " t_lib: getStatData: setting timeout to $newTimeout for try number $retry." );
+        $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " getStatData: setting timeout to $newTimeout for try number $retry." );
       }
       curl_setopt( $this->ch, CURLOPT_TIMEOUT_MS, $newTimeout );
       $retry++;
@@ -161,7 +165,7 @@ public $dummy_time = null, $dummy_temp = null;
         case 28:
           // It was a timeout, trying again may work
           $newTimeout += self::$timeoutIncrement;
-          $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " t_lib: getStatData: changed timeout to $newTimeout because of timeout error in curl command.  Try number $retry" );
+          $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " getStatData: changed timeout to $newTimeout because of timeout error in curl command.  Try number $retry" );
 
           if( $retry < self::$maxRetries ){
             /** Build in one second sleep after each communication attempt
@@ -179,7 +183,7 @@ public $dummy_time = null, $dummy_temp = null;
         break;
         default:
           // Some other error that I don't know how to fix, so don't even try.
-          $util::logError( basename( $_SERVER["SCRIPT_NAME"], ".php") . ' t_lib: getStatData curl error (' .  curl_error( $this->ch ) .' -> '. curl_errno( $this->ch ) . ") when performing command ($cmd) on try number $retry" );
+          $util::logError( basename( $_SERVER["SCRIPT_NAME"], ".php") . ' getStatData curl error (' .  curl_error( $this->ch ) .' -> '. curl_errno( $this->ch ) . ") when performing command ($cmd) on try number $retry" );
           throw new Thermostat_Exception( 'getStatData() - curl died.  check logs.' );
          break;
       }
@@ -202,11 +206,11 @@ public $dummy_time = null, $dummy_temp = null;
     switch( curl_errno( $this->ch )  ){
       case 0:
         if( $retry > 1 ){
-          $util::logWarn( "t_lib: Made $retry attempts and last curl status was " . curl_errno( $this->ch ) );
+          $util::logWarn( "Made $retry attempts and last curl status was " . curl_errno( $this->ch ) );
         }
       break;
       default:
-        $util::logError( 't_lib: getStatData.  Communication just did not work' );
+        $util::logError( 'getStatData.  Communication just did not work' );
         throw new Thermostat_Exception( 'getStatData() - Communication failure.  check logs.' );
       break;
     }
@@ -223,7 +227,7 @@ public $dummy_time = null, $dummy_temp = null;
     curl_setopt( $this->ch, CURLOPT_POSTFIELDS, $value );
 
     if( $this->debug  ){
-      $util::logDebug( "t_lib: setStatData: commandURL was $commandURL" );
+      $util::logDebug( "setStatData: commandURL was $commandURL" );
       echo '<br>commandURL: ' . $commandURL . '<br>';
     }
 
@@ -234,7 +238,7 @@ public $dummy_time = null, $dummy_temp = null;
 
     // Need to wait for a response... object(stdClass)#4 (1) { ['success']=> int(0) }
 
-    // Once we actually start using teh set function the error detection, timeout, and retry logic will begin to apply here too.
+    // Once we actually start using the set function the error detection, timeout, and retry logic will begin to apply here too.
     return;
   }
 
@@ -242,20 +246,20 @@ public $dummy_time = null, $dummy_temp = null;
     global $util;
     $retval = false;
     // Aha!  This might be how to detect the missing connection?
-//$util::logError( 't_lib: containsTransient looking...' );
+//$util::logError( 'containsTransient looking...' );
     if( is_object( $obj ) ){
       foreach( $obj as $key => &$value ){
-  //$util::logDebug( 't_lib: containsTransient key...' );
+  //$util::logDebug( 'containsTransient key...' );
     // Warning: Invalid argument supplied for foreach() in ~/thermo2/lib/t_lib.php on line 171
     // It was line 171 before I started adding comments!
         if( is_object($value) ){
           foreach( $value as $key2 => &$value2 ){
-  //$util::logDebug( 't_lib: containsTransient nested key...' );
+  //$util::logDebug( 'containsTransient nested key...' );
             if( is_int( $value2 ) && $value2 == -1 ){
 // QQQ Should I throw an exception here?
               //if( $this->debug )
               //echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n";
-              $util::logWarn( 't_lib: containsTransient WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n" );
+              $util::logWarn( 'containsTransient WARNING (' . date(DATE_RFC822) . '): ' . $key2 . " contained a transient\n" );
               // NULL the -1 transient
               //$value2 = NULL;
               $retval = true;
@@ -264,12 +268,12 @@ public $dummy_time = null, $dummy_temp = null;
         }
         else{
           // Comment out because this message appears even when everything is working!
-          // $util::logError( 't_lib: containsTransient: value was NOT an object!' );
+          // $util::logError( 'containsTransient: value was NOT an object!' );
         }
         if( is_int( $value ) && $value == -1 ){
 // QQQ Should I throw an exception here?
           //echo 'WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n";
-          $util::logWarn( 't_lib: containsTransient WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n" );
+          $util::logWarn( 'containsTransient WARNING (' . date(DATE_RFC822) . '): ' . $key . " contained a transient\n" );
           // NULL the -1 transient
           //$value = NULL;
           $retval = true;
@@ -280,24 +284,24 @@ ob_start();                    // start buffer capture
 var_dump( $value );            // dump the values
 $contents = ob_get_contents(); // put the buffer into a variable
 ob_end_clean();                // end capture
-$util::logDebug( "t_lib: data is {{{ $contents }}}" );
+$util::logDebug( "data is {{{ $contents }}}" );
 **/
         }
       }
     }
     else{
-      $util::logError( 't_lib: containsTransient: argument obj was NOT an object!' );
+      $util::logError( 'containsTransient: argument obj was NOT an object!' );
       if( is_scalar( $obj ) ){
-        $util::logDebug( 't_lib: transient is ' . $obj );
+        $util::logDebug( 'transient is ' . $obj );
       }
       elseif( is_null( $obj ) ){
-        $util::logDebug( 't_lib: transient is NULL' );
+        $util::logDebug( 'transient is NULL' );
       }
       elseif( is_array( $obj ) ){
-        $util::logDebug( 't_lib: transient is array (ought to dump it here)' );
+        $util::logDebug( 'transient is array (ought to dump it here)' );
       }
     }
-//$util::logDebug( 't_lib: containsTransient ending...' );
+//$util::logDebug( 'containsTransient ending...' );
     return $retval;
   }
 
@@ -413,6 +417,29 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
     return;
   }
 
+  public function getLock(){
+    global $util;
+
+    $lockFileName = $util::$lockFile . $this->thermostat_id;
+    $this->lock = @fopen( $lockFileName, 'w' );
+    if( !$this->lock ){
+      $util::logError( "Could not write to lock file $lockFileName" );
+      return false;
+    }
+    if( flock( $this->lock, LOCK_EX ) ){
+      $util::logDebug( 'Lock achieved' );
+      return true;
+    }
+    return false;
+  }
+  public function releaseLock(){
+    global $util;
+
+    $util::logDebug( 'Lock released' );
+    fclose( $this->lock );
+    return true;
+  }
+
   public function getStat(){
     global $util;
     /** Query thermostat for data and check the query for transients.
@@ -426,7 +453,7 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
     $retry = 0;
     do{
       if( $retry > 0 ){
-        $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " t_lib: getStat:  outout was [[[[$outputs]]]] on try $retry." );
+        $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " getStat:  outout was [[[[$outputs]]]] on try $retry." );
       }
 
       $outputs = $this->getStatData( '/tstat' );  // getStatData() has it's own retry function.
@@ -435,7 +462,7 @@ echo '<tr><td>this->passphrase</td><td>' . 'MASKED' . '</td><td>password (not sh
 
 // Trying to find out why I am getting zero's stored as inside temps.
 if( $obj->{'temp'} == 0 ){
-  $util::logError( basename( $_SERVER["SCRIPT_NAME"], ".php") . " t_lib: getStat: I got a ZERO.  Here is original output [[[[$outputs]]]]" );
+  $util::logError( basename( $_SERVER["SCRIPT_NAME"], ".php") . " getStat: I got a ZERO.  Here is original output [[[[$outputs]]]]" );
 }
 
       $retry++;
@@ -446,17 +473,17 @@ if( $obj->{'temp'} == 0 ){
       }
       else{
         if( $retry == 5 ){
-          $util::logError( basename( $_SERVER["SCRIPT_NAME"], ".php") . ' t_lib: getStat: Too many thermostat transient communication failures.' );
+          $util::logError( basename( $_SERVER["SCRIPT_NAME"], ".php") . ' getStat: Too many thermostat transient communication failures.' );
           throw new Thermostat_Exception( 'Too many thermostat transient failures' );
         }
         else{
           //echo "Transient (" . date(DATE_RFC822) . ") failure " . $i . " retrying...\n";
-          $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " t_lib: getStat: Transient (" . date(DATE_RFC822) . ") failure " . $retry . " retrying...\n" );
+          $util::logDebug( basename( $_SERVER["SCRIPT_NAME"], ".php") . " getStat: Transient (" . date(DATE_RFC822) . ") failure " . $retry . " retrying...\n" );
         }
       }
 
       if( empty( $obj ) ){
-        $util::logError( 't_lib: No output from thermostat.' );
+        $util::logError( 'No output from thermostat.' );
         throw new Thermostat_Exception( 'No output from thermostat' );
       }
     }while( $retry < self::$maxRetries ); // Exit loop if we ranout of retries
@@ -707,7 +734,7 @@ echo var_dump( json_decode( $outputs ) );
       $this->wlan_fw_version = $obj->{'wlan_fw_version'};
     }
     else{
-      $util::logDebug( "t_lib: getSysInfo connectOK shows an error ($this->connectOK)" );
+      $util::logDebug( "getSysInfo connectOK shows an error ($this->connectOK)" );
     }
 
     return;
@@ -732,7 +759,7 @@ echo var_dump( json_decode( $outputs ) );
       $this->rssi = $obj->{'rssi'};
     }
     else{
-      $util::logDebug( "t_lib: getSysNetwork connectOK shows an error ($this->connectOK)" );
+      $util::logDebug( "getSysNetwork connectOK shows an error ($this->connectOK)" );
     }
 
     return;
@@ -817,11 +844,11 @@ echo var_dump( json_decode( $outputs ) );
         $this->dummy_temp = $d_temp;
       }
       else{
-        $util::logError( 't_lib: getProgram fetch of HEAT program failed.' );
+        $util::logError( 'getProgram fetch of HEAT program failed.' );
       }
     }
     else{
-      $util::logError( 't_lib: getProgram fetch of COOL program failed.' );
+      $util::logError( 'getProgram fetch of COOL program failed.' );
     }
 
 

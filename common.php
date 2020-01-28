@@ -360,8 +360,8 @@ self::logInfo( "common: timeout is $timeout ( " . ($timeout / (60 * 60 * 24) ) .
 // QQQ This comment may not be true!
     /**
       * Change the save path. Sessions stored in the same path all share the same lifetime; the lowest lifetime will be
-      * used for all. Therefore, for this to work, the session must be stored in a directory where only sessions sharing
-      * it's lifetime are. Best to just dynamically create on.
+      * used for all.  Therefore, for this to work, the session must be stored in a directory where only sessions sharing
+      * it's lifetime are.  Best to just dynamically create one?
       */
     ini_set( 'session.save_path', realpath( self::$sessionDir ) );
 
@@ -390,14 +390,15 @@ self::logInfo( "common: timeout is $timeout ( " . ($timeout / (60 * 60 * 24) ) .
       return true;
     }
     else{
-      echo '<p>You have no thermostats defined.  If you did, you\'d see the present status of your system(s).</p>';
-      echo '<p>Visit the <a href="profile.php">Profile</a> page to set up a thermostat!</p>';
-      require_once( 'standard_page_foot.php' );
+//      echo '<p>You have no thermostats defined.  If you did, you\'d see the present status of your system(s).</p>';
+//      echo '<p>Visit the <a href="profile.php">Profile</a> page to set up a thermostat!</p>';
+//      require_once( 'standard_page_foot.php' );
       return false;
     }
   }
 
   // QQQ Need a function to checkElectric() to see if user has any meters set up
+  // QQQ Need a function to checkBulb() to see if user has any lights for warning/message set up
 
 }
 $util = UTIX::getInstance();
@@ -481,7 +482,7 @@ $util::logDebug( 'common: Database->disconnect()' );
 //$util::logInfo( "backup: backupOneTable: Trying backup using\n" . $command );
 // QQQ Be careful, this log command writes your DB password!
 
-    // Maybe need a try/catch around this?
+    // QQQ Maybe need a try/catch around this?
     $rv = exec( $command );
 
     if( $rv != 0 ){
